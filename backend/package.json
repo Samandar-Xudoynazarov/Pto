@@ -1,0 +1,20 @@
+{
+  "name": "pto-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ПТО ish stoli — Express + MongoDB API",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --watch local.js",
+    "start": "node --env-file-if-exists=.env local.js",
+    "import": "node --env-file-if-exists=.env scripts/import.js"
+  },
+  "engines": {
+    "node": ">=20.12"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "mongoose": "^9.10.1"
+  }
+}

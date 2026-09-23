@@ -1,0 +1,9474 @@
+{
+ "materials": [
+  {
+   "name": "Бетон М 200",
+   "unit": "м3",
+   "price": null,
+   "group": "beton",
+   "stock": false,
+   "electrodeBase": false,
+   "recipe": [
+    {
+     "material": "Цемент Портланд М450",
+     "norm": 0.34
+    },
+    {
+     "material": "Шебень",
+     "norm": 1.15
+    },
+    {
+     "material": "Химдобавка",
+     "norm": 1.5
+    },
+    {
+     "material": "Песок",
+     "norm": 0.8
+    },
+    {
+     "material": "Вода",
+     "norm": 0.2
+    },
+    {
+     "material": "Электроэнергия (бетон)",
+     "norm": 10
+    }
+   ],
+   "writeoff": [
+    {
+     "material": "Песок",
+     "norm": 0.8
+    },
+    {
+     "material": "Цемент Портланд М450",
+     "norm": 0.39
+    },
+    {
+     "material": "Шебень",
+     "norm": 1.15
+    }
+   ]
+  },
+  {
+   "name": "Бетон М 300",
+   "unit": "м3",
+   "price": null,
+   "group": "beton",
+   "stock": false,
+   "electrodeBase": false,
+   "recipe": [
+    {
+     "material": "Цемент Портланд М450",
+     "norm": 0.4
+    },
+    {
+     "material": "Шебень",
+     "norm": 1.056
+    },
+    {
+     "material": "Песок",
+     "norm": 0.704
+    },
+    {
+     "material": "Вода",
+     "norm": 0.2
+    },
+    {
+     "material": "Электроэнергия (бетон)",
+     "norm": 10
+    },
+    {
+     "material": "Химдобавка",
+     "norm": 2
+    }
+   ],
+   "writeoff": [
+    {
+     "material": "Песок",
+     "norm": 0.704
+    },
+    {
+     "material": "Цемент Портланд М450",
+     "norm": 0.48
+    },
+    {
+     "material": "Шебень",
+     "norm": 1.056
+    }
+   ]
+  },
+  {
+   "name": "Бетон М 400",
+   "unit": "м3",
+   "price": null,
+   "group": "beton",
+   "stock": false,
+   "electrodeBase": false,
+   "recipe": [
+    {
+     "material": "Цемент Портланд М450",
+     "norm": 0.5
+    },
+    {
+     "material": "Шебень",
+     "norm": 1.036
+    },
+    {
+     "material": "Песок",
+     "norm": 0.609
+    },
+    {
+     "material": "Химдобавка",
+     "norm": 3
+    },
+    {
+     "material": "Вода",
+     "norm": 0.205
+    },
+    {
+     "material": "Электроэнергия (бетон)",
+     "norm": 10
+    }
+   ],
+   "writeoff": [
+    {
+     "material": "Песок",
+     "norm": 0.609
+    },
+    {
+     "material": "Цемент Портланд М450",
+     "norm": 0.59
+    },
+    {
+     "material": "Шебень",
+     "norm": 1.036
+    }
+   ]
+  },
+  {
+   "name": "Песок",
+   "unit": "т",
+   "price": 101200,
+   "group": "xomashyo",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Цемент Портланд М450",
+   "unit": "т",
+   "price": 660000,
+   "group": "xomashyo",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Шебень",
+   "unit": "т",
+   "price": 48400,
+   "group": "xomashyo",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Арматура ф 28 мм",
+   "unit": "кг",
+   "price": 7704,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Арматура А500 - 25мм",
+   "unit": "кг",
+   "price": 7704,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Арматура А500 - 22мм",
+   "unit": "кг",
+   "price": 7704,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Арматура А500 - 18мм",
+   "unit": "кг",
+   "price": 7704,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Арматура А500 - 16мм",
+   "unit": "кг",
+   "price": 7704,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Арматура А500 - 14мм",
+   "unit": "кг",
+   "price": 7704,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Арматура А500 - 12мм",
+   "unit": "кг",
+   "price": 7704,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Арматура А500 - 8мм",
+   "unit": "кг",
+   "price": 8003,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Пруток А500 -22мм",
+   "unit": "кг",
+   "price": 8003,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Пруток А500 -20мм",
+   "unit": "кг",
+   "price": 8003,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Круг Ф 18 мм",
+   "unit": "кг",
+   "price": 8003,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Пруток А500 -16мм",
+   "unit": "кг",
+   "price": 8003,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Пруток А500 -12мм",
+   "unit": "кг",
+   "price": 8100,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Пруток А500 -8мм",
+   "unit": "кг",
+   "price": 8330,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Пруток А500 -6,5мм",
+   "unit": "кг",
+   "price": 8750,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Взялная проволка 3,5",
+   "unit": "кг",
+   "price": 9185,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Электрод",
+   "unit": "кг",
+   "price": 26000,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Смазочные материалы",
+   "unit": "л",
+   "price": 5600,
+   "group": "boshqa",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Детал Д35",
+   "unit": "шт",
+   "price": 1665000,
+   "group": "zaklad",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Деталь Д115",
+   "unit": "п/м",
+   "price": 24000,
+   "group": "zaklad",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Заклад. Детал Д-108",
+   "unit": "шт",
+   "price": 221500,
+   "group": "zaklad",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Заклад. Детал Д-113",
+   "unit": "шт",
+   "price": 298000,
+   "group": "zaklad",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Закладной деталь Д-102",
+   "unit": "шт",
+   "price": 201000,
+   "group": "zaklad",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Закладной деталь Д2БМ-3М",
+   "unit": "шт",
+   "price": 888500,
+   "group": "zaklad",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Оголовник УД-28",
+   "unit": "шт",
+   "price": 60000,
+   "group": "zaklad",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Оголовник Усу(250)",
+   "unit": "шт",
+   "price": 2697633,
+   "group": "zaklad",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Уголок 140х9",
+   "unit": "кг",
+   "price": 10150,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Заклад. Детал МН-22",
+   "unit": "шт",
+   "price": 80000,
+   "group": "zaklad",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Заклад. Детал лист",
+   "unit": "шт",
+   "price": 140000,
+   "group": "zaklad",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Арматура А500 - 20мм",
+   "unit": "кг",
+   "price": 7704,
+   "group": "metall",
+   "stock": false,
+   "electrodeBase": true
+  },
+  {
+   "name": "Арматура А500 - 10мм",
+   "unit": "кг",
+   "price": 7704,
+   "group": "metall",
+   "stock": false,
+   "electrodeBase": true
+  },
+  {
+   "name": "Пруток А500 -28мм",
+   "unit": "кг",
+   "price": 8003,
+   "group": "metall",
+   "stock": false,
+   "electrodeBase": true
+  },
+  {
+   "name": "Пруток А500 -25мм",
+   "unit": "кг",
+   "price": 8003,
+   "group": "metall",
+   "stock": false,
+   "electrodeBase": true
+  },
+  {
+   "name": "Пруток А500 -14мм",
+   "unit": "кг",
+   "price": 8003,
+   "group": "metall",
+   "stock": false,
+   "electrodeBase": true
+  },
+  {
+   "name": "Пруток А500 -10мм",
+   "unit": "кг",
+   "price": 8330,
+   "group": "metall",
+   "stock": true,
+   "electrodeBase": true
+  },
+  {
+   "name": "Закладной деталь Д-104х2",
+   "unit": "шт",
+   "price": 207000,
+   "group": "zaklad",
+   "stock": false,
+   "electrodeBase": false
+  },
+  {
+   "name": "Стал проволока ф 4",
+   "unit": "кг",
+   "price": 10500,
+   "group": "metall",
+   "stock": false,
+   "electrodeBase": false
+  },
+  {
+   "name": "Химдобавка",
+   "unit": "л",
+   "price": 12320,
+   "group": "xomashyo",
+   "stock": false,
+   "electrodeBase": false
+  },
+  {
+   "name": "Вода",
+   "unit": "т",
+   "price": 15000,
+   "group": "xomashyo",
+   "stock": false,
+   "electrodeBase": false
+  },
+  {
+   "name": "Электроэнергия (бетон)",
+   "unit": "кВт·ч",
+   "price": 1100,
+   "group": "xizmat",
+   "stock": false,
+   "electrodeBase": false
+  },
+  {
+   "name": "Деталь Д-101",
+   "unit": "шт",
+   "price": null,
+   "group": "zaklad",
+   "stock": true,
+   "electrodeBase": false
+  },
+  {
+   "name": "Деталь Д-104",
+   "unit": "шт",
+   "price": null,
+   "group": "zaklad",
+   "stock": true,
+   "electrodeBase": false
+  }
+ ],
+ "products": [
+  {
+   "code": "Л 13-11",
+   "name": "Кабельный лоток",
+   "group": "Лотоклар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 2.52
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 170.1
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 42.6
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 3.5
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 1.4
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 2.52
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 170.1
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 42.6
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 3.5
+     },
+     {
+      "material": "Электрод",
+      "norm": 5.6
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 7
+     }
+    ],
+    "metalKg": 228.79999999999998,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 6856088.11,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "Л 12-8",
+   "name": "Кабельный лоток",
+   "group": "Лотоклар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 1.92
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 55.2
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 15.1
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 3
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 1.2
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 1.92
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 110.4
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 30.2
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 3
+     },
+     {
+      "material": "Электрод",
+      "norm": 5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 6
+     }
+    ],
+    "metalKg": 154.6,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 4834631.86,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "Л 11-8",
+   "name": "Кабельный лоток",
+   "group": "Лотоклар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 1.44
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 122
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 42.1
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2.8
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 1.3
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 1.44
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 122
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 42.1
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2.8
+     },
+     {
+      "material": "Электрод",
+      "norm": 5.2
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 6.5
+     }
+    ],
+    "metalKg": 178.6,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 4516534.3,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "Л 8-8",
+   "name": "Кабельный лоток",
+   "group": "Лотоклар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 1.56
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 61
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 27.2
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2.6
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 1.56
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 61
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 27.2
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2.6
+     },
+     {
+      "material": "Электрод",
+      "norm": 4
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 5
+     }
+    ],
+    "metalKg": 99.8,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 75000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 3456796.07,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "Л 8-11",
+   "name": "Кабельный лоток",
+   "group": "Лотоклар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 1.56
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 61
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 27.2
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2.6
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 1.56
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 61
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 27.2
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2.6
+     },
+     {
+      "material": "Электрод",
+      "norm": 4
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 5
+     }
+    ],
+    "metalKg": 99.8,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 3779358.66,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "Л 6-8",
+   "name": "Кабельный лоток",
+   "group": "Лотоклар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 0.9
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 56
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 14.1
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2.6
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.8
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 0.9
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 56
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 14.1
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2.6
+     },
+     {
+      "material": "Электрод",
+      "norm": 3.5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 4
+     }
+    ],
+    "metalKg": 76.19999999999999,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 75000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 2331616.79,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "Л 5-8",
+   "name": "Кабельный лоток",
+   "group": "Лотоклар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 0.88
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 31
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 7.3
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 1.8
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.5
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 0.88
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 31
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 7.3
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 1.8
+     },
+     {
+      "material": "Электрод",
+      "norm": 2
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 2.5
+     }
+    ],
+    "metalKg": 44.599999999999994,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 1990184.47,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "Л 5-15",
+   "name": "Кабельный лоток",
+   "group": "Лотоклар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 0.88
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 34
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 8.2
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 1.8
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.5
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 0.88
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 34
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 8.2
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 1.8
+     },
+     {
+      "material": "Электрод",
+      "norm": 2
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 2.5
+     }
+    ],
+    "metalKg": 48.5,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 2035085.02,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "Л 2-8",
+   "name": "Кабельный лоток",
+   "group": "Лотоклар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 0.38
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 9
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 6.2
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 1.2
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.4
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 0.38
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 9
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 6.2
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 1.2
+     },
+     {
+      "material": "Электрод",
+      "norm": 0.9
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 2
+     }
+    ],
+    "metalKg": 19.299999999999997,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 824560.69,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "Л 20.5",
+   "name": "Кабельный лоток",
+   "group": "Лотоклар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 0.07
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 6
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 0.5
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.2
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 0.07
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 6
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 0.5
+     },
+     {
+      "material": "Электрод",
+      "norm": 0.5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     }
+    ],
+    "metalKg": 8,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 218419.34,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "ПЛ 5д-5",
+   "name": "Плита перекрытия",
+   "group": "Плиталар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 0.04
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 2
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 0.5
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.2
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 0.04
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 2
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 0.5
+     },
+     {
+      "material": "Электрод",
+      "norm": 0.5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     }
+    ],
+    "metalKg": 4,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 122313.88,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "ПЛ 7д-3",
+   "name": "Плита перекрытия",
+   "group": "Плиталар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 0.06
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 4
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 0.5
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.2
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 0.06
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 4
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 0.5
+     },
+     {
+      "material": "Электрод",
+      "norm": 0.5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     }
+    ],
+    "metalKg": 6,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 178496.62,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "ПЛ 10д-3",
+   "name": "Плита перекрытия",
+   "group": "Плиталар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 0.08
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 5
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 0.5
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.2
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 0.08
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 5
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 0.5
+     },
+     {
+      "material": "Электрод",
+      "norm": 0.5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     }
+    ],
+    "metalKg": 7,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 222848.0,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "ПЛ 10.5",
+   "name": "Плита перекрытия",
+   "group": "Плиталар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 0.03
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 4
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 0.5
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.2
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 0.03
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 4
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 0.5
+     },
+     {
+      "material": "Электрод",
+      "norm": 0.5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     }
+    ],
+    "metalKg": 6,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 129716.57,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "Св-10,5",
+   "name": "Опора",
+   "group": "Опоралар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 0.47
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "norm": 51
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "norm": 2.6
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 5.1
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2.6
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 0.47
+     },
+     {
+      "material": "Арматура А500 - 14мм",
+      "norm": 51
+     },
+     {
+      "material": "Пруток А500 -8мм",
+      "norm": 2.6
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 5.1
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1.3
+     }
+    ],
+    "metalKg": 60,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 75000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 1271775.43,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Св-9,5",
+   "name": "Опора",
+   "group": "Опоралар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 0.42
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "norm": 46.1
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "norm": 2.36
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 1.15
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 4.12
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 0.42
+     },
+     {
+      "material": "Арматура А500 - 14мм",
+      "norm": 46.1
+     },
+     {
+      "material": "Пруток А500 -8мм",
+      "norm": 2.36
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 1.15
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 4.12
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     }
+    ],
+    "metalKg": 54.73,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 75000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 1150458.58,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф5-Усу(250)",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 1.89
+    },
+    {
+     "material": "Арматура ф 28 мм",
+     "norm": 335
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "norm": 250
+    },
+    {
+     "material": "Круг Ф 18 мм",
+     "norm": 8
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "norm": 54
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2.7
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2
+    },
+    {
+     "material": "Оголовник Усу(250)",
+     "norm": 1
+    },
+    {
+     "material": "Уголок 140х9",
+     "norm": 50
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 1.89
+     },
+     {
+      "material": "Арматура ф 28 мм",
+      "norm": 335
+     },
+     {
+      "material": "Арматура А500 - 14мм",
+      "norm": 250
+     },
+     {
+      "material": "Пруток А500 -12мм",
+      "norm": 54
+     },
+     {
+      "material": "Круг Ф 18 мм",
+      "norm": 8
+     },
+     {
+      "material": "Оголовник Усу(250)",
+      "norm": 1
+     },
+     {
+      "material": "Уголок 140х9",
+      "norm": 50
+     },
+     {
+      "material": "Электрод",
+      "norm": 8
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2.7
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     }
+    ],
+    "metalKg": 699.7,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     },
+     {
+      "name": "Логистика",
+      "type": "fixed",
+      "value": 1000000
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 16418733.66,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф5-АМ",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 2.5
+    },
+    {
+     "material": "Арматура А500 - 25мм",
+     "norm": 203
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "norm": 148
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 115
+    },
+    {
+     "material": "Пруток А500 -22мм",
+     "norm": 11
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "norm": 7
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 4
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2.6
+    },
+    {
+     "material": "Детал Д35",
+     "norm": 1
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 2.5
+     },
+     {
+      "material": "Арматура А500 - 25мм",
+      "norm": 203
+     },
+     {
+      "material": "Арматура А500 - 18мм",
+      "norm": 148
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 115
+     },
+     {
+      "material": "Пруток А500 -22мм",
+      "norm": 11
+     },
+     {
+      "material": "Пруток А500 -8мм",
+      "norm": 7
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 4
+     },
+     {
+      "material": "Детал Д35",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1.3
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 496.3,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 11967287.07,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф5-Амк",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 2.5
+    },
+    {
+     "material": "Арматура А500 - 25мм",
+     "norm": 203
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "norm": 148
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 115
+    },
+    {
+     "material": "Пруток А500 -22мм",
+     "norm": 11
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "norm": 7
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 4
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2.6
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 0.6
+    },
+    {
+     "material": "Закладной деталь Д2БМ-3М",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 2.5
+     },
+     {
+      "material": "Арматура А500 - 25мм",
+      "norm": 203
+     },
+     {
+      "material": "Арматура А500 - 18мм",
+      "norm": 148
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 115
+     },
+     {
+      "material": "Пруток А500 -22мм",
+      "norm": 11
+     },
+     {
+      "material": "Пруток А500 -8мм",
+      "norm": 7
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 4
+     },
+     {
+      "material": "Закладной деталь Д2БМ-3М",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1.3
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 0.6
+     }
+    ],
+    "metalKg": 495.90000000000003,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 10889337.24,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф4-АМ",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 2
+    },
+    {
+     "material": "Арматура А500 - 25мм",
+     "norm": 177
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 155
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 8
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 4
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2.6
+    },
+    {
+     "material": "Детал Д35",
+     "norm": 1
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 2
+     },
+     {
+      "material": "Арматура А500 - 25мм",
+      "norm": 177
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 155
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 8
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 4
+     },
+     {
+      "material": "Детал Д35",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 2.8
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1.3
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 350.1,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 9467256.65,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф4-Амк",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 2
+    },
+    {
+     "material": "Арматура А500 - 25мм",
+     "norm": 177
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 155
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 8
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 4
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2.6
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    },
+    {
+     "material": "Закладной деталь Д2БМ-3М",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 2
+     },
+     {
+      "material": "Арматура А500 - 25мм",
+      "norm": 177
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 155
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 8
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 4
+     },
+     {
+      "material": "Закладной деталь Д2БМ-3М",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 2.8
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1.3
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 350.1,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 8402768.33,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф3-АМ",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 1.7
+    },
+    {
+     "material": "Арматура А500 - 22мм",
+     "norm": 131
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 110
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 8
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 4
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2.6
+    },
+    {
+     "material": "Детал Д35",
+     "norm": 1
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 1.7
+     },
+     {
+      "material": "Арматура А500 - 22мм",
+      "norm": 131
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 110
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 8
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 4
+     },
+     {
+      "material": "Детал Д35",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 2.8
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1.3
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 259.1,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 7967578.67,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф3-Амк",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 1.7
+    },
+    {
+     "material": "Арматура А500 - 25мм",
+     "norm": 131
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 110
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 8
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 4
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2.6
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    },
+    {
+     "material": "Закладной деталь Д2БМ-3М",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 1.7
+     },
+     {
+      "material": "Арматура А500 - 25мм",
+      "norm": 131
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 110
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 8
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 4
+     },
+     {
+      "material": "Закладной деталь Д2БМ-3М",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 2.8
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1.3
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 259.1,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 6903090.35,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф5-4",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 1.79
+    },
+    {
+     "material": "Арматура А500 - 22мм",
+     "norm": 166
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 136
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 8
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "norm": 7
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 1
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 4
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 0.6
+    },
+    {
+     "material": "Закладной деталь Д-102",
+     "norm": 2
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 1.79
+     },
+     {
+      "material": "Арматура А500 - 22мм",
+      "norm": 166
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 136
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 1
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 8
+     },
+     {
+      "material": "Пруток А500 -12мм",
+      "norm": 7
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 4
+     },
+     {
+      "material": "Закладной деталь Д-102",
+      "norm": 2
+     },
+     {
+      "material": "Электрод",
+      "norm": 1.6
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 0.6
+     }
+    ],
+    "metalKg": 327.20000000000005,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 7104171.89,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф5-2",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 1.79
+    },
+    {
+     "material": "Арматура А500 - 22мм",
+     "norm": 150
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 130
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 8
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "norm": 30
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 1
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 4
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    },
+    {
+     "material": "Закладной деталь Д-102",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 1.79
+     },
+     {
+      "material": "Арматура А500 - 22мм",
+      "norm": 150
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 130
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 1
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 8
+     },
+     {
+      "material": "Пруток А500 -12мм",
+      "norm": 30
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 4
+     },
+     {
+      "material": "Закладной деталь Д-102",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 4
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 330,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 6952483.0,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф4-2",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 1.36
+    },
+    {
+     "material": "Арматура А500 - 22мм",
+     "norm": 126
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 105
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 8
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 12
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 1.64
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    },
+    {
+     "material": "Закладной деталь Д-102",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 1.36
+     },
+     {
+      "material": "Арматура А500 - 22мм",
+      "norm": 126
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 105
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 12
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 8
+     },
+     {
+      "material": "Закладной деталь Д-102",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 0.82
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 257.82,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 5489545.18,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф3-2",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 1.17
+    },
+    {
+     "material": "Арматура А500 - 22мм",
+     "norm": 59
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 57
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 4
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "norm": 30
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 2
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 1
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    },
+    {
+     "material": "Закладной деталь Д-102",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 1.17
+     },
+     {
+      "material": "Арматура А500 - 22мм",
+      "norm": 59
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 57
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 2
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 4
+     },
+     {
+      "material": "Пруток А500 -12мм",
+      "norm": 30
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 1
+     },
+     {
+      "material": "Закладной деталь Д-102",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 1.6
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 156.6,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 3986518.53,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Фк4-05",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 1.16
+    },
+    {
+     "material": "Арматура А500 - 16мм",
+     "norm": 30.2
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 87
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 4
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 4
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2.5
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    },
+    {
+     "material": "Заклад. Детал Д-113",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 1.16
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 87
+     },
+     {
+      "material": "Арматура А500 - 16мм",
+      "norm": 30.2
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 4
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 4
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2.5
+     },
+     {
+      "material": "Заклад. Детал Д-113",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 4.5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 134.2,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 3840329.05,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф4-05",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 1.33
+    },
+    {
+     "material": "Арматура А500 - 16мм",
+     "norm": 38.2
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 87
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 4
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 6
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2.5
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    },
+    {
+     "material": "Заклад. Детал Д-113",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 1.33
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 87
+     },
+     {
+      "material": "Арматура А500 - 16мм",
+      "norm": 38.2
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 6
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 4
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2.5
+     },
+     {
+      "material": "Заклад. Детал Д-113",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 4.5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 145.2,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 4216295.72,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Фк3-05",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 1.17
+    },
+    {
+     "material": "Арматура А500 - 16мм",
+     "norm": 30.2
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 34
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 4
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 4
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2.5
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    },
+    {
+     "material": "Заклад. Детал Д-113",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 1.17
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 34
+     },
+     {
+      "material": "Арматура А500 - 16мм",
+      "norm": 30.2
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 4
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 4
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2.5
+     },
+     {
+      "material": "Заклад. Детал Д-113",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 4.5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 82.2,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 3270628.86,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф3-05",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 1.17
+    },
+    {
+     "material": "Арматура А500 - 16мм",
+     "norm": 23
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 34
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 4
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 6
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 3.2
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    },
+    {
+     "material": "Заклад. Детал Д-113",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 1.17
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 34
+     },
+     {
+      "material": "Арматура А500 - 16мм",
+      "norm": 23
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 6
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 4
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2
+     },
+     {
+      "material": "Заклад. Детал Д-113",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 3
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1.6
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 75.6,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 3158456.84,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф2-2",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 0.96
+    },
+    {
+     "material": "Арматура А500 - 16мм",
+     "norm": 43
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 24
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "norm": 12
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 1
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    },
+    {
+     "material": "Закладной деталь Д-102",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 0.96
+     },
+     {
+      "material": "Арматура А500 - 16мм",
+      "norm": 43
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 24
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 1
+     },
+     {
+      "material": "Пруток А500 -8мм",
+      "norm": 12
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2
+     },
+     {
+      "material": "Закладной деталь Д-102",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 1.6
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 85.6,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 2800693.64,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ф2-А",
+   "name": "Фундамент",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 1.2
+    },
+    {
+     "material": "Арматура А500 - 25мм",
+     "norm": 174
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 97
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 4
+    },
+    {
+     "material": "Пруток А500 -16мм",
+     "norm": 6
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 2
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2
+    },
+    {
+     "material": "Деталь Д115",
+     "norm": 1
+    },
+    {
+     "material": "Закладной деталь Д-102",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 1.2
+     },
+     {
+      "material": "Арматура А500 - 25мм",
+      "norm": 174
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 97
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 2
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 4
+     },
+     {
+      "material": "Пруток А500 -16мм",
+      "norm": 6
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2
+     },
+     {
+      "material": "Закладной деталь Д-102",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 1.6
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 1
+     }
+    ],
+    "metalKg": 289.6,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 5492556.89,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Па3-1",
+   "name": "Плита анкерная",
+   "group": "Плиталар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 1.15
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "norm": 26
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 36
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 8
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "norm": 15
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 7
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 3.5
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2.6
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 1.15
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 36
+     },
+     {
+      "material": "Арматура А500 - 18мм",
+      "norm": 26
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 7
+     },
+     {
+      "material": "Пруток А500 -8мм",
+      "norm": 15
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 8
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 3.5
+     },
+     {
+      "material": "Заклад. Детал Д-108",
+      "norm": 1
+     },
+     {
+      "material": "Электрод",
+      "norm": 3.5
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1.3
+     },
+     {
+      "material": "Деталь Д115",
+      "norm": 0
+     }
+    ],
+    "metalKg": 101.3,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 3324734.3,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Па3-2",
+   "name": "Плита анкерная",
+   "group": "Плиталар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 1.43
+    },
+    {
+     "material": "Арматура А500 - 22мм",
+     "norm": 95
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 37
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 16
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "norm": 8
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "norm": 30
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 9
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 1.72
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 1.43
+     },
+     {
+      "material": "Арматура А500 - 22мм",
+      "norm": 95
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 37
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 16
+     },
+     {
+      "material": "Заклад. Детал Д-108",
+      "norm": 1
+     },
+     {
+      "material": "Пруток А500 -20мм",
+      "norm": 8
+     },
+     {
+      "material": "Пруток А500 -8мм",
+      "norm": 30
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 9
+     },
+     {
+      "material": "Электрод",
+      "norm": 1.2
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 0.86
+     }
+    ],
+    "metalKg": 200.06,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 4817103.0,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Ар-5",
+   "name": "Ригель",
+   "group": "Ригеллар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 0.2
+    },
+    {
+     "material": "Арматура А500 - 16мм",
+     "norm": 56
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "norm": 4
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 2
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.6
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 0.2
+     },
+     {
+      "material": "Арматура А500 - 16мм",
+      "norm": 56
+     },
+     {
+      "material": "Пруток А500 -12мм",
+      "norm": 4
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 2
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2
+     },
+     {
+      "material": "Электрод",
+      "norm": 1
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 0.3
+     }
+    ],
+    "metalKg": 65.3,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 1077063.46,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Р1-А",
+   "name": "Ригель",
+   "group": "Ригеллар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 0.2
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 32
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "norm": 2
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 4
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.6
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 0.2
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 32
+     },
+     {
+      "material": "Пруток А500 -12мм",
+      "norm": 2
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 4
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2
+     },
+     {
+      "material": "Электрод",
+      "norm": 0.9
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 0.3
+     }
+    ],
+    "metalKg": 41.199999999999996,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 803672.46,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "ЛК-20.5",
+   "name": "Лоток",
+   "group": "Лотоклар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 0.145
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 8
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 0.3
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 1.6
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 0.145
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 8
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 0.3
+     },
+     {
+      "material": "Электрод",
+      "norm": 1
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 0.8
+     }
+    ],
+    "metalKg": 0,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "fixed",
+      "value": 5000.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "fixed",
+      "value": 75
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 223.5
+     },
+     {
+      "name": "Амортизация",
+      "type": "m3",
+      "value": 10000.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 12000.0
+     },
+     {
+      "name": "Налог НДС за льготный обьект",
+      "type": "m3",
+      "value": 42721.43
+     },
+     {
+      "name": "Аренда помещения",
+      "type": "m3",
+      "value": 0.0
+     },
+     {
+      "name": "Налог земля",
+      "type": "m3",
+      "value": 77000.0
+     },
+     {
+      "name": "Налог имущество",
+      "type": "m3",
+      "value": 21000.0
+     },
+     {
+      "name": "Прочие",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 358726.39,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "УСО-1А",
+   "name": "Стойка",
+   "group": "Стойкалар",
+   "norms": [
+    {
+     "material": "Бетон М 200",
+     "norm": 0.32
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "norm": 51.2
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "norm": 0.87
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2.39
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.4
+    },
+    {
+     "material": "Оголовник УД-28",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 200",
+      "norm": 0.32
+     },
+     {
+      "material": "Арматура А500 - 18мм",
+      "norm": 51.2
+     },
+     {
+      "material": "Стал проволока ф 4",
+      "norm": 2.39
+     },
+     {
+      "material": "Пруток А500 -12мм",
+      "norm": 0.87
+     },
+     {
+      "material": "Электрод",
+      "norm": 0.3
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 0.2
+     },
+     {
+      "material": "Оголовник УД-28",
+      "norm": 1
+     }
+    ],
+    "metalKg": 0,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 200000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "fixed",
+      "value": 5000.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации",
+      "type": "m3",
+      "value": 157125.566289
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "fixed",
+      "value": 6200
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 223.5
+     },
+     {
+      "name": "Амортизация",
+      "type": "m3",
+      "value": 10000.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 12000.0
+     },
+     {
+      "name": "Налог НДС за льготный обьект",
+      "type": "m3",
+      "value": 42721.43
+     },
+     {
+      "name": "Аренда помещения",
+      "type": "m3",
+      "value": 0.0
+     },
+     {
+      "name": "Налог земля",
+      "type": "m3",
+      "value": 77000.0
+     },
+     {
+      "name": "Налог имущество",
+      "type": "m3",
+      "value": 21000.0
+     },
+     {
+      "name": "Прочие",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 1120501.11,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "УСО-2А",
+   "name": "Стойка",
+   "group": "Стойкалар",
+   "norms": [
+    {
+     "material": "Бетон М 200",
+     "norm": 0.27
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "norm": 36.2
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "norm": 0.87
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2.39
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.4
+    },
+    {
+     "material": "Оголовник УД-28",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 200",
+      "norm": 0.27
+     },
+     {
+      "material": "Арматура А500 - 18мм",
+      "norm": 36.2
+     },
+     {
+      "material": "Стал проволока ф 4",
+      "norm": 2.39
+     },
+     {
+      "material": "Пруток А500 -12мм",
+      "norm": 0.87
+     },
+     {
+      "material": "Электрод",
+      "norm": 0.3
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 0.2
+     },
+     {
+      "material": "Оголовник УД-28",
+      "norm": 1
+     }
+    ],
+    "metalKg": 0,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "fixed",
+      "value": 5000.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации",
+      "type": "m3",
+      "value": 157125.566289
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "fixed",
+      "value": 4450
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 223.5
+     },
+     {
+      "name": "Амортизация",
+      "type": "m3",
+      "value": 10000.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 12000.0
+     },
+     {
+      "name": "Налог НДС за льготный обьект",
+      "type": "m3",
+      "value": 42721.43
+     },
+     {
+      "name": "Аренда помещения",
+      "type": "m3",
+      "value": 0.0
+     },
+     {
+      "name": "Налог земля",
+      "type": "m3",
+      "value": 77000.0
+     },
+     {
+      "name": "Налог имущество",
+      "type": "m3",
+      "value": 21000.0
+     },
+     {
+      "name": "Прочие",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 934522.25,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "УСО-3А",
+   "name": "Стойка",
+   "group": "Стойкалар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 0.22
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "norm": 28.8
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 1.6
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 1.6
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.6
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 0.22
+     },
+     {
+      "material": "Арматура А500 - 18мм",
+      "norm": 28.8
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 1.6
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 1.6
+     },
+     {
+      "material": "Электрод",
+      "norm": 2
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1.3
+     }
+    ],
+    "metalKg": 35.3,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 786781.56,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "УСО-4А",
+   "name": "Стойка",
+   "group": "Стойкалар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 0.19
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "norm": 24
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 1.6
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 1.6
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 2.6
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 0.19
+     },
+     {
+      "material": "Арматура А500 - 18мм",
+      "norm": 24
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 1.6
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 1.6
+     },
+     {
+      "material": "Электрод",
+      "norm": 2
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 1.3
+     }
+    ],
+    "metalKg": 30.500000000000004,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 686732.4,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "УСО-5А",
+   "name": "Стойка",
+   "group": "Стойкалар",
+   "norms": [
+    {
+     "material": "Бетон М 200",
+     "norm": 0.14
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "norm": 17.6
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "norm": 0.87
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 1.45
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 1.6
+    },
+    {
+     "material": "Оголовник УД-28",
+     "norm": 2
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 200",
+      "norm": 0.14
+     },
+     {
+      "material": "Арматура А500 - 18мм",
+      "norm": 17.6
+     },
+     {
+      "material": "Стал проволока ф 4",
+      "norm": 1.45
+     },
+     {
+      "material": "Пруток А500 -12мм",
+      "norm": 0.87
+     },
+     {
+      "material": "Электрод",
+      "norm": 0.3
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 0.8
+     },
+     {
+      "material": "Оголовник УД-28",
+      "norm": 2
+     }
+    ],
+    "metalKg": 0,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "fixed",
+      "value": 5000.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации",
+      "type": "m3",
+      "value": 157125.566289
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "fixed",
+      "value": -100.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 223.5
+     },
+     {
+      "name": "Амортизация",
+      "type": "m3",
+      "value": 10000.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 12000.0
+     },
+     {
+      "name": "Налог НДС за льготный обьект",
+      "type": "m3",
+      "value": 42721.43
+     },
+     {
+      "name": "Аренда помещения",
+      "type": "m3",
+      "value": 0.0
+     },
+     {
+      "name": "Налог земля",
+      "type": "m3",
+      "value": 77000.0
+     },
+     {
+      "name": "Налог имущество",
+      "type": "m3",
+      "value": 21000.0
+     },
+     {
+      "name": "Прочие",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 25.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 639156.21,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Пл-10.5",
+   "name": "Плита",
+   "group": "Плиталар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 0.034
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "norm": 0.3
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 1.4
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 0.46
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 0.034
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 1.4
+     },
+     {
+      "material": "Пруток А500 -6,5мм",
+      "norm": 0.3
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 0.23
+     }
+    ],
+    "metalKg": 1.93,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 201000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 30000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 68000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 2.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 76286.43,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "ЛЖ-1.6",
+   "name": "Лежень",
+   "group": "Лежнилар",
+   "norms": [
+    {
+     "material": "Бетон М 200",
+     "norm": 0.17
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 44.1
+    },
+    {
+     "material": "Заклад. Детал МН-22",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 200",
+      "norm": 0.17
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 44.1
+     },
+     {
+      "material": "Заклад. Детал МН-22",
+      "norm": 1
+     }
+    ],
+    "metalKg": 1,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 200000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 811925.18,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "ЛЖ-2.8",
+   "name": "Лежень",
+   "group": "Лежнилар",
+   "norms": [
+    {
+     "material": "Бетон М 200",
+     "norm": 0.3
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 49.8
+    },
+    {
+     "material": "Заклад. Детал лист",
+     "norm": 1
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 200",
+      "norm": 0.3
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 49.8
+     },
+     {
+      "material": "Заклад. Детал лист",
+      "norm": 1
+     }
+    ],
+    "metalKg": 1,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 200000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 1131739.6,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "УБ-1",
+   "name": "Подножник (стакан)",
+   "group": "Фундаментлар",
+   "norms": [
+    {
+     "material": "Бетон М 200",
+     "norm": 0.12
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 12
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 200",
+      "norm": 0.12
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 12
+     }
+    ],
+    "metalKg": 12,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 200000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 20.0,
+    "vat": 12.0
+   },
+   "notes": [],
+   "excelPrice": 304406.26,
+   "excelFile": "Фундамент"
+  },
+  {
+   "code": "Л 9-5",
+   "name": "Кабельный лоток",
+   "group": "Лотоклар",
+   "norms": [
+    {
+     "material": "Бетон М 400",
+     "norm": 2.04
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 66
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 29.8
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2.8
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 6.5
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 400",
+      "norm": 2.04
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 66
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 29.8
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2.8
+     },
+     {
+      "material": "Электрод",
+      "norm": 5.2
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 6.5
+     }
+    ],
+    "metalKg": 110.3,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 150000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 30.0,
+    "vat": 12.0
+   },
+   "notes": [
+    "Норма varag'ida yo'q — sarf normasi kalkulyatsiyadan olindi"
+   ],
+   "excelPrice": 5099502.16,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "Л 8-5",
+   "name": "Кабельный лоток",
+   "group": "Лотоклар",
+   "norms": [
+    {
+     "material": "Бетон М 300",
+     "norm": 1.56
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 61
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 27.2
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 2.6
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 5
+    }
+   ],
+   "calc": {
+    "items": [
+     {
+      "material": "Бетон М 300",
+      "norm": 1.56
+     },
+     {
+      "material": "Арматура А500 - 12мм",
+      "norm": 61
+     },
+     {
+      "material": "Арматура А500 - 8мм",
+      "norm": 27.2
+     },
+     {
+      "material": "Взялная проволка 3,5",
+      "norm": 2.6
+     },
+     {
+      "material": "Электрод",
+      "norm": 4
+     },
+     {
+      "material": "Смазочные материалы",
+      "norm": 5
+     }
+    ],
+    "metalKg": 99.8,
+    "prodRows": [
+     {
+      "name": "ФОТ",
+      "type": "m3",
+      "value": 300000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     }
+    ],
+    "otherRows": [
+     {
+      "name": "ФОТ Админимтрации И Гвардия",
+      "type": "m3",
+      "value": 75000.0
+     },
+     {
+      "name": "Единый Социальный Платёж",
+      "type": "pctPrev",
+      "value": 12.0
+     },
+     {
+      "name": "Электроэнергия",
+      "type": "m3",
+      "value": 35000.0
+     },
+     {
+      "name": "Вода",
+      "type": "m3",
+      "value": 150.0
+     },
+     {
+      "name": "Питание",
+      "type": "m3",
+      "value": 40000.0
+     },
+     {
+      "name": "Логистика Метала до завода",
+      "type": "kg",
+      "value": 560.0
+     },
+     {
+      "name": "Налог земля и Налог имущество",
+      "type": "m3",
+      "value": 113000.0
+     },
+     {
+      "name": "Амортизация",
+      "type": "pctSS",
+      "value": 3.0
+     }
+    ],
+    "margin": 30.0,
+    "vat": 12.0
+   },
+   "notes": [
+    "Норма varag'ida yo'q — sarf normasi kalkulyatsiyadan olindi"
+   ],
+   "excelPrice": 3744862.41,
+   "excelFile": "Лотки и Плита"
+  },
+  {
+   "code": "Л 20.10",
+   "name": "Лоток",
+   "group": "Лотоклар",
+   "norms": [],
+   "calc": null,
+   "notes": [
+    "Faqat ombor faylida bor — norma va kalkulyatsiya kiritilmagan"
+   ]
+  }
+ ],
+ "settings": {
+  "electrodePct": 1.5,
+  "opening": {
+   "date": "2026-09-22",
+   "materials": {
+    "Цемент Портланд М450": 19.1937,
+    "Шебень": 54.40748,
+    "Песок": 92.90087,
+    "Арматура ф 28 мм": 1052.0,
+    "Арматура А500 - 25мм": 2406.0,
+    "Арматура А500 - 22мм": 1597.0,
+    "Арматура А500 - 18мм": 1140.4,
+    "Арматура А500 - 16мм": 12474.44,
+    "Арматура А500 - 14мм": 7252.54,
+    "Арматура А500 - 12мм": 1465.16,
+    "Арматура А500 - 8мм": 377.545,
+    "Пруток А500 -22мм": 320.8,
+    "Пруток А500 -20мм": 938.0,
+    "Круг Ф 18 мм": 1280.0,
+    "Пруток А500 -12мм": 5678.47,
+    "Пруток А500 -10мм": 1803.92,
+    "Пруток А500 -8мм": 681.2,
+    "Пруток А500 -6,5мм": 1917.1,
+    "Взялная проволка 3,5": 578.0,
+    "Уголок 140х9": 783.0,
+    "Смазочные материалы": 9.82,
+    "Детал Д35": 19,
+    "Оголовник Усу(250)": 9,
+    "Электрод": 1948.56,
+    "Деталь Д115": 85.6,
+    "Заклад. Детал Д-108": 31,
+    "Заклад. Детал Д-113": 1,
+    "Деталь Д-101": 143,
+    "Деталь Д-104": 71
+   },
+   "products": {
+    "Ф5-Усу(250)": 11,
+    "Па3-1": 12,
+    "Ар-5": 54,
+    "Ф5-АМ": 17,
+    "Ф3-2": 19,
+    "Ф5-4": 19,
+    "Ф5-2": 27,
+    "ЛК-20.5": 51,
+    "Р1-А": 41,
+    "Фк4-05": 13,
+    "УСО-5А": 1,
+    "Ф5-Амк": 7,
+    "Ф4-Амк": 17,
+    "Св-10,5": 2,
+    "Св-9,5": 32,
+    "Ф2-2": 8,
+    "Ф2-А": 2,
+    "Л 2-8": 3,
+    "Л 20.10": 6,
+    "Л 12-8": 22,
+    "Па3-2": 2,
+    "ПЛ 7д-3": 4,
+    "ПЛ 10д-3": 4
+   }
+  },
+  "calcTemplate": {
+   "items": [
+    {
+     "material": "Бетон М 400",
+     "norm": 2.52
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "norm": 170.1
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "norm": 42.6
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "norm": 3.5
+    },
+    {
+     "material": "Электрод",
+     "norm": 5.6
+    },
+    {
+     "material": "Смазочные материалы",
+     "norm": 7
+    }
+   ],
+   "metalKg": 228.79999999999998,
+   "prodRows": [
+    {
+     "name": "ФОТ",
+     "type": "m3",
+     "value": 300000.0
+    },
+    {
+     "name": "Единый Социальный Платёж",
+     "type": "pctPrev",
+     "value": 12.0
+    }
+   ],
+   "otherRows": [
+    {
+     "name": "ФОТ Админимтрации И Гвардия",
+     "type": "m3",
+     "value": 150000.0
+    },
+    {
+     "name": "Единый Социальный Платёж",
+     "type": "pctPrev",
+     "value": 12.0
+    },
+    {
+     "name": "Электроэнергия",
+     "type": "m3",
+     "value": 35000.0
+    },
+    {
+     "name": "Вода",
+     "type": "m3",
+     "value": 150.0
+    },
+    {
+     "name": "Питание",
+     "type": "m3",
+     "value": 40000.0
+    },
+    {
+     "name": "Логистика Метала до завода",
+     "type": "kg",
+     "value": 560.0
+    },
+    {
+     "name": "Налог земля и Налог имущество",
+     "type": "m3",
+     "value": 113000.0
+    },
+    {
+     "name": "Амортизация",
+     "type": "pctSS",
+     "value": 3.0
+    }
+   ],
+   "margin": 20.0,
+   "vat": 12.0
+  },
+  "company": "ООО «ЭКМ» АО «Уз КЭК»",
+  "signers": [
+   "Инженер ПТО Худойназаров С.",
+   "Материалны: Бухгалтер Аралова З."
+  ]
+ },
+ "days": [
+  {
+   "date": "2026-09-02",
+   "note": "",
+   "production": [
+    {
+     "product": "Ф5-Усу(250)",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "Па3-1",
+     "plan": 1,
+     "fact": 1,
+     "note": ""
+    },
+    {
+     "product": "ЛК-20.5",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "УСО-4А",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "УСО-5А",
+     "plan": 11,
+     "fact": 11,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 3.7,
+     "kirim": 50
+    },
+    {
+     "material": "Шебень",
+     "sarf": 7.61,
+     "kirim": 25.2
+    },
+    {
+     "material": "Песок",
+     "sarf": 4.82,
+     "kirim": 27
+    },
+    {
+     "material": "Арматура ф 28 мм",
+     "sarf": 670.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 267.6,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 16мм",
+     "sarf": 0,
+     "kirim": 369.0
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "sarf": 500.0,
+     "kirim": 283.0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 0,
+     "kirim": 207.7
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 52.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 8.0,
+     "kirim": 0
+    },
+    {
+     "material": "Круг Ф 18 мм",
+     "sarf": 16.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 117.57,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 15.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 10.8,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 28.5,
+     "kirim": 0
+    },
+    {
+     "material": "Уголок 140х9",
+     "sarf": 100.0,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 32.6,
+     "kirim": 0
+    },
+    {
+     "material": "Оголовник Усу(250)",
+     "sarf": 2,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 26.0,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 1,
+     "kirim": 0
+    }
+   ],
+   "shipments": [
+    {
+     "product": "Ф5-Усу(250)",
+     "qty": 4,
+     "customer": "Самарканд",
+     "vehicle": "75 X 023 RA"
+    },
+    {
+     "product": "Па3-1",
+     "qty": 6,
+     "customer": "Самарканд",
+     "vehicle": "75 940 TAA"
+    },
+    {
+     "product": "Р1-А",
+     "qty": 6,
+     "customer": "Самарканд",
+     "vehicle": "75 940 TAA"
+    },
+    {
+     "product": "Па3-1",
+     "qty": 6,
+     "customer": "Самарканд",
+     "vehicle": "75 D 188 BB"
+    },
+    {
+     "product": "Р1-А",
+     "qty": 6,
+     "customer": "Самарканд",
+     "vehicle": "75 D 188 BB"
+    },
+    {
+     "product": "Фк4-05",
+     "qty": 7,
+     "customer": "Самарканд",
+     "vehicle": "25 T 919 HA"
+    }
+   ]
+  },
+  {
+   "date": "2026-09-03",
+   "note": "",
+   "production": [
+    {
+     "product": "Ф5-Усу(250)",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "Па3-1",
+     "plan": 3,
+     "fact": 3,
+     "note": ""
+    },
+    {
+     "product": "Фк4-05",
+     "plan": 4,
+     "fact": 4,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 6.11,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 12.46,
+     "kirim": 0
+    },
+    {
+     "material": "Песок",
+     "sarf": 8,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура ф 28 мм",
+     "sarf": 670.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 78.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 16мм",
+     "sarf": 120.8,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "sarf": 500.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 348.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 108.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 40.0,
+     "kirim": 0
+    },
+    {
+     "material": "Круг Ф 18 мм",
+     "sarf": 16.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 108.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 45.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 37.0,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 25.9,
+     "kirim": 0
+    },
+    {
+     "material": "Уголок 140х9",
+     "sarf": 100.0,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 19.8,
+     "kirim": 0
+    },
+    {
+     "material": "Оголовник Усу(250)",
+     "sarf": 2,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 33.0,
+     "kirim": 0
+    },
+    {
+     "material": "Деталь Д115",
+     "sarf": 4,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 3,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-113",
+     "sarf": 4,
+     "kirim": 0
+    }
+   ],
+   "shipments": [
+    {
+     "product": "Ф5-Усу(250)",
+     "qty": 4,
+     "customer": "Самарканд",
+     "vehicle": "25 J 368 OA"
+    }
+   ]
+  },
+  {
+   "date": "2026-09-04",
+   "note": "",
+   "production": [
+    {
+     "product": "Ф5-Усу(250)",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "Па3-1",
+     "plan": 3,
+     "fact": 3,
+     "note": ""
+    },
+    {
+     "product": "ЛК-20.5",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "УБ-1",
+     "plan": 5,
+     "fact": 5,
+     "note": ""
+    },
+    {
+     "product": "Фк4-05",
+     "plan": 4,
+     "fact": 4,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 6.49,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 13.46,
+     "kirim": 0
+    },
+    {
+     "material": "Песок",
+     "sarf": 8.68,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура ф 28 мм",
+     "sarf": 670.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 78.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 16мм",
+     "sarf": 120.8,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "sarf": 500.0,
+     "kirim": 566.0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 348.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 184.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 40.0,
+     "kirim": 0
+    },
+    {
+     "material": "Круг Ф 18 мм",
+     "sarf": 16.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 108.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 45.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 37.6,
+     "kirim": 30.0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 25.9,
+     "kirim": 0
+    },
+    {
+     "material": "Уголок 140х9",
+     "sarf": 100.0,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 23,
+     "kirim": 100
+    },
+    {
+     "material": "Оголовник Усу(250)",
+     "sarf": 2,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 36.0,
+     "kirim": 0
+    },
+    {
+     "material": "Деталь Д115",
+     "sarf": 4,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 3,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-113",
+     "sarf": 4,
+     "kirim": 0
+    }
+   ],
+   "shipments": [
+    {
+     "product": "Ф5-Усу(250)",
+     "qty": 4,
+     "customer": "Самарканд",
+     "vehicle": "40 269 KCA"
+    },
+    {
+     "product": "Ф5-АМ",
+     "qty": 4,
+     "customer": "Самарканд",
+     "vehicle": "40 X 581 SB"
+    },
+    {
+     "product": "Фк4-05",
+     "qty": 4,
+     "customer": "Самарканд",
+     "vehicle": "40 W 194 BB"
+    },
+    {
+     "product": "Р1-А",
+     "qty": 11,
+     "customer": "Самарканд",
+     "vehicle": "40 W 194 BB"
+    }
+   ]
+  },
+  {
+   "date": "2026-09-05",
+   "note": "",
+   "production": [
+    {
+     "product": "Ф5-Усу(250)",
+     "plan": 1,
+     "fact": 1,
+     "note": ""
+    },
+    {
+     "product": "Па3-1",
+     "plan": 3,
+     "fact": 3,
+     "note": ""
+    },
+    {
+     "product": "ЛК-20.5",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "Фк4-05",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "УСО-5А",
+     "plan": 8,
+     "fact": 8,
+     "note": ""
+    },
+    {
+     "product": "УСО-3А",
+     "plan": 4,
+     "fact": 4,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 4.88,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 10.57,
+     "kirim": 0
+    },
+    {
+     "material": "Песок",
+     "sarf": 6.93,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура ф 28 мм",
+     "sarf": 335.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 334.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 16мм",
+     "sarf": 60.4,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "sarf": 250.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 174.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 124.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 32.0,
+     "kirim": 0
+    },
+    {
+     "material": "Круг Ф 18 мм",
+     "sarf": 8.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 60.96,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 45.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 36.0,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 36.2,
+     "kirim": 0
+    },
+    {
+     "material": "Уголок 140х9",
+     "sarf": 50.0,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 32.2,
+     "kirim": 70
+    },
+    {
+     "material": "Оголовник Усу(250)",
+     "sarf": 1,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 23.0,
+     "kirim": 0
+    },
+    {
+     "material": "Деталь Д115",
+     "sarf": 2,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 3,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-113",
+     "sarf": 2,
+     "kirim": 0
+    }
+   ],
+   "shipments": []
+  },
+  {
+   "date": "2026-09-06",
+   "note": "",
+   "production": [],
+   "materials": [],
+   "shipments": [
+    {
+     "product": "Ф5-Усу(250)",
+     "qty": 3,
+     "customer": "Самарканд",
+     "vehicle": "75 638 СAA"
+    },
+    {
+     "product": "Р1-А",
+     "qty": 4,
+     "customer": "Самарканд",
+     "vehicle": "75 638 СAA"
+    },
+    {
+     "product": "УСО-4А",
+     "qty": 32,
+     "customer": "Жиззах",
+     "vehicle": "75 X 023 RA"
+    },
+    {
+     "product": "УБ-1",
+     "qty": 24,
+     "customer": "Жиззах",
+     "vehicle": "75 X 023 RA"
+    }
+   ]
+  },
+  {
+   "date": "2026-09-07",
+   "note": "",
+   "production": [
+    {
+     "product": "Па3-1",
+     "plan": 3,
+     "fact": 3,
+     "note": ""
+    },
+    {
+     "product": "ЛК-20.5",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "УБ-1",
+     "plan": 13,
+     "fact": 13,
+     "note": ""
+    },
+    {
+     "product": "Р1-А",
+     "plan": 6,
+     "fact": 6,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 2.98,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 7.01,
+     "kirim": 25.2
+    },
+    {
+     "material": "Песок",
+     "sarf": 4.73,
+     "kirim": 27
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 78.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "sarf": 0,
+     "kirim": 452.54
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 192.0,
+     "kirim": 634.0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 280.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 24.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 12.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 45.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 45.6,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 22.5,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 14.6,
+     "kirim": 100
+    },
+    {
+     "material": "Электрод",
+     "sarf": 10.0,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 3,
+     "kirim": 0
+    }
+   ],
+   "shipments": [
+    {
+     "product": "Па3-1",
+     "qty": 6,
+     "customer": "Самарканд",
+     "vehicle": "25 T 919 HA"
+    },
+    {
+     "product": "Р1-А",
+     "qty": 6,
+     "customer": "Самарканд",
+     "vehicle": "25 T 919 HA"
+    }
+   ]
+  },
+  {
+   "date": "2026-09-08",
+   "note": "",
+   "production": [
+    {
+     "product": "Ф5-Усу(250)",
+     "plan": 1,
+     "fact": 1,
+     "note": ""
+    },
+    {
+     "product": "Па3-1",
+     "plan": 3,
+     "fact": 3,
+     "note": ""
+    },
+    {
+     "product": "ЛК-20.5",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "УБ-1",
+     "plan": 8,
+     "fact": 8,
+     "note": ""
+    },
+    {
+     "product": "Р1-А",
+     "plan": 6,
+     "fact": 6,
+     "note": ""
+    },
+    {
+     "product": "Фк4-05",
+     "plan": 4,
+     "fact": 4,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 6.09,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 13.18,
+     "kirim": 0
+    },
+    {
+     "material": "Песок",
+     "sarf": 8.66,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура ф 28 мм",
+     "sarf": 335.0,
+     "kirim": 4995.0
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 78.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 16мм",
+     "sarf": 120.8,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "sarf": 250.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 540.0,
+     "kirim": 240.0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 220.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 40.0,
+     "kirim": 0
+    },
+    {
+     "material": "Круг Ф 18 мм",
+     "sarf": 8.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 66.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 45.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 61.6,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 35.2,
+     "kirim": 0
+    },
+    {
+     "material": "Уголок 140х9",
+     "sarf": 50.0,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 24.6,
+     "kirim": 0
+    },
+    {
+     "material": "Оголовник Усу(250)",
+     "sarf": 1,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 27.0,
+     "kirim": 0
+    },
+    {
+     "material": "Деталь Д115",
+     "sarf": 4,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 3,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-113",
+     "sarf": 4,
+     "kirim": 0
+    }
+   ],
+   "shipments": []
+  },
+  {
+   "date": "2026-09-09",
+   "note": "",
+   "production": [
+    {
+     "product": "Ф5-Усу(250)",
+     "plan": 3,
+     "fact": 3,
+     "note": ""
+    },
+    {
+     "product": "Па3-1",
+     "plan": 3,
+     "fact": 3,
+     "note": ""
+    },
+    {
+     "product": "ЛК-20.5",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "УБ-1",
+     "plan": 10,
+     "fact": 10,
+     "note": ""
+    },
+    {
+     "product": "Р1-А",
+     "plan": 6,
+     "fact": 6,
+     "note": ""
+    },
+    {
+     "product": "Фк4-05",
+     "plan": 3,
+     "fact": 3,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 7.85,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 16.15,
+     "kirim": 0
+    },
+    {
+     "material": "Песок",
+     "sarf": 10.34,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура ф 28 мм",
+     "sarf": 1005.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 78.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 16мм",
+     "sarf": 90.6,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "sarf": 750.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 453.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 244.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 36.0,
+     "kirim": 0
+    },
+    {
+     "material": "Круг Ф 18 мм",
+     "sarf": 24.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 174.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 45.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 57.6,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 38.1,
+     "kirim": 0
+    },
+    {
+     "material": "Уголок 140х9",
+     "sarf": 150.0,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 26.6,
+     "kirim": 0
+    },
+    {
+     "material": "Оголовник Усу(250)",
+     "sarf": 3,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 47.0,
+     "kirim": 500.0
+    },
+    {
+     "material": "Деталь Д115",
+     "sarf": 3,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 3,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-113",
+     "sarf": 3,
+     "kirim": 0
+    }
+   ],
+   "shipments": [
+    {
+     "product": "Па3-1",
+     "qty": 6,
+     "customer": "Самарканд",
+     "vehicle": "75 N 196 VA"
+    },
+    {
+     "product": "Р1-А",
+     "qty": 6,
+     "customer": "Самарканд",
+     "vehicle": "75 N 196 VA"
+    },
+    {
+     "product": "Па3-1",
+     "qty": 6,
+     "customer": "Самарканд",
+     "vehicle": "75 X 023 RA"
+    },
+    {
+     "product": "Р1-А",
+     "qty": 6,
+     "customer": "Самарканд",
+     "vehicle": "75 X 023 RA"
+    }
+   ]
+  },
+  {
+   "date": "2026-09-10",
+   "note": "",
+   "production": [
+    {
+     "product": "Ф5-Усу(250)",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "Па3-1",
+     "plan": 3,
+     "fact": 3,
+     "note": ""
+    },
+    {
+     "product": "ЛК-20.5",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 4.03,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 7.87,
+     "kirim": 0
+    },
+    {
+     "material": "Песок",
+     "sarf": 4.93,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура ф 28 мм",
+     "sarf": 670.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 78.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "sarf": 500.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 124.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 24.0,
+     "kirim": 0
+    },
+    {
+     "material": "Круг Ф 18 мм",
+     "sarf": 16.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 108.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 45.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 21.6,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 15.9,
+     "kirim": 0
+    },
+    {
+     "material": "Уголок 140х9",
+     "sarf": 100.0,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 15,
+     "kirim": 0
+    },
+    {
+     "material": "Оголовник Усу(250)",
+     "sarf": 2,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 25.0,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 3,
+     "kirim": 50
+    }
+   ],
+   "shipments": []
+  },
+  {
+   "date": "2026-09-11",
+   "note": "",
+   "production": [
+    {
+     "product": "Ф5-Усу(250)",
+     "plan": 1,
+     "fact": 1,
+     "note": ""
+    },
+    {
+     "product": "Па3-1",
+     "plan": 3,
+     "fact": 3,
+     "note": ""
+    },
+    {
+     "product": "ЛК-20.5",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "Л 12-8",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 4.75,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 9.96,
+     "kirim": 0
+    },
+    {
+     "material": "Песок",
+     "sarf": 6.49,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура ф 28 мм",
+     "sarf": 335.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 78.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "sarf": 250.0,
+     "kirim": 5035.0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 220.8,
+     "kirim": 2480.0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 184.4,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 24.0,
+     "kirim": 0
+    },
+    {
+     "material": "Круг Ф 18 мм",
+     "sarf": 8.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 110.0,
+     "kirim": 3065.0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 154.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 21.6,
+     "kirim": 1520.0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 19.2,
+     "kirim": 0
+    },
+    {
+     "material": "Уголок 140х9",
+     "sarf": 50.0,
+     "kirim": 297.0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 15.4,
+     "kirim": 0
+    },
+    {
+     "material": "Детал Д35",
+     "sarf": 0,
+     "kirim": 20
+    },
+    {
+     "material": "Оголовник Усу(250)",
+     "sarf": 1,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 22.0,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 3,
+     "kirim": 0
+    }
+   ],
+   "shipments": [
+    {
+     "product": "Па3-1",
+     "qty": 6,
+     "customer": "Самарканд",
+     "vehicle": "25 T 919 OA"
+    }
+   ]
+  },
+  {
+   "date": "2026-09-12",
+   "note": "",
+   "production": [
+    {
+     "product": "Л 12-8",
+     "plan": 4,
+     "fact": 4,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 3.69,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 8.11,
+     "kirim": 0
+    },
+    {
+     "material": "Песок",
+     "sarf": 5.41,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 220.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 60.0,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 12.0,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 4.8,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 4.0,
+     "kirim": 0
+    }
+   ],
+   "shipments": [
+    {
+     "product": "Л 12-8",
+     "qty": 4,
+     "customer": "Жиззах",
+     "vehicle": "75 T 962 OA"
+    },
+    {
+     "product": "УСО-3А",
+     "qty": 4,
+     "customer": "Жиззах",
+     "vehicle": "75 T 962 OA"
+    },
+    {
+     "product": "УСО-5А",
+     "qty": 9,
+     "customer": "Жиззах",
+     "vehicle": "75 T 962 OA"
+    },
+    {
+     "product": "УБ-1",
+     "qty": 18,
+     "customer": "Жиззах",
+     "vehicle": "75 T 962 OA"
+    }
+   ]
+  },
+  {
+   "date": "2026-09-13",
+   "note": "",
+   "production": [
+    {
+     "product": "Л 12-8",
+     "plan": 4,
+     "fact": 4,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 3.69,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 8.11,
+     "kirim": 0
+    },
+    {
+     "material": "Песок",
+     "sarf": 5.41,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 221.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 61.0,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 12.0,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 4.8,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 4.0,
+     "kirim": 0
+    }
+   ],
+   "shipments": []
+  },
+  {
+   "date": "2026-09-14",
+   "note": "",
+   "production": [
+    {
+     "product": "Ф5-Усу(250)",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "Ф5-АМ",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "Р1-А",
+     "plan": 6,
+     "fact": 6,
+     "note": ""
+    },
+    {
+     "product": "Л 12-8",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 7.6,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 14.42,
+     "kirim": 25.2
+    },
+    {
+     "material": "Песок",
+     "sarf": 8.9,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура ф 28 мм",
+     "sarf": 670.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 25мм",
+     "sarf": 406.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 296.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "sarf": 500.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 120.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 532.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -22мм",
+     "sarf": 30.2,
+     "kirim": 0
+    },
+    {
+     "material": "Круг Ф 18 мм",
+     "sarf": 16.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 120.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 14.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 24.0,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 31.4,
+     "kirim": 0
+    },
+    {
+     "material": "Уголок 140х9",
+     "sarf": 100.0,
+     "kirim": 522.0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 15.2,
+     "kirim": 0
+    },
+    {
+     "material": "Детал Д35",
+     "sarf": 2,
+     "kirim": 0
+    },
+    {
+     "material": "Оголовник Усу(250)",
+     "sarf": 2,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 42.0,
+     "kirim": 0
+    },
+    {
+     "material": "Деталь Д115",
+     "sarf": 2,
+     "kirim": 0
+    }
+   ],
+   "shipments": [
+    {
+     "product": "УБ-1",
+     "qty": 15,
+     "customer": "Жиззах",
+     "vehicle": "75 X 023 RA"
+    },
+    {
+     "product": "УСО-5А",
+     "qty": 9,
+     "customer": "Жиззах",
+     "vehicle": "75 X 023 RA"
+    },
+    {
+     "product": "Л 12-8",
+     "qty": 4,
+     "customer": "Жиззах",
+     "vehicle": "75 X 023 RA"
+    },
+    {
+     "product": "Ф5-Усу(250)",
+     "qty": 4,
+     "customer": "Самарканд",
+     "vehicle": "25 T 919 HA"
+    }
+   ]
+  },
+  {
+   "date": "2026-09-15",
+   "note": "",
+   "production": [
+    {
+     "product": "Па3-1",
+     "plan": 1,
+     "fact": 1,
+     "note": ""
+    },
+    {
+     "product": "Ф5-АМ",
+     "plan": 1,
+     "fact": 1,
+     "note": ""
+    },
+    {
+     "product": "Р1-А",
+     "plan": 6,
+     "fact": 6,
+     "note": ""
+    },
+    {
+     "product": "Л 12-8",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 4.45,
+     "kirim": 50
+    },
+    {
+     "material": "Шебень",
+     "sarf": 9.13,
+     "kirim": 25.2
+    },
+    {
+     "material": "Песок",
+     "sarf": 5.88,
+     "kirim": 27
+    },
+    {
+     "material": "Арматура А500 - 25мм",
+     "sarf": 203.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 174.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 417.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 67.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -22мм",
+     "sarf": 11.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 8.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 12.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 22.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 31.0,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 25.5,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 23.9,
+     "kirim": 0
+    },
+    {
+     "material": "Детал Д35",
+     "sarf": 1,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 14.0,
+     "kirim": 0
+    },
+    {
+     "material": "Деталь Д115",
+     "sarf": 1,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 1,
+     "kirim": 0
+    }
+   ],
+   "shipments": [
+    {
+     "product": "Ф3-2",
+     "qty": 7,
+     "customer": "Давлатобод",
+     "vehicle": "80 191 OBA"
+    }
+   ]
+  },
+  {
+   "date": "2026-09-16",
+   "note": "",
+   "production": [
+    {
+     "product": "Па3-1",
+     "plan": 3,
+     "fact": 3,
+     "note": ""
+    },
+    {
+     "product": "Р1-А",
+     "plan": 12,
+     "fact": 12,
+     "note": ""
+    },
+    {
+     "product": "Л 12-8",
+     "plan": 4,
+     "fact": 4,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 6.49,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 14.29,
+     "kirim": 0
+    },
+    {
+     "material": "Песок",
+     "sarf": 9.53,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 78.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 605.0,
+     "kirim": 1038.0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 169.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 24.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 24.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 45.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 69.0,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 46.5,
+     "kirim": 0
+    },
+    {
+     "material": "Уголок 140х9",
+     "sarf": 0,
+     "kirim": 524.0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 19.8,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 15.0,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 3,
+     "kirim": 0
+    }
+   ],
+   "shipments": []
+  },
+  {
+   "date": "2026-09-17",
+   "note": "",
+   "production": [
+    {
+     "product": "Ф5-Усу(250)",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "Па3-1",
+     "plan": 3,
+     "fact": 3,
+     "note": ""
+    },
+    {
+     "product": "Р1-А",
+     "plan": 12,
+     "fact": 12,
+     "note": ""
+    },
+    {
+     "product": "Л 12-8",
+     "plan": 4,
+     "fact": 4,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 8.72,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 18.2,
+     "kirim": 25.2
+    },
+    {
+     "material": "Песок",
+     "sarf": 11.83,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура ф 28 мм",
+     "sarf": 670.0,
+     "kirim": 539.0
+    },
+    {
+     "material": "Арматура А500 - 25мм",
+     "sarf": 78.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "sarf": 500.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 605.0,
+     "kirim": 1038.0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 169.0,
+     "kirim": 462.0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 24.0,
+     "kirim": 0
+    },
+    {
+     "material": "Круг Ф 18 мм",
+     "sarf": 16.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 132.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 45.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 69.0,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 51.9,
+     "kirim": 0
+    },
+    {
+     "material": "Уголок 140х9",
+     "sarf": 100.0,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 23.8,
+     "kirim": 0
+    },
+    {
+     "material": "Оголовник Усу(250)",
+     "sarf": 2,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 36.0,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 3,
+     "kirim": 0
+    }
+   ],
+   "shipments": [
+    {
+     "product": "Ф5-АМ",
+     "qty": 4,
+     "customer": "",
+     "vehicle": "01 339 EKA"
+    },
+    {
+     "product": "Ф5-АМ",
+     "qty": 4,
+     "customer": "",
+     "vehicle": "40 681 LCA"
+    },
+    {
+     "product": "Ф5-АМ",
+     "qty": 4,
+     "customer": "",
+     "vehicle": "40 F 485 PB"
+    }
+   ]
+  },
+  {
+   "date": "2026-09-18",
+   "note": "",
+   "production": [
+    {
+     "product": "Ф5-Усу(250)",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "Па3-1",
+     "plan": 3,
+     "fact": 3,
+     "note": ""
+    },
+    {
+     "product": "Ф5-АМ",
+     "plan": 2,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "Р1-А",
+     "plan": 12,
+     "fact": 12,
+     "note": ""
+    },
+    {
+     "product": "Л 12-8",
+     "plan": 4,
+     "fact": 4,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 11.67,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 23,
+     "kirim": 25.2
+    },
+    {
+     "material": "Песок",
+     "sarf": 14.87,
+     "kirim": 27
+    },
+    {
+     "material": "Арматура ф 28 мм",
+     "sarf": 670.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 25мм",
+     "sarf": 406.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 374.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "sarf": 500.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 834.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 168.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -22мм",
+     "sarf": 22.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 24.0,
+     "kirim": 0
+    },
+    {
+     "material": "Круг Ф 18 мм",
+     "sarf": 16.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 132.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 59.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 69.0,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 59.9,
+     "kirim": 0
+    },
+    {
+     "material": "Уголок 140х9",
+     "sarf": 100.0,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 29,
+     "kirim": 0
+    },
+    {
+     "material": "Детал Д35",
+     "sarf": 2,
+     "kirim": 0
+    },
+    {
+     "material": "Оголовник Усу(250)",
+     "sarf": 2,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 51.0,
+     "kirim": 0
+    },
+    {
+     "material": "Деталь Д115",
+     "sarf": 2,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 3,
+     "kirim": 0
+    }
+   ],
+   "shipments": [
+    {
+     "product": "Л 12-8",
+     "qty": 4,
+     "customer": "Жиззах",
+     "vehicle": "75 M 424 AB"
+    },
+    {
+     "product": "Р1-А",
+     "qty": 12,
+     "customer": "Жиззах",
+     "vehicle": "75 M 424 AB"
+    },
+    {
+     "product": "Ф5-Усу(250)",
+     "qty": 4,
+     "customer": "Самарканд",
+     "vehicle": "75 R 969 AB"
+    },
+    {
+     "product": "Па3-1",
+     "qty": 6,
+     "customer": "Самарканд",
+     "vehicle": "01 V 450 ZB"
+    },
+    {
+     "product": "Р1-А",
+     "qty": 6,
+     "customer": "Самарканд",
+     "vehicle": "01 V 450 ZB"
+    }
+   ]
+  },
+  {
+   "date": "2026-09-19",
+   "note": "",
+   "production": [
+    {
+     "product": "Р1-А",
+     "plan": 6,
+     "fact": 6,
+     "note": ""
+    },
+    {
+     "product": "Л 12-8",
+     "plan": 4,
+     "fact": 4,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 4.26,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 9.38,
+     "kirim": 25.2
+    },
+    {
+     "material": "Песок",
+     "sarf": 6.25,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 412.8,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 60.4,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 12.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 24.0,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 24.0,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 8,
+     "kirim": 0
+    },
+    {
+     "material": "Электрод",
+     "sarf": 7.64,
+     "kirim": 0
+    }
+   ],
+   "shipments": [
+    {
+     "product": "Па3-1",
+     "qty": 4,
+     "customer": "Самарканд",
+     "vehicle": "75 638 CAA"
+    },
+    {
+     "product": "Р1-А",
+     "qty": 4,
+     "customer": "Самарканд",
+     "vehicle": "75 638 CAA"
+    }
+   ]
+  },
+  {
+   "date": "2026-09-21",
+   "note": "",
+   "production": [
+    {
+     "product": "Ф5-Усу(250)",
+     "plan": 0,
+     "fact": 1,
+     "note": ""
+    },
+    {
+     "product": "Па3-1",
+     "plan": 0,
+     "fact": 1,
+     "note": ""
+    },
+    {
+     "product": "Ф5-Амк",
+     "plan": 0,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "Л 12-8",
+     "plan": 0,
+     "fact": 4,
+     "note": ""
+    },
+    {
+     "product": "Па3-2",
+     "plan": 0,
+     "fact": 2,
+     "note": ""
+    },
+    {
+     "product": "ПЛ 7д-3",
+     "plan": 0,
+     "fact": 4,
+     "note": ""
+    },
+    {
+     "product": "ПЛ 10д-3",
+     "plan": 0,
+     "fact": 4,
+     "note": ""
+    }
+   ],
+   "materials": [
+    {
+     "material": "Цемент Портланд М450",
+     "sarf": 10.01,
+     "kirim": 0
+    },
+    {
+     "material": "Шебень",
+     "sarf": 20.06,
+     "kirim": 25.2
+    },
+    {
+     "material": "Песок",
+     "sarf": 12.77,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура ф 28 мм",
+     "sarf": 335.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 25мм",
+     "sarf": 406.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 22мм",
+     "sarf": 190.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 18мм",
+     "sarf": 322.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 16мм",
+     "sarf": 0,
+     "kirim": 739.44
+    },
+    {
+     "material": "Арматура А500 - 14мм",
+     "sarf": 250.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 12мм",
+     "sarf": 525.0,
+     "kirim": 0
+    },
+    {
+     "material": "Арматура А500 - 8мм",
+     "sarf": 164.4,
+     "kirim": 209.745
+    },
+    {
+     "material": "Пруток А500 -22мм",
+     "sarf": 22.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -20мм",
+     "sarf": 24.0,
+     "kirim": 0
+    },
+    {
+     "material": "Круг Ф 18 мм",
+     "sarf": 8.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -12мм",
+     "sarf": 54.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -8мм",
+     "sarf": 89.0,
+     "kirim": 0
+    },
+    {
+     "material": "Пруток А500 -6,5мм",
+     "sarf": 25.0,
+     "kirim": 0
+    },
+    {
+     "material": "Взялная проволка 3,5",
+     "sarf": 35.0,
+     "kirim": 0
+    },
+    {
+     "material": "Уголок 140х9",
+     "sarf": 50.0,
+     "kirim": 0
+    },
+    {
+     "material": "Смазочные материалы",
+     "sarf": 19.64,
+     "kirim": 0
+    },
+    {
+     "material": "Оголовник Усу(250)",
+     "sarf": 1,
+     "kirim": 10
+    },
+    {
+     "material": "Электрод",
+     "sarf": 37.0,
+     "kirim": 0
+    },
+    {
+     "material": "Деталь Д115",
+     "sarf": 1.2,
+     "kirim": 0
+    },
+    {
+     "material": "Заклад. Детал Д-108",
+     "sarf": 3,
+     "kirim": 0
+    }
+   ],
+   "shipments": [
+    {
+     "product": "Ф5-4",
+     "qty": 1,
+     "customer": "Давлатобод Хамза",
+     "vehicle": "85 B 125 MA"
+    },
+    {
+     "product": "Ф3-2",
+     "qty": 6,
+     "customer": "Давлатобод Хамза",
+     "vehicle": "85 B 125 MA"
+    },
+    {
+     "product": "Ф5-4",
+     "qty": 1,
+     "customer": "Давлатобод Хамза",
+     "vehicle": "80 L 748 DB"
+    },
+    {
+     "product": "Ф3-2",
+     "qty": 6,
+     "customer": "Давлатобод Хамза",
+     "vehicle": "80 L 748 DB"
+    }
+   ]
+  }
+ ]
+}
