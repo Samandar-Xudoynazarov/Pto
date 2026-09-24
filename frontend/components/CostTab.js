@@ -1,4 +1,5 @@
 "use client";
+import { useUser } from "@/lib/role";
 import { useMemo, useState } from "react";
 import { ROW_TYPES, costCard, fmt, fmtN, lsGet, lsSet } from "@/lib/calc";
 
@@ -96,6 +97,7 @@ export function CostCard({ product, mats }) {
 }
 
 export default function CostTab({ data, onEdit }) {
+  const { canEdit } = useUser();
   const { products, mats } = data;
   const [sel, setSel] = useState(() => lsGet("pto.costSel", products[0]?.id));
   const [q, setQ] = useState("");
@@ -162,9 +164,11 @@ export default function CostTab({ data, onEdit }) {
                 </h3>
                 <p className="hint">{cur.p.group}</p>
               </div>
-              <button className="btn no-print" onClick={() => onEdit(cur.p)}>
-                Tahrirlash
-              </button>
+              {canEdit && (
+                <button className="btn no-print" onClick={() => onEdit(cur.p)}>
+                  Tahrirlash
+                </button>
+              )}
             </div>
             {!cur.has ? (
               <div className="empty tbl-wrap">Kalkulyatsiya kiritilmagan. «Tahrirlash» orqali materiallarni qo&apos;shing.</div>

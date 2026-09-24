@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
 import { GROUPS, fmt, fmtN, priceOf } from "@/lib/calc";
 import DeleteButton from "./DeleteButton";
@@ -167,6 +168,7 @@ function MaterialEditor({ material, open, onClose, data, notify, onSaved }) {
 }
 
 export default function MaterialsTab({ data, notify, reload, reloadSettings }) {
+  const { canEdit } = useUser();
   const { materials, mats, settings } = data;
   const [edit, setEdit] = useState(null); // null | "new" | material
   const [group, setGroup] = useState("all");
@@ -208,9 +210,11 @@ export default function MaterialsTab({ data, notify, reload, reloadSettings }) {
           <h2>Materiallar va narxlar</h2>
         </div>
         <div className="r">
-          <button className="btn primary" onClick={() => setEdit("new")}>
-            + Material qo&apos;shish
-          </button>
+          {canEdit && (
+            <button className="btn primary" onClick={() => setEdit("new")}>
+              + Material qo&apos;shish
+            </button>
+          )}
         </div>
       </div>
       <div className="chips">
@@ -252,12 +256,14 @@ export default function MaterialsTab({ data, notify, reload, reloadSettings }) {
                 </td>
                 <td>{m.stock ? "ha" : "—"}</td>
                 <td>
-                  <div className="acts">
-                    <button className="btn sm" onClick={() => setEdit(m)}>
-                      Tahrirlash
-                    </button>
-                    <DeleteButton onConfirm={() => del(m.id)} />
-                  </div>
+                  {canEdit && (
+                    <div className="acts">
+                      <button className="btn sm" onClick={() => setEdit(m)}>
+                        Tahrirlash
+                      </button>
+                      <DeleteButton onConfirm={() => del(m.id)} />
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
@@ -267,6 +273,7 @@ export default function MaterialsTab({ data, notify, reload, reloadSettings }) {
 
       <form onSubmit={saveSettings}>
         <h3>Sozlamalar</h3>
+        <fieldset className="plain" disabled={!canEdit}>
         <div className="form-grid">
           <div className="field">
             <label htmlFor="set-pct">
@@ -283,9 +290,12 @@ export default function MaterialsTab({ data, notify, reload, reloadSettings }) {
             <textarea id="set-signers" rows={2} value={signers} onChange={(e) => setSigners(e.target.value)} />
           </div>
         </div>
-        <button className="btn primary" style={{ marginTop: 10 }}>
-          Sozlamalarni saqlash
-        </button>
+        </fieldset>
+        {canEdit && (
+          <button className="btn primary" style={{ marginTop: 10 }}>
+            Sozlamalarni saqlash
+          </button>
+        )}
       </form>
 
       <MaterialEditor

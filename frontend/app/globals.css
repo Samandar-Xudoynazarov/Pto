@@ -206,6 +206,32 @@ dialog.wide-dlg form{max-height:calc(100vh - 40px);overflow:auto}
 .login h1{font-size:24px;font-weight:700;margin:0}
 .err{color:var(--bad);font-size:13px;margin:0}
 
+/* ================= foydalanuvchi va huquqlar ================= */
+.side-user{margin-top:8px;display:grid;gap:2px}
+.side-user-name{color:var(--side-hi);font-weight:600;font-size:13.5px}
+.side-user-role{font-size:12px}
+.side-user-acts{display:flex;gap:6px;flex-wrap:wrap}
+fieldset.plain{border:0;margin:0;padding:0;min-width:0}
+fieldset.plain:disabled input,fieldset.plain:disabled select,fieldset.plain:disabled textarea{opacity:1;color:var(--ink);background:transparent;border-color:transparent;-webkit-text-fill-color:var(--ink);appearance:none;-webkit-appearance:none}
+fieldset.plain:disabled .btn.danger{display:none}
+textarea[readonly]{background:var(--paper)}
+select.st:disabled{cursor:default;opacity:1;appearance:none;-webkit-appearance:none}
+.st-bad{background:var(--bad-soft);color:var(--bad)}
+
+/* ================= boshqaruv ================= */
+.backup-card{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;padding:16px;border:1px solid var(--line);border-radius:var(--r);background:var(--paper)}
+.howto{margin-top:10px;font-size:13px;color:var(--ink-2)}
+.howto summary{cursor:pointer;font-weight:600}
+.howto ol{margin:8px 0;padding-left:20px;display:grid;gap:4px}
+.howto code,code{font-family:var(--f-mono);font-size:12px;background:var(--muted-soft);padding:1px 6px;border-radius:5px;word-break:break-all}
+table.audit tr.clickable:hover td{background:var(--paper)}
+tr.audit-detail > td{background:var(--paper);padding:6px 12px 12px}
+table.changes{font-size:12.5px;width:auto;min-width:min(560px,100%)}
+table.changes td{padding:4px 10px;border-bottom:1px dashed var(--line)}
+table.changes td.old{color:var(--ink-3);text-decoration:line-through}
+table.changes td.new{color:var(--ink);font-weight:600}
+table.changes td.arrow{color:var(--ink-3);padding-inline:2px}
+
 /* ================= chop etish ================= */
 .print-only{display:none}
 @media print{

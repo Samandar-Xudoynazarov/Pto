@@ -134,8 +134,53 @@ const settingsSchema = new Schema(
   opts
 );
 
+/* ---------- Foydalanuvchilar ---------- */
+export const ROLE_LIST = ["admin", "pto", "rahbar"];
+const userSchema = new Schema(
+  {
+    username: {
+      type: String,
+      required: [true, "Login kiritilmagan"],
+      trim: true,
+      lowercase: true,
+      unique: true,
+      minlength: [3, "Login kamida 3 belgi"],
+      maxlength: 40,
+      match: [/^[a-z0-9._-]+$/, "Login faqat lotin harflari, raqam, nuqta, _ va - dan iborat bo'lsin"],
+    },
+    name: { type: String, default: "", trim: true, maxlength: 120 },
+    role: { type: String, enum: ROLE_LIST, default: "rahbar" },
+    passwordHash: { type: String, required: true },
+    active: { type: Boolean, default: true },
+    mustChangePassword: { type: Boolean, default: false },
+    tokenVersion: { type: Number, default: 0 }, // oshirilsa, eski tokenlar bekor bo'ladi
+    failedLogins: { type: Number, default: 0 },
+    lockUntil: { type: Date, default: null },
+    lastLoginAt: { type: Date, default: null },
+  },
+  opts
+);
+
+/* ---------- O'zgarishlar jurnali ---------- */
+const auditSchema = new Schema(
+  {
+    user: { id: String, username: String, name: String },
+    action: { type: String, required: true }, // create | update | delete | login | backup
+    entity: { type: String, default: "" }, // material | product | day | order | settings | user
+    entityId: { type: String, default: "" },
+    label: { type: String, default: "" },
+    changes: { type: [new Schema({ p: String, a: Schema.Types.Mixed, b: Schema.Types.Mixed }, sub)], default: [] },
+    more: { type: Number, default: 0 },
+  },
+  { ...opts, timestamps: { createdAt: true, updatedAt: false } }
+);
+auditSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 400 }); // ~13 oydan keyin o'chadi
+auditSchema.index({ entity: 1, createdAt: -1 });
+
 export const Material = models.Material || model("Material", materialSchema);
 export const Product = models.Product || model("Product", productSchema);
 export const Day = models.Day || model("Day", daySchema);
 export const Order = models.Order || model("Order", orderSchema);
 export const Settings = models.Settings || model("Settings", settingsSchema);
+export const User = models.User || model("User", userSchema);
+export const AuditLog = models.AuditLog || model("AuditLog", auditSchema);

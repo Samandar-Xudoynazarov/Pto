@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { api, login, setPassword } from "@/lib/api";
+import { api, login, logout } from "@/lib/api";
+import { UserContext, roleLabel } from "@/lib/role";
 import { byId, fmtDate, lsGet, lsSet, today } from "@/lib/calc";
 import FormDialog from "@/components/FormDialog";
 import DayTab from "@/components/DayTab";
@@ -12,6 +13,8 @@ import CatalogTab from "@/components/CatalogTab";
 import MaterialsTab from "@/components/MaterialsTab";
 import ProductEditor from "@/components/ProductEditor";
 import Icon from "@/components/Icon";
+import AdminTab from "@/components/AdminTab";
+import PasswordDialog from "@/components/PasswordDialog";
 
 const TABS = [
   ["day", "Kunlik hisobot", "Reja / fakt, xomashyo sarfi va kirimi, jo'natish"],
@@ -21,9 +24,12 @@ const TABS = [
   ["cost", "Kalkulyatsiya", "Tannarx va sotuv narxi — Excel tartibida"],
   ["cat", "Katalog", "Mahsulotlar, sarf normalari va kalkulyatsiya kartalari"],
   ["mat", "Materiallar", "Narxlar, beton retseptlari va sozlamalar"],
+  ["admin", "Boshqaruv", "Foydalanuvchilar, zaxira nusxa va o'zgarishlar tarixi", "admin"],
 ];
+const tabsFor = (user) => TABS.filter((t) => !t[3] || t[3] === user?.role);
 
 function Login({ onDone }) {
+  const [username, setUsername] = useState("");
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -32,7 +38,7 @@ function Login({ onDone }) {
     setBusy(true);
     setErr("");
     try {
-      await login(pw);
+      await login(username, pw);
       onDone();
     } catch (e2) {
       setErr(e2.message);
@@ -45,10 +51,24 @@ function Login({ onDone }) {
       <form onSubmit={submit}>
         <div className="brand-mark">ПТО</div>
         <h1>ПТО ish stoli</h1>
-        <p className="hint">Davom etish uchun parolni kiriting</p>
+        <p className="hint">Davom etish uchun login va parolni kiriting</p>
+        <div className="field">
+          <label htmlFor="login-user">Login</label>
+          <input
+            id="login-user"
+            autoFocus
+            autoComplete="username"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </div>
         <div className="field">
           <label htmlFor="pw">Parol</label>
-          <input id="pw" type="password" autoFocus value={pw} onChange={(e) => setPw(e.target.value)} required />
+          <input id="pw" type="password" autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} required />
         </div>
         {err && <p className="err">{err}</p>}
         <button className="btn primary" disabled={busy}>
@@ -67,6 +87,8 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [settings, setSettings] = useState(null);
+  const [user, setUser] = useState(null);
+  const [pwOpen, setPwOpen] = useState(false);
   const [form, setForm] = useState(null);
   const [editProduct, setEditProduct] = useState(undefined); // undefined = yopiq, null = yangi
   const [toast, setToast] = useState("");
@@ -82,7 +104,8 @@ export default function Home() {
   const loadAll = useCallback(async () => {
     setPhase((p) => (p === "ready" ? p : "loading"));
     try {
-      const [m, p, o, s] = await Promise.all([api("/materials"), api("/products"), api("/orders"), api("/settings")]);
+      const [me, m, p, o, s] = await Promise.all([api("/me"), api("/materials"), api("/products"), api("/orders"), api("/settings")]);
+      setUser(me);
       setMaterials(m);
       setProducts(p);
       setOrders(o);
@@ -115,6 +138,13 @@ export default function Home() {
     loadAll();
   }, [loadAll]);
 
+  // token eskirgan yoki foydalanuvchi bloklangan bo'lsa — kirish sahifasiga
+  useEffect(() => {
+    const onAuth = () => setPhase("login");
+    window.addEventListener("pto:unauthorized", onAuth);
+    return () => window.removeEventListener("pto:unauthorized", onAuth);
+  }, []);
+
   const chooseTab = (k) => {
     setTab(k);
     lsSet("pto.tab", k);
@@ -128,9 +158,12 @@ export default function Home() {
 
   if (phase === "login") return <Login onDone={loadAll} />;
 
-  const current = TABS.find(([k]) => k === tab) || TABS[0];
+  const tabs = tabsFor(user);
+  const current = tabs.find(([k]) => k === tab) || tabs[0];
+  const active = current[0];
 
   return (
+    <UserContext.Provider value={user}>
     <div className={`app${menuOpen ? " menu-open" : ""}`}>
       <aside className="side no-print" aria-label="Bo'limlar">
         <div className="brand">
@@ -144,11 +177,11 @@ export default function Home() {
           </button>
         </div>
         <nav className="nav" role="tablist">
-          {TABS.map(([k, l]) => (
+          {tabs.map(([k, l]) => (
             <button
               key={k}
               role="tab"
-              aria-selected={tab === k}
+              aria-selected={active === k}
               onClick={() => {
                 chooseTab(k);
                 setMenuOpen(false);
@@ -164,16 +197,26 @@ export default function Home() {
             {fmtDate(today())}
           </div>
           <div className={`side-state ${phase}`}>{phase === "ready" ? "Server bilan ulangan" : phase === "error" ? "Ulanishda xato" : "Yuklanmoqda…"}</div>
-          {phase === "ready" && (
-            <button
-              className="side-logout"
-              onClick={() => {
-                setPassword("");
-                setPhase("login");
-              }}
-            >
-              <Icon name="logout" /> Chiqish
-            </button>
+          {phase === "ready" && user && (
+            <div className="side-user">
+              <div className="side-user-name">{user.name || user.username}</div>
+              <div className="side-user-role">{roleLabel(user.role)}</div>
+              <div className="side-user-acts">
+                <button className="side-logout" onClick={() => setPwOpen(true)}>
+                  <Icon name="key" /> Parol
+                </button>
+                <button
+                  className="side-logout"
+                  onClick={() => {
+                    logout();
+                    setUser(null);
+                    setPhase("login");
+                  }}
+                >
+                  <Icon name="logout" /> Chiqish
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </aside>
@@ -205,13 +248,14 @@ export default function Home() {
           </section>
         ) : (
           <>
-            {tab === "day" && <DayTab data={data} notify={notify} onSaved={reloadOrders} />}
-            {tab === "month" && <MonthTab data={data} notify={notify} />}
-            {tab === "stock" && <StockTab data={data} notify={notify} reloadSettings={reloadSettings} />}
-            {tab === "ord" && <OrdersTab data={data} openForm={openForm} notify={notify} reload={reloadOrders} />}
-            {tab === "cost" && <CostTab data={data} onEdit={(p) => setEditProduct(p)} />}
-            {tab === "cat" && <CatalogTab data={data} notify={notify} reload={reloadProducts} onEdit={(p) => setEditProduct(p)} />}
-            {tab === "mat" && <MaterialsTab data={data} notify={notify} reload={reloadMaterials} reloadSettings={reloadSettings} />}
+            {active === "day" && <DayTab data={data} notify={notify} onSaved={reloadOrders} />}
+            {active === "month" && <MonthTab data={data} notify={notify} />}
+            {active === "stock" && <StockTab data={data} notify={notify} reloadSettings={reloadSettings} />}
+            {active === "ord" && <OrdersTab data={data} openForm={openForm} notify={notify} reload={reloadOrders} />}
+            {active === "cost" && <CostTab data={data} onEdit={(p) => setEditProduct(p)} />}
+            {active === "cat" && <CatalogTab data={data} notify={notify} reload={reloadProducts} onEdit={(p) => setEditProduct(p)} />}
+            {active === "mat" && <MaterialsTab data={data} notify={notify} reload={reloadMaterials} reloadSettings={reloadSettings} />}
+            {active === "admin" && <AdminTab data={data} openForm={openForm} notify={notify} />}
             <ProductEditor
               product={editProduct || null}
               open={editProduct !== undefined}
@@ -225,11 +269,22 @@ export default function Home() {
       </main>
 
       <FormDialog form={form} onClose={() => setForm(null)} />
+      <PasswordDialog
+        open={pwOpen || Boolean(user?.mustChangePassword)}
+        forced={Boolean(user?.mustChangePassword)}
+        onClose={() => setPwOpen(false)}
+        onDone={(u) => {
+          setUser(u);
+          setPwOpen(false);
+          notify("Parol o'zgartirildi");
+        }}
+      />
       {toast && (
         <div className="toast" role="status">
           {toast}
         </div>
       )}
     </div>
+    </UserContext.Provider>
   );
 }

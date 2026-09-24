@@ -1,19 +1,25 @@
 import express from "express";
 import cors from "cors";
-import crypto from "node:crypto";
 import mongoose from "mongoose";
 import { connectDB } from "./db.js";
-import { Material, Product, Day, Order, Settings, DATE_RE } from "./models.js";
+import { Material, Product, Day, Order, Settings, User, AuditLog, DATE_RE } from "./models.js";
 import { stockReport } from "./stock.js";
+import { ROLES, WRITE_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
+import { audit, diff } from "./audit.js";
 
 const app = express();
 
 /* ---------- CORS ---------- */
-const origins = (process.env.CORS_ORIGIN || "*").split(",").map((s) => s.trim()).filter(Boolean);
+// "https://site.vercel.app/" kabi oxiridagi "/" brauzer yuboradigan Origin bilan mos kelmaydi — olib tashlaymiz
+const origins = (process.env.CORS_ORIGIN || "*")
+  .split(",")
+  .map((s) => s.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
 app.use(
   cors({
     origin: origins.includes("*") ? true : origins,
-    allowedHeaders: ["Content-Type", "x-app-password"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    exposedHeaders: ["Content-Disposition"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
 );
@@ -22,28 +28,81 @@ app.use(express.json({ limit: "2mb" }));
 /* ---------- ochiq yo'llar ---------- */
 app.get("/api/health", (_req, res) => res.json({ ok: true, time: new Date().toISOString() }));
 
-function passwordOk(given) {
-  const expected = process.env.APP_PASSWORD;
-  if (!expected) return true; // parol o'rnatilmagan bo'lsa himoya o'chiq
-  const a = crypto.createHash("sha256").update(String(given || "")).digest();
-  const b = crypto.createHash("sha256").update(expected).digest();
-  return crypto.timingSafeEqual(a, b);
-}
-
-app.post("/api/login", (req, res) => {
-  if (!passwordOk(req.body?.password)) return res.status(401).json({ error: "Parol noto'g'ri" });
-  res.json({ ok: true, protected: Boolean(process.env.APP_PASSWORD) });
-});
-
-/* ---------- himoya va DB ulanish ---------- */
-app.use("/api", (req, res, next) => {
-  if (!passwordOk(req.get("x-app-password"))) return res.status(401).json({ error: "Kirish uchun parol kerak" });
-  next();
-});
 app.use("/api", async (_req, _res, next) => {
   await connectDB();
   next();
 });
+
+const LOCK_AFTER = 5; // shuncha xato urinishdan keyin
+const LOCK_MIN = 10; // shuncha daqiqaga bloklanadi
+
+app.post("/api/login", async (req, res) => {
+  const username = String(req.body?.username || "").trim().toLowerCase();
+  const password = String(req.body?.password || "");
+  if (!username || !password) return res.status(400).json({ error: "Login va parolni kiriting" });
+
+  // Birinchi kirish: bazada foydalanuvchi yo'q bo'lsa, "admin" + APP_PASSWORD bilan administrator yaratiladi
+  if (!(await User.exists({}))) {
+    const boot = process.env.APP_PASSWORD;
+    if (!boot) return res.status(503).json({ error: "Foydalanuvchi yo'q. Birinchi kirish uchun serverda APP_PASSWORD ni o'rnating" });
+    if (username !== "admin" || !safeEqual(password, boot)) return res.status(401).json({ error: "Login yoki parol noto'g'ri" });
+    const user = await User.create({
+      username: "admin",
+      name: "Administrator",
+      role: "admin",
+      passwordHash: await hashPassword(password),
+      mustChangePassword: true,
+      lastLoginAt: new Date(),
+    });
+    req.user = user;
+    await audit(req, { action: "login", entity: "user", entityId: user._id, label: "Birinchi kirish — administrator yaratildi" });
+    return res.json({ token: issueToken(user), user: publicUser(user) });
+  }
+
+  const user = await User.findOne({ username });
+  if (!user || !user.active) return res.status(401).json({ error: "Login yoki parol noto'g'ri" });
+  if (user.lockUntil && user.lockUntil > new Date()) {
+    const min = Math.ceil((user.lockUntil - Date.now()) / 60000);
+    return res.status(429).json({ error: `Ko'p marta noto'g'ri parol kiritildi. ${min} daqiqadan keyin urinib ko'ring` });
+  }
+  if (!(await verifyPassword(password, user.passwordHash))) {
+    user.failedLogins = (user.failedLogins || 0) + 1;
+    if (user.failedLogins >= LOCK_AFTER) {
+      user.lockUntil = new Date(Date.now() + LOCK_MIN * 60000);
+      user.failedLogins = 0;
+    }
+    await user.save();
+    return res.status(401).json({ error: "Login yoki parol noto'g'ri" });
+  }
+  user.failedLogins = 0;
+  user.lockUntil = null;
+  user.lastLoginAt = new Date();
+  await user.save();
+  req.user = user;
+  await audit(req, { action: "login", entity: "user", entityId: user._id, label: user.username });
+  res.json({ token: issueToken(user), user: publicUser(user) });
+});
+
+/* ---------- himoya: token va rol ---------- */
+app.use("/api", async (req, res, next) => {
+  const token = (req.get("authorization") || "").replace(/^Bearer\s+/i, "");
+  const t = readToken(token);
+  if (!t || !mongoose.isValidObjectId(t.u)) return res.status(401).json({ error: "Qaytadan kiring" });
+  const user = await User.findById(t.u);
+  if (!user || !user.active || (user.tokenVersion || 0) !== t.v) return res.status(401).json({ error: "Qaytadan kiring" });
+  req.user = user;
+  next();
+});
+
+// "Rahbar" faqat ko'radi. O'z parolini almashtirish hammaga ruxsat.
+app.use("/api", (req, res, next) => {
+  if (req.method === "GET" || req.path === "/me/password") return next();
+  if (!WRITE_ROLES.includes(req.user.role)) return res.status(403).json({ error: "Sizda faqat ko'rish huquqi bor" });
+  next();
+});
+
+const adminOnly = (req, res, next) =>
+  req.user.role === "admin" ? next() : res.status(403).json({ error: "Bu bo'lim faqat administrator uchun" });
 
 /* ---------- yordamchilar ---------- */
 const isId = (v) => mongoose.isValidObjectId(v);
@@ -56,6 +115,136 @@ async function getSettings() {
   return (await Settings.findOne({ key: "main" })) || (await Settings.create({ key: "main" }));
 }
 
+/* ---------- Joriy foydalanuvchi ---------- */
+app.get("/api/me", (req, res) => res.json(publicUser(req.user)));
+
+app.put("/api/me/password", async (req, res) => {
+  const { current, next: nextPw } = req.body || {};
+  const u = req.user;
+  if (!(await verifyPassword(current, u.passwordHash))) return res.status(400).json({ error: "Joriy parol noto'g'ri" });
+  const problem = passwordProblem(nextPw);
+  if (problem) return res.status(400).json({ error: problem });
+  if (current === nextPw) return res.status(400).json({ error: "Yangi parol eskisidan farq qilsin" });
+  u.passwordHash = await hashPassword(nextPw);
+  u.mustChangePassword = false;
+  u.tokenVersion = (u.tokenVersion || 0) + 1; // boshqa qurilmalardagi sessiyalar yopiladi
+  await u.save();
+  await audit(req, { action: "update", entity: "user", entityId: u._id, label: u.username, changes: [{ p: "password", a: "••••", b: "••••" }] });
+  res.json({ token: issueToken(u), user: publicUser(u) });
+});
+
+/* ---------- Foydalanuvchilar (faqat admin) ---------- */
+app.get("/api/users", adminOnly, async (_req, res) => {
+  const list = await User.find().sort({ createdAt: 1 });
+  res.json(list.map(publicUser));
+});
+
+app.post("/api/users", adminOnly, async (req, res) => {
+  const { username, name, role, password } = req.body || {};
+  if (!ROLES.includes(role)) return res.status(400).json({ error: "Rol noto'g'ri" });
+  const problem = passwordProblem(password);
+  if (problem) return res.status(400).json({ error: problem });
+  const user = await User.create({ username, name, role, passwordHash: await hashPassword(password), mustChangePassword: true });
+  await audit(req, { action: "create", entity: "user", entityId: user._id, label: user.username, after: publicUser(user) });
+  res.status(201).json(publicUser(user));
+});
+
+async function adminsLeft(exceptId) {
+  return User.countDocuments({ role: "admin", active: true, _id: { $ne: exceptId } });
+}
+
+app.put("/api/users/:id", adminOnly, async (req, res) => {
+  if (!isId(req.params.id)) return notFound(res);
+  const user = await User.findById(req.params.id);
+  if (!user) return notFound(res);
+  const before = publicUser(user);
+  const b = req.body || {};
+  if (b.role !== undefined && !ROLES.includes(b.role)) return res.status(400).json({ error: "Rol noto'g'ri" });
+
+  const losesAdmin = user.role === "admin" && ((b.role && b.role !== "admin") || b.active === false);
+  if (losesAdmin && !(await adminsLeft(user._id))) return res.status(400).json({ error: "Kamida bitta faol administrator qolishi kerak" });
+
+  if (b.name !== undefined) user.name = String(b.name);
+  if (b.role !== undefined) user.role = b.role;
+  if (b.active !== undefined) {
+    user.active = Boolean(b.active);
+    if (!user.active) user.tokenVersion = (user.tokenVersion || 0) + 1;
+  }
+  let pwChanged = false;
+  if (b.password) {
+    const problem = passwordProblem(b.password);
+    if (problem) return res.status(400).json({ error: problem });
+    user.passwordHash = await hashPassword(b.password);
+    user.mustChangePassword = true;
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
+    user.lockUntil = null;
+    user.failedLogins = 0;
+    pwChanged = true;
+  }
+  await user.save();
+  const after = publicUser(user);
+  const changes = diff("user", before, after);
+  if (pwChanged) changes.push({ p: "password", a: "••••", b: "yangi parol" });
+  await audit(req, { action: "update", entity: "user", entityId: user._id, label: user.username, changes });
+  res.json(after);
+});
+
+app.delete("/api/users/:id", adminOnly, async (req, res) => {
+  if (!isId(req.params.id)) return notFound(res);
+  if (String(req.user._id) === req.params.id) return res.status(400).json({ error: "O'zingizni o'chira olmaysiz" });
+  const user = await User.findById(req.params.id);
+  if (!user) return notFound(res);
+  if (user.role === "admin" && user.active && !(await adminsLeft(user._id))) return res.status(400).json({ error: "Kamida bitta faol administrator qolishi kerak" });
+  await user.deleteOne();
+  await audit(req, { action: "delete", entity: "user", entityId: user._id, label: user.username, before: publicUser(user) });
+  res.json({ ok: true });
+});
+
+/* ---------- O'zgarishlar jurnali (faqat admin) ---------- */
+app.get("/api/audit", adminOnly, async (req, res) => {
+  const { entity, user, action, from, to, before } = req.query;
+  const q = {};
+  if (typeof entity === "string" && entity) q.entity = entity;
+  if (typeof action === "string" && action) q.action = action;
+  if (typeof user === "string" && user) q["user.id"] = user;
+  const range = {};
+  if (validDate(from)) range.$gte = new Date(`${from}T00:00:00+05:00`);
+  if (validDate(to)) range.$lte = new Date(`${to}T23:59:59.999+05:00`);
+  if (typeof before === "string" && !Number.isNaN(Date.parse(before))) range.$lt = new Date(before);
+  if (Object.keys(range).length) q.createdAt = range;
+  const limit = Math.min(200, Math.max(1, +req.query.limit || 50));
+  const list = await AuditLog.find(q).sort({ createdAt: -1 }).limit(limit + 1);
+  res.json({ items: list.slice(0, limit), hasMore: list.length > limit });
+});
+
+/* ---------- Zaxira nusxa (faqat admin) ---------- */
+app.get("/api/backup", adminOnly, async (req, res) => {
+  const [materials, products, days, orders, settings, users] = await Promise.all([
+    Material.find().lean(),
+    Product.find().lean(),
+    Day.find().sort({ date: 1 }).lean(),
+    Order.find().sort({ no: 1 }).lean(),
+    Settings.find().lean(),
+    User.find().select("-passwordHash -tokenVersion -failedLogins -lockUntil").lean(),
+  ]);
+  const now = new Date();
+  const stamp = new Date(now.getTime() + 5 * 36e5).toISOString().slice(0, 16).replace(/[T:]/g, "-");
+  await audit(req, {
+    action: "backup",
+    entity: "backup",
+    label: `${materials.length} material, ${products.length} mahsulot, ${days.length} kun, ${orders.length} buyurtma`,
+  });
+  res.setHeader("Content-Disposition", `attachment; filename="pto-backup-${stamp}.json"`);
+  res.json({
+    app: "pto",
+    format: 1,
+    createdAt: now.toISOString(),
+    createdBy: req.user.username,
+    counts: { materials: materials.length, products: products.length, days: days.length, orders: orders.length, users: users.length },
+    data: { materials, products, days, orders, settings, users },
+  });
+});
+
 /* ---------- Materiallar ---------- */
 const MATERIAL_FIELDS = ["name", "unit", "group", "price", "stock", "electrodeBase", "recipe", "writeoff", "sort"];
 
@@ -64,12 +253,18 @@ app.get("/api/materials", async (_req, res) => {
 });
 app.post("/api/materials", async (req, res) => {
   const last = await Material.findOne().sort({ sort: -1 }).select("sort");
-  res.status(201).json(await Material.create({ sort: (last?.sort || 0) + 1, ...pick(req.body, MATERIAL_FIELDS) }));
+  const doc = await Material.create({ sort: (last?.sort || 0) + 1, ...pick(req.body, MATERIAL_FIELDS) });
+  await audit(req, { action: "create", entity: "material", entityId: doc._id, label: doc.name, after: doc });
+  res.status(201).json(doc);
 });
 app.put("/api/materials/:id", async (req, res) => {
   if (!isId(req.params.id)) return notFound(res);
+  const before = await Material.findById(req.params.id).lean();
+  if (!before) return notFound(res);
   const doc = await Material.findByIdAndUpdate(req.params.id, pick(req.body, MATERIAL_FIELDS), upd);
-  doc ? res.json(doc) : notFound(res);
+  if (!doc) return notFound(res);
+  await audit(req, { action: "update", entity: "material", entityId: doc._id, label: doc.name, before, after: doc });
+  res.json(doc);
 });
 app.delete("/api/materials/:id", async (req, res) => {
   const id = req.params.id;
@@ -80,7 +275,9 @@ app.delete("/api/materials/:id", async (req, res) => {
     (await Day.exists({ "materials.materialId": id }));
   if (used) return res.status(409).json({ error: "Material normalarda, retseptda yoki kunlik hisobotda ishlatilgan — o'chirib bo'lmaydi" });
   const doc = await Material.findByIdAndDelete(id);
-  doc ? res.json({ ok: true }) : notFound(res);
+  if (!doc) return notFound(res);
+  await audit(req, { action: "delete", entity: "material", entityId: doc._id, label: doc.name, before: doc });
+  res.json({ ok: true });
 });
 
 /* ---------- Mahsulotlar ---------- */
@@ -93,12 +290,18 @@ app.post("/api/products", async (req, res) => {
   const data = pick(req.body, PRODUCT_FIELDS);
   if (!data.calc) data.calc = (await getSettings()).calcTemplate || undefined;
   const last = await Product.findOne().sort({ sort: -1 }).select("sort");
-  res.status(201).json(await Product.create({ sort: (last?.sort || 0) + 1, ...data }));
+  const doc = await Product.create({ sort: (last?.sort || 0) + 1, ...data });
+  await audit(req, { action: "create", entity: "product", entityId: doc._id, label: doc.code, after: doc });
+  res.status(201).json(doc);
 });
 app.put("/api/products/:id", async (req, res) => {
   if (!isId(req.params.id)) return notFound(res);
+  const before = await Product.findById(req.params.id).lean();
+  if (!before) return notFound(res);
   const doc = await Product.findByIdAndUpdate(req.params.id, pick(req.body, PRODUCT_FIELDS), upd);
-  doc ? res.json(doc) : notFound(res);
+  if (!doc) return notFound(res);
+  await audit(req, { action: "update", entity: "product", entityId: doc._id, label: doc.code, before, after: doc });
+  res.json(doc);
 });
 app.delete("/api/products/:id", async (req, res) => {
   const id = req.params.id;
@@ -108,7 +311,9 @@ app.delete("/api/products/:id", async (req, res) => {
     (await Day.exists({ $or: [{ "production.productId": id }, { "shipments.productId": id }] }));
   if (used) return res.status(409).json({ error: "Mahsulot buyurtma yoki kunlik hisobotda ishlatilgan — o'chirib bo'lmaydi" });
   const doc = await Product.findByIdAndDelete(id);
-  doc ? res.json({ ok: true }) : notFound(res);
+  if (!doc) return notFound(res);
+  await audit(req, { action: "delete", entity: "product", entityId: doc._id, label: doc.code, before: doc });
+  res.json({ ok: true });
 });
 
 /* ---------- Kunlik hisobotlar ---------- */
@@ -137,12 +342,16 @@ app.put("/api/days/:date", async (req, res) => {
     data.shipments = data.shipments
       .filter((l) => l.productId && +l.qty > 0)
       .map((l) => ({ ...l, orderId: isId(l.orderId) ? l.orderId : null }));
+  const before = await Day.findOne({ date }).lean();
   const doc = await Day.findOneAndUpdate({ date }, { $set: { ...data, date } }, { ...upd, upsert: true, setDefaultsOnInsert: true });
+  await audit(req, { action: before ? "update" : "create", entity: "day", entityId: date, label: date, before, after: doc });
   res.json(doc);
 });
 app.delete("/api/days/:date", async (req, res) => {
   const doc = await Day.findOneAndDelete({ date: req.params.date });
-  doc ? res.json({ ok: true }) : notFound(res);
+  if (!doc) return notFound(res);
+  await audit(req, { action: "delete", entity: "day", entityId: doc.date, label: doc.date, before: doc });
+  res.json({ ok: true });
 });
 
 /* ---------- Ombor qoldig'i ---------- */
@@ -157,6 +366,7 @@ app.get("/api/stock", async (req, res) => {
 
 /* ---------- Buyurtmalar ---------- */
 const ORDER_FIELDS = ["customer", "productId", "qty", "price", "date", "deadline", "status", "note"];
+const orderLabel = (o) => `№${o.no} ${o.customer}`;
 
 app.get("/api/orders", async (_req, res) => {
   const [orders, shipped] = await Promise.all([
@@ -174,18 +384,25 @@ app.post("/api/orders", async (req, res) => {
   const data = pick(req.body, ORDER_FIELDS);
   if (!isId(data.productId) || !(await Product.exists({ _id: data.productId }))) return res.status(400).json({ error: "Mahsulot topilmadi" });
   const last = await Order.findOne().sort({ no: -1 }).select("no");
-  res.status(201).json(await Order.create({ ...data, no: (last?.no || 0) + 1 }));
+  const doc = await Order.create({ ...data, no: (last?.no || 0) + 1 });
+  await audit(req, { action: "create", entity: "order", entityId: doc._id, label: orderLabel(doc), after: doc });
+  res.status(201).json(doc);
 });
 app.put("/api/orders/:id", async (req, res) => {
   if (!isId(req.params.id)) return notFound(res);
+  const before = await Order.findById(req.params.id).lean();
+  if (!before) return notFound(res);
   const doc = await Order.findByIdAndUpdate(req.params.id, pick(req.body, ORDER_FIELDS), upd);
-  doc ? res.json(doc) : notFound(res);
+  if (!doc) return notFound(res);
+  await audit(req, { action: "update", entity: "order", entityId: doc._id, label: orderLabel(doc), before, after: doc });
+  res.json(doc);
 });
 app.delete("/api/orders/:id", async (req, res) => {
   if (!isId(req.params.id)) return notFound(res);
   const doc = await Order.findByIdAndDelete(req.params.id);
   if (!doc) return notFound(res);
   await Day.updateMany({ "shipments.orderId": doc._id }, { $set: { "shipments.$[s].orderId": null } }, { arrayFilters: [{ "s.orderId": doc._id }] });
+  await audit(req, { action: "delete", entity: "order", entityId: doc._id, label: orderLabel(doc), before: doc });
   res.json({ ok: true });
 });
 
@@ -195,6 +412,7 @@ app.get("/api/settings", async (_req, res) => {
 });
 app.put("/api/settings", async (req, res) => {
   const s = await getSettings();
+  const before = s.toObject();
   const b = req.body || {};
   if (b.electrodePct !== undefined) s.electrodePct = Math.max(0, +b.electrodePct || 0);
   if (b.company !== undefined) s.company = String(b.company).slice(0, 200);
@@ -215,6 +433,7 @@ app.put("/api/settings", async (req, res) => {
     s.markModified("opening");
   }
   await s.save();
+  await audit(req, { action: "update", entity: "settings", entityId: "main", label: "Sozlamalar", before, after: s });
   res.json(s);
 });
 

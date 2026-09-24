@@ -1,10 +1,12 @@
 "use client";
 import { useMemo, useState } from "react";
+import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
 import { STATUSES, costCard, fmt, fmtDate, lsGet, lsSet, productOptions, today } from "@/lib/calc";
 import DeleteButton from "./DeleteButton";
 
 export default function OrdersTab({ data, openForm, notify, reload }) {
+  const { canEdit } = useUser();
   const { products, orders, mats, prods: byId } = data;
   const [filter, setFilter] = useState(() => lsGet("pto.ordFilter", "faol"));
 
@@ -78,9 +80,11 @@ export default function OrdersTab({ data, openForm, notify, reload }) {
           <h2>Buyurtmalar</h2>
         </div>
         <div className="r">
-          <button className="btn primary" onClick={() => orderForm()}>
-            + Yangi buyurtma
-          </button>
+          {canEdit && (
+            <button className="btn primary" onClick={() => orderForm()}>
+              + Yangi buyurtma
+            </button>
+          )}
         </div>
       </div>
 
@@ -149,6 +153,7 @@ export default function OrdersTab({ data, openForm, notify, reload }) {
                         className={`st st-${o.status}`}
                         aria-label="Holat"
                         value={o.status}
+                        disabled={!canEdit}
                         onChange={(e) => setStatus(o, e.target.value)}
                       >
                         {STATUSES.map(([k, l]) => (
@@ -160,12 +165,14 @@ export default function OrdersTab({ data, openForm, notify, reload }) {
                     </td>
                     <td className="n">{fmt(summa)}</td>
                     <td>
-                      <div className="acts">
-                        <button className="btn sm" onClick={() => orderForm(o)}>
-                          Tahrirlash
-                        </button>
-                        <DeleteButton onConfirm={() => del(o.id)} />
-                      </div>
+                      {canEdit && (
+                        <div className="acts">
+                          <button className="btn sm" onClick={() => orderForm(o)}>
+                            Tahrirlash
+                          </button>
+                          <DeleteButton onConfirm={() => del(o.id)} />
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );

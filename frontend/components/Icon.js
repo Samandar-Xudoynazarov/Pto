@@ -17,6 +17,8 @@ const P = {
   plus: "M12 5v14M5 12h14",
   chevL: "M15 6l-6 6 6 6",
   chevR: "M9 6l6 6-6 6",
+  admin: "M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6zM9.5 12l2 2 3.5-4",
+  key: "M14.5 9.5a4 4 0 1 0-3.9 4.9L9 16h-2v2H5v2H3v-2.5l6.6-6.6M15 7.5h.01",
 };
 
 export default function Icon({ name, size = 16 }) {

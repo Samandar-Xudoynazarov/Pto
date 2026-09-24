@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
 import { GROUPS, consumption, costCard, fmt, fmtDate, fmtN, priceOf, today } from "@/lib/calc";
 
@@ -99,6 +100,7 @@ function OpeningDialog({ open, onClose, data, onSaved, notify }) {
 }
 
 export default function StockTab({ data, notify, reloadSettings }) {
+  const { canEdit } = useUser();
   const { materials, products, mats, prods, settings, orders } = data;
   const [date, setDate] = useState(today());
   const [stock, setStock] = useState(null);
@@ -168,9 +170,11 @@ export default function StockTab({ data, notify, reloadSettings }) {
           <input id="st-date" type="date" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} />
         </div>
         <div className="r">
-          <button className="btn" onClick={() => setOpenDlg(true)}>
-            Boshlang&apos;ich qoldiq
-          </button>
+          {canEdit && (
+            <button className="btn" onClick={() => setOpenDlg(true)}>
+              Boshlang&apos;ich qoldiq
+            </button>
+          )}
         </div>
       </div>
       {stock && (

@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
 import Icon from "./Icon";
 import { addDaySheet, deliver, newWorkbook, pickRows } from "@/lib/excel";
@@ -10,6 +11,7 @@ const emptyProd = () => ({ productId: "", plan: "", fact: "", note: "" });
 const emptyShip = () => ({ productId: "", qty: "", customer: "", vehicle: "", orderId: "" });
 
 export default function DayTab({ data, notify, onSaved }) {
+  const { canEdit } = useUser();
   const { materials, products, mats, prods, settings, orders } = data;
   const [date, setDate] = useState(() => lsGet("pto.day", today()));
   const [loading, setLoading] = useState(true);
@@ -208,14 +210,16 @@ export default function DayTab({ data, notify, onSaved }) {
           <button className="btn" onClick={() => window.print()}>
             <Icon name="print" /> Chop etish
           </button>
-          {exists && (
+          {canEdit && exists && (
             <button className="btn danger" onClick={removeDay}>
               Kunni o&apos;chirish
             </button>
           )}
-          <button className="btn primary" onClick={save} disabled={saving || loading}>
-            <Icon name="save" /> {saving ? "Saqlanmoqda…" : "Saqlash"}
-          </button>
+          {canEdit && (
+            <button className="btn primary" onClick={save} disabled={saving || loading}>
+              <Icon name="save" /> {saving ? "Saqlanmoqda…" : "Saqlash"}
+            </button>
+          )}
         </div>
       </div>
       {stock?.beforeOpening && (
@@ -230,7 +234,7 @@ export default function DayTab({ data, notify, onSaved }) {
           <div>
             <h3>Mahsulotlar: reja / fakt</h3>
             <div className="tbl-wrap">
-              <table className="edit">
+              <fieldset className="plain" disabled={!canEdit}><table className="edit">
                 <thead>
                   <tr>
                     <th>Mahsulot</th>
@@ -284,11 +288,13 @@ export default function DayTab({ data, notify, onSaved }) {
                     <td colSpan={2}></td>
                   </tr>
                 </tfoot>
-              </table>
+              </table></fieldset>
             </div>
-            <button className="btn sm no-print" style={{ marginTop: 8 }} onClick={touch(() => setProd((rows) => [...rows, emptyProd()]))}>
-              + Mahsulot qo&apos;shish
-            </button>
+            {canEdit && (
+              <button className="btn sm no-print" style={{ marginTop: 8 }} onClick={touch(() => setProd((rows) => [...rows, emptyProd()]))}>
+                + Mahsulot qo&apos;shish
+              </button>
+            )}
           </div>
 
           {/* ---- materiallar ---- */}
@@ -299,13 +305,15 @@ export default function DayTab({ data, notify, onSaved }) {
                 <label className="check">
                   <input id="day-showall" type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} /> Barcha materiallar
                 </label>
-                <button className="btn sm" onClick={fillFromNorm}>
-                  Sarfni normadan to&apos;ldirish
-                </button>
+                {canEdit && (
+                  <button className="btn sm" onClick={fillFromNorm}>
+                    Sarfni normadan to&apos;ldirish
+                  </button>
+                )}
               </div>
             </div>
             <div className="tbl-wrap" style={{ marginTop: 8 }}>
-              <table className="edit">
+              <fieldset className="plain" disabled={!canEdit}><table className="edit">
                 <thead>
                   <tr>
                     <th>Material</th>
@@ -347,7 +355,7 @@ export default function DayTab({ data, notify, onSaved }) {
                     );
                   })}
                 </tbody>
-              </table>
+              </table></fieldset>
             </div>
             <p className="hint no-print" style={{ marginTop: 6 }}>
               Metall kg da. «Norma (fakt)» — fakt × Норма (beton → qum/sement/sheben, elektrod = metallning {fmtN(settings.electrodePct, 2)} %). Sarf normadan 10 % dan ko&apos;p farq qilsa sariq bilan belgilanadi.
@@ -394,7 +402,7 @@ export default function DayTab({ data, notify, onSaved }) {
             <div>
               <h3>Jo&apos;natish (отгрузка)</h3>
               <div className="tbl-wrap">
-                <table className="edit">
+                <fieldset className="plain" disabled={!canEdit}><table className="edit">
                   <thead>
                     <tr>
                       <th>Qayerga</th>
@@ -454,17 +462,19 @@ export default function DayTab({ data, notify, onSaved }) {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></fieldset>
               </div>
-              <button className="btn sm no-print" style={{ marginTop: 8 }} onClick={touch(() => setShips((rows) => [...rows, emptyShip()]))}>
-                + Jo&apos;natish qo&apos;shish
-              </button>
+              {canEdit && (
+                <button className="btn sm no-print" style={{ marginTop: 8 }} onClick={touch(() => setShips((rows) => [...rows, emptyShip()]))}>
+                  + Jo&apos;natish qo&apos;shish
+                </button>
+              )}
             </div>
           </div>
 
           <div className="field no-print">
             <label htmlFor="day-note">Izoh</label>
-            <textarea id="day-note" rows={2} value={note} onChange={touch((e) => setNote(e.target.value))} />
+            <textarea id="day-note" rows={2} readOnly={!canEdit} value={note} onChange={touch((e) => setNote(e.target.value))} />
           </div>
 
           <div className="print-only signers">

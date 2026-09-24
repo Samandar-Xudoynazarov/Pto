@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "node --env-file-if-exists=.env --watch local.js",
     "start": "node --env-file-if-exists=.env local.js",
-    "import": "node --env-file-if-exists=.env scripts/import.js"
+    "import": "node --env-file-if-exists=.env scripts/import.js",
+    "restore": "node --env-file-if-exists=.env scripts/restore.js",
+    "user": "node --env-file-if-exists=.env scripts/user.js"
   },
   "engines": {
     "node": ">=20.12"

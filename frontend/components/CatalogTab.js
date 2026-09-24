@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
+import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
 import { concreteVolume, fmtN } from "@/lib/calc";
 import DeleteButton from "./DeleteButton";
 
 export default function CatalogTab({ data, notify, reload, onEdit }) {
+  const { canEdit } = useUser();
   const { products, mats } = data;
   const [group, setGroup] = useState("all");
   const [q, setQ] = useState("");
@@ -32,9 +34,11 @@ export default function CatalogTab({ data, notify, reload, onEdit }) {
           <input id="cat-q" type="search" placeholder="Qidirish" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Qidirish" />
         </div>
         <div className="r">
-          <button className="btn primary" onClick={() => onEdit(null)}>
-            + Mahsulot qo&apos;shish
-          </button>
+          {canEdit && (
+            <button className="btn primary" onClick={() => onEdit(null)}>
+              + Mahsulot qo&apos;shish
+            </button>
+          )}
         </div>
       </div>
       <div className="chips">
@@ -77,12 +81,14 @@ export default function CatalogTab({ data, notify, reload, onEdit }) {
                   <td className="n">{metal ? fmtN(metal, 1) : "—"}</td>
                   <td className="n">{v ? fmtN(v * 2.5 + metal / 1000, 2) : "—"}</td>
                   <td>
-                    <div className="acts">
-                      <button className="btn sm" onClick={() => onEdit(p)}>
-                        Tahrirlash
-                      </button>
-                      <DeleteButton onConfirm={() => del(p.id)} />
-                    </div>
+                    {canEdit && (
+                      <div className="acts">
+                        <button className="btn sm" onClick={() => onEdit(p)}>
+                          Tahrirlash
+                        </button>
+                        <DeleteButton onConfirm={() => del(p.id)} />
+                      </div>
+                    )}
                   </td>
                 </tr>
               );

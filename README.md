@@ -30,7 +30,8 @@ Vercel'da **ikkita loyiha** yaratiladi: biri backend uchun, biri frontend uchun.
    | Nomi | Qiymati |
    |---|---|
    | `MONGODB_URI` | Atlas ulanish qatori |
-   | `APP_PASSWORD` | ilovaga kirish paroli |
+   | `APP_PASSWORD` | birinchi kirish paroli (pastda «Foydalanuvchilar» bo'limiga qarang) |
+   | `AUTH_SECRET` | uzun tasodifiy satr — kirish tokenlarini imzolaydi |
    | `CORS_ORIGIN` | frontend manzili, masalan `https://pto-frontend.vercel.app` (birinchi deploy paytida `*` qo'ysangiz ham bo'ladi) |
 
 5. **Deploy** tugmasini bosing. So'ng `https://<backend>.vercel.app/api/health` manzilini oching: `{"ok":true,...}` chiqishi kerak.
@@ -70,9 +71,33 @@ cd backend && cp .env.example .env && npm install && npm run dev    # http://loc
 cd frontend && cp .env.example .env.local && npm install && npm run dev   # http://localhost:3000
 ```
 
+## Foydalanuvchilar va rollar
+
+| Rol | Huquqlari |
+|---|---|
+| Administrator | hamma narsa + foydalanuvchilar, zaxira nusxa, o'zgarishlar tarixi («Boshqaruv» bo'limi) |
+| ПТО muhandisi | hisobot, ombor, buyurtma, katalog, materiallarni tahrirlaydi |
+| Rahbar | hamma bo'limni ko'radi, hech narsani o'zgartira olmaydi |
+
+**Birinchi kirish:** bazada foydalanuvchi bo'lmasa, login `admin` va parol sifatida `APP_PASSWORD` qiymati kiritiladi. Administrator avtomatik yaratiladi va darhol o'z parolini o'rnatishi so'raladi. Keyingi foydalanuvchilar «Boshqaruv» bo'limida qo'shiladi.
+
+**Parol unutilsa** (kompyuterda, `backend` papkasida): `npm run user -- admin YangiParol123`
+
+5 marta noto'g'ri parol kiritilsa, foydalanuvchi 10 daqiqaga bloklanadi. Barcha o'zgarishlar (kim, qachon, nimani, qaysi qiymatdan qaysi qiymatga) jurnalga yoziladi va 13 oy saqlanadi.
+
+## Zaxira nusxa
+
+«Boshqaruv → Zaxira nusxa → Yuklab olish» butun bazani JSON faylga beradi (parollarsiz). Tiklash:
+
+```bash
+cd backend
+npm run restore -- pto-backup-2026-09-24-18-30.json         # nima tiklanishini ko'rsatadi
+npm run restore -- pto-backup-2026-09-24-18-30.json --yes   # tiklaydi
+```
+
 ## API
 
-Barcha so'rovlarda `x-app-password` sarlavhasi bo'lishi kerak (`/api/health` va `/api/login` bundan mustasno).
+Barcha so'rovlarda `Authorization: Bearer <token>` sarlavhasi bo'lishi kerak (`/api/health` va `/api/login` bundan mustasno). Token `POST /api/login` (`{ username, password }`) javobida keladi.
 
 | Metod | Yo'l | Tavsif |
 |---|---|---|
@@ -83,6 +108,10 @@ Barcha so'rovlarda `x-app-password` sarlavhasi bo'lishi kerak (`/api/health` va 
 | GET | `/api/stock?from=&to=` | ombor: davr boshi, harakat, oxiri |
 | GET/POST, PUT/DELETE `:id` | `/api/orders` | buyurtmalar; GET javobida `shipped` bor |
 | GET/PUT | `/api/settings` | boshlang'ich qoldiq, elektrod %, imzolar |
+| GET, PUT `password` | `/api/me` | joriy foydalanuvchi, o'z parolini almashtirish |
+| GET/POST, PUT/DELETE `:id` | `/api/users` | foydalanuvchilar (admin) |
+| GET | `/api/audit` | o'zgarishlar tarixi (admin) |
+| GET | `/api/backup` | zaxira nusxa (admin) |
 
 ## Hisoblash qoidalari
 
