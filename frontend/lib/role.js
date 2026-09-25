@@ -5,6 +5,7 @@ export const ROLES = [
   ["admin", "Administrator"],
   ["pto", "ПТО muhandisi"],
   ["rahbar", "Rahbar (faqat ko'rish)"],
+  ["kurator", "Kurator (faqat ko'rish)"],
 ];
 export const roleLabel = (r) => ROLES.find(([k]) => k === r)?.[1] || r;
 

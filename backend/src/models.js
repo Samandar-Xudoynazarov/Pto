@@ -135,7 +135,7 @@ const settingsSchema = new Schema(
 );
 
 /* ---------- Foydalanuvchilar ---------- */
-export const ROLE_LIST = ["admin", "pto", "rahbar"];
+export const ROLE_LIST = ["admin", "pto", "rahbar", "kurator"];
 const userSchema = new Schema(
   {
     username: {
@@ -177,6 +177,23 @@ const auditSchema = new Schema(
 auditSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 400 }); // ~13 oydan keyin o'chadi
 auditSchema.index({ entity: 1, createdAt: -1 });
 
+/* ---------- Hisoblagichlar (buyurtma raqami va h.k.) ---------- */
+// { _id: "order", seq: 17 } — $inc bilan atomik oshiriladi, bir vaqtdagi so'rovlar bir xil raqam olmaydi
+const counterSchema = new Schema({ _id: { type: String, required: true }, seq: { type: Number, default: 0 } }, { versionKey: false });
+
+/* ---------- Kirish urinishlari (cheklash uchun, limits.js) ---------- */
+// _id: "u:<login>|<ip>" yoki "ip:<ip>". expiresAt o'tgach MongoDB hujjatni o'zi o'chiradi.
+const loginAttemptSchema = new Schema(
+  {
+    _id: { type: String, required: true },
+    count: { type: Number, default: 0 },
+    lockUntil: { type: Date, default: null },
+    expiresAt: { type: Date, required: true },
+  },
+  { versionKey: false }
+);
+loginAttemptSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
 export const Material = models.Material || model("Material", materialSchema);
 export const Product = models.Product || model("Product", productSchema);
 export const Day = models.Day || model("Day", daySchema);
@@ -184,3 +201,5 @@ export const Order = models.Order || model("Order", orderSchema);
 export const Settings = models.Settings || model("Settings", settingsSchema);
 export const User = models.User || model("User", userSchema);
 export const AuditLog = models.AuditLog || model("AuditLog", auditSchema);
+export const Counter = models.Counter || model("Counter", counterSchema);
+export const LoginAttempt = models.LoginAttempt || model("LoginAttempt", loginAttemptSchema);

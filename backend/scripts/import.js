@@ -10,7 +10,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import mongoose from "mongoose";
 import { connectDB } from "../src/db.js";
-import { Material, Product, Day, Order, Settings } from "../src/models.js";
+import { Material, Product, Day, Order, Settings, Counter } from "../src/models.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
@@ -21,7 +21,7 @@ const data = JSON.parse(fs.readFileSync(path.resolve(here, file), "utf8"));
 await connectDB();
 
 if (reset) {
-  await Promise.all([Material.deleteMany({}), Product.deleteMany({}), Day.deleteMany({}), Order.deleteMany({}), Settings.deleteMany({})]);
+  await Promise.all([Material.deleteMany({}), Product.deleteMany({}), Day.deleteMany({}), Order.deleteMany({}), Settings.deleteMany({}), Counter.deleteMany({})]);
   console.log("Baza tozalandi.");
 } else if ((await Material.countDocuments()) || (await Product.countDocuments())) {
   console.log("Bazada ma'lumot bor. Qaytadan yuklash uchun: npm run import -- --reset");

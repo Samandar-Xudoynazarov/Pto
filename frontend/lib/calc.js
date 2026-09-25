@@ -97,7 +97,9 @@ export function expandNorms(product, mats, settings) {
     if (m?.electrodeBase) metal += q;
   }
   const pct = +settings?.electrodePct || 0;
-  const electrode = [...mats.values()].find((m) => m.name === "Электрод");
+  const all = [...mats.values()];
+  // «Elektrod» belgisi qo'yilgan material; eski ma'lumotlar uchun — nomi bo'yicha
+  const electrode = all.find((m) => m.isElectrode) || all.find((m) => m.name?.trim().toLowerCase() === "электрод");
   if (electrode && pct && metal) {
     const hasManual = (product?.norms || []).some((l) => l.materialId === electrode.id);
     if (!hasManual) add(electrode.id, Math.round(((pct / 100) * metal + 1e-9) * 1000) / 1000, true); // Excel ROUND(…;3)

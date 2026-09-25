@@ -105,7 +105,7 @@ app.use("/api", async (req, res, next) => {
   next();
 });
 
-// "Rahbar" va "Kurator" faqat ko'radi. O'z parolini almashtirish hammaga ruxsat.
+// "Rahbar" faqat ko'radi. O'z parolini almashtirish hammaga ruxsat.
 app.use("/api", (req, res, next) => {
   if (req.method === "GET" || req.path === "/me/password") return next();
   if (!WRITE_ROLES.includes(req.user.role)) return res.status(403).json({ error: "Sizda faqat ko'rish huquqi bor" });

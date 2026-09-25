@@ -17,7 +17,7 @@ const FIELD = {
   production: "Ishlab chiqarish", materials: "Materiallar", shipments: "Jo'natish", products: "Mahsulotlar",
   plan: "reja", fact: "fakt", note: "izoh", sarf: "sarf", kirim: "kirim", qty: "soni", customer: "buyurtmachi",
   vehicle: "mashina", orderId: "buyurtma", productId: "mahsulot", materialId: "material", name: "nomi", unit: "birlik",
-  group: "guruh", price: "narx", stock: "omborda hisoblanadi", electrodeBase: "elektrod asosi", recipe: "retsept (1 m³)",
+  group: "guruh", price: "narx", stock: "omborda hisoblanadi", electrodeBase: "elektrod asosi", isElectrode: "elektrod", recipe: "retsept (1 m³)",
   writeoff: "Норма (1 m³)", norm: "norma", code: "marka", norms: "Sarf normasi", calc: "Kalkulyatsiya", items: "materiallar",
   metalKg: "metall, kg", prodRows: "ishlab chiqarish xarajatlari", otherRows: "boshqa xarajatlar", margin: "marja, %",
   vat: "QQS, %", status: "holat", deadline: "muddat", date: "sana", electrodePct: "elektrod, %", company: "korxona",
@@ -197,7 +197,7 @@ function Users({ openForm, notify }) {
       </div>
       <p className="hint" style={{ marginTop: 8 }}>
         <strong>Administrator</strong> hamma narsani va foydalanuvchilarni boshqaradi. <strong>ПТО muhandisi</strong> hisobot, ombor, buyurtma, katalog va
-        materiallarni tahrirlaydi. <strong>Rahbar</strong> hamma bo&apos;limni ko&apos;radi, lekin hech narsani o&apos;zgartira olmaydi. Bloklangan foydalanuvchi
+        materiallarni tahrirlaydi. <strong>Rahbar</strong> va <strong>Kurator</strong> hamma bo&apos;limni ko&apos;radi, lekin hech narsani o&apos;zgartira olmaydi. Bloklangan foydalanuvchi
         darhol tizimdan chiqariladi.
       </p>
     </div>

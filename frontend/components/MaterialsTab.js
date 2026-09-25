@@ -62,7 +62,7 @@ function MaterialEditor({ material, open, onClose, data, notify, onSaved }) {
       setD(
         material
           ? JSON.parse(JSON.stringify(material))
-          : { name: "", unit: "кг", group: "metall", price: 0, stock: true, electrodeBase: false, recipe: [], writeoff: [] }
+          : { name: "", unit: "кг", group: "metall", price: 0, stock: true, electrodeBase: false, isElectrode: false, recipe: [], writeoff: [] }
       );
       if (el && !el.open) el.showModal();
     } else if (el?.open) el.close();
@@ -72,7 +72,7 @@ function MaterialEditor({ material, open, onClose, data, notify, onSaved }) {
     e.preventDefault();
     setBusy(true);
     const clean = (arr) => (arr || []).filter((l) => l.materialId).map((l) => ({ materialId: l.materialId, norm: +l.norm || 0 }));
-    const body = { name: d.name.trim(), unit: d.unit.trim(), group: d.group, price: +d.price || 0, stock: d.stock, electrodeBase: d.electrodeBase, recipe: clean(d.recipe), writeoff: clean(d.writeoff) };
+    const body = { name: d.name.trim(), unit: d.unit.trim(), group: d.group, price: +d.price || 0, stock: d.stock, electrodeBase: d.electrodeBase, isElectrode: Boolean(d.isElectrode), recipe: clean(d.recipe), writeoff: clean(d.writeoff) };
     try {
       if (material?.id) await api(`/materials/${material.id}`, { method: "PUT", body });
       else await api("/materials", { method: "POST", body });
@@ -133,6 +133,9 @@ function MaterialEditor({ material, open, onClose, data, notify, onSaved }) {
             </label>
             <label className="check">
               <input id="me-el" type="checkbox" checked={d.electrodeBase} onChange={(e) => setD({ ...d, electrodeBase: e.target.checked })} /> Elektrod normasi shu metalldan hisoblanadi
+            </label>
+            <label className="check">
+              <input id="me-iel" type="checkbox" checked={Boolean(d.isElectrode)} onChange={(e) => setD({ ...d, isElectrode: e.target.checked })} /> Bu material — elektrod (norma metall og&apos;irligidan avtomatik)
             </label>
           </div>
           {isBeton && (

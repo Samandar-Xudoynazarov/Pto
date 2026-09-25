@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
 import Icon from "./Icon";
@@ -10,7 +10,7 @@ const num = (v) => (v === "" || v === null || v === undefined ? 0 : +v || 0);
 const emptyProd = () => ({ productId: "", plan: "", fact: "", note: "" });
 const emptyShip = () => ({ productId: "", qty: "", customer: "", vehicle: "", orderId: "" });
 
-export default function DayTab({ data, notify, onSaved }) {
+export default function DayTab({ data, notify, onSaved, onDirtyChange }) {
   const { canEdit } = useUser();
   const { materials, products, mats, prods, settings, orders } = data;
   const [date, setDate] = useState(() => lsGet("pto.day", today()));
@@ -26,10 +26,16 @@ export default function DayTab({ data, notify, onSaved }) {
   const [showAll, setShowAll] = useState(false);
   const [exporting, setExporting] = useState(false);
 
+  // Sana tez almashtirilsa, eski so'rov javobi kechikib kelib, yangi sanadagi jadvalni
+  // boshqa kunning ma'lumoti bilan to'ldirib yubormasligi uchun faqat oxirgi so'rov hisobga olinadi.
+  const loadSeq = useRef(0);
   const load = useCallback(async () => {
+    const seq = ++loadSeq.current;
+    const stale = () => seq !== loadSeq.current;
     setLoading(true);
     try {
       const [d, s] = await Promise.all([api(`/days/${date}`), api(`/stock?from=${date}&to=${date}`)]);
+      if (stale()) return;
       setProd(d.production.length ? d.production.map((l) => ({ ...l, plan: l.plan || "", fact: l.fact || "" })) : [emptyProd()]);
       setMatIn(Object.fromEntries(d.materials.map((l) => [l.materialId, { sarf: l.sarf || "", kirim: l.kirim || "" }])));
       setShips(d.shipments.map((l) => ({ ...l, orderId: l.orderId || "" })));
@@ -38,14 +44,28 @@ export default function DayTab({ data, notify, onSaved }) {
       setStock(s);
       setDirty(false);
     } catch (e) {
-      notify(e.message);
+      if (!stale()) notify(e.message);
     } finally {
-      setLoading(false);
+      if (!stale()) setLoading(false);
     }
   }, [date, notify]);
   useEffect(() => {
     load();
   }, [load]);
+
+  // Saqlanmagan o'zgarish bo'lsa: ota komponentga xabar beramiz (bo'lim almashtirish/chiqishda so'raladi)
+  // va sahifani yopish/yangilashda brauzer ogohlantiradi
+  useEffect(() => {
+    onDirtyChange?.(dirty);
+    if (!dirty) return;
+    const warn = (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty, onDirtyChange]);
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
 
   function go(next) {
     if (!next) return;

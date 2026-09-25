@@ -15,6 +15,7 @@ import ProductEditor from "@/components/ProductEditor";
 import Icon from "@/components/Icon";
 import AdminTab from "@/components/AdminTab";
 import PasswordDialog from "@/components/PasswordDialog";
+import InstallHint from "@/components/InstallHint";
 
 const TABS = [
   ["day", "Kunlik hisobot", "Reja / fakt, xomashyo sarfi va kirimi, jo'natish"],
@@ -104,8 +105,14 @@ export default function Home() {
   const loadAll = useCallback(async () => {
     setPhase((p) => (p === "ready" ? p : "loading"));
     try {
-      const [me, m, p, o, s] = await Promise.all([api("/me"), api("/materials"), api("/products"), api("/orders"), api("/settings")]);
+      const me = await api("/me");
       setUser(me);
+      // vaqtinchalik parol: server boshqa ma'lumotni bermaydi — avval yangi parol o'rnatiladi
+      if (me.mustChangePassword) {
+        setPhase("password");
+        return;
+      }
+      const [m, p, o, s] = await Promise.all([api("/materials"), api("/products"), api("/orders"), api("/settings")]);
       setMaterials(m);
       setProducts(p);
       setOrders(o);
@@ -145,7 +152,18 @@ export default function Home() {
     return () => window.removeEventListener("pto:unauthorized", onAuth);
   }, []);
 
+  // Kunlik hisobotda saqlanmagan o'zgarish bor-yo'qligi (DayTab xabar beradi)
+  const unsaved = useRef(false);
+  const onDirtyChange = useCallback((v) => {
+    unsaved.current = v;
+  }, []);
+  const confirmLeave = () =>
+    !unsaved.current || window.confirm("Kunlik hisobotda saqlanmagan o'zgarishlar bor. Ularni tashlab ketasizmi?");
+
   const chooseTab = (k) => {
+    if (k === tab) return;
+    if (!confirmLeave()) return;
+    unsaved.current = false;
     setTab(k);
     lsSet("pto.tab", k);
   };
@@ -196,8 +214,8 @@ export default function Home() {
           <div className="side-date" suppressHydrationWarning>
             {fmtDate(today())}
           </div>
-          <div className={`side-state ${phase}`}>{phase === "ready" ? "Server bilan ulangan" : phase === "error" ? "Ulanishda xato" : "Yuklanmoqda…"}</div>
-          {phase === "ready" && user && (
+          <div className={`side-state ${phase === "password" ? "ready" : phase}`}>{phase === "ready" || phase === "password" ? "Server bilan ulangan" : phase === "error" ? "Ulanishda xato" : "Yuklanmoqda…"}</div>
+          {(phase === "ready" || phase === "password") && user && (
             <div className="side-user">
               <div className="side-user-name">{user.name || user.username}</div>
               <div className="side-user-role">{roleLabel(user.role)}</div>
@@ -208,6 +226,8 @@ export default function Home() {
                 <button
                   className="side-logout"
                   onClick={() => {
+                    if (!confirmLeave()) return;
+                    unsaved.current = false;
                     logout();
                     setUser(null);
                     setPhase("login");
@@ -233,6 +253,8 @@ export default function Home() {
           </div>
         </header>
 
+        <InstallHint />
+
         {phase === "error" && (
           <div className="notice">
             {loadError}{" "}
@@ -244,11 +266,13 @@ export default function Home() {
 
         {phase !== "ready" ? (
           <section className="sheet">
-            <div className="loading">{phase === "loading" ? "Ma'lumotlar yuklanmoqda…" : "Ma'lumotlarni yuklab bo'lmadi."}</div>
+            <div className="loading">
+              {phase === "loading" ? "Ma'lumotlar yuklanmoqda…" : phase === "password" ? "Davom etish uchun yangi parol o'rnating." : "Ma'lumotlarni yuklab bo'lmadi."}
+            </div>
           </section>
         ) : (
           <>
-            {active === "day" && <DayTab data={data} notify={notify} onSaved={reloadOrders} />}
+            {active === "day" && <DayTab data={data} notify={notify} onSaved={reloadOrders} onDirtyChange={onDirtyChange} />}
             {active === "month" && <MonthTab data={data} notify={notify} />}
             {active === "stock" && <StockTab data={data} notify={notify} reloadSettings={reloadSettings} />}
             {active === "ord" && <OrdersTab data={data} openForm={openForm} notify={notify} reload={reloadOrders} />}
@@ -277,6 +301,7 @@ export default function Home() {
           setUser(u);
           setPwOpen(false);
           notify("Parol o'zgartirildi");
+          if (phase !== "ready") loadAll();
         }}
       />
       {toast && (

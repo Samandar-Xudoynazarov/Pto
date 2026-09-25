@@ -78,12 +78,15 @@ cd frontend && cp .env.example .env.local && npm install && npm run dev   # http
 | Administrator | hamma narsa + foydalanuvchilar, zaxira nusxa, o'zgarishlar tarixi («Boshqaruv» bo'limi) |
 | ПТО muhandisi | hisobot, ombor, buyurtma, katalog, materiallarni tahrirlaydi |
 | Rahbar | hamma bo'limni ko'radi, hech narsani o'zgartira olmaydi |
+| Kurator | kuzatuvchi: hamma bo'limni ko'radi, hech narsani o'zgartira olmaydi |
 
 **Birinchi kirish:** bazada foydalanuvchi bo'lmasa, login `admin` va parol sifatida `APP_PASSWORD` qiymati kiritiladi. Administrator avtomatik yaratiladi va darhol o'z parolini o'rnatishi so'raladi. Keyingi foydalanuvchilar «Boshqaruv» bo'limida qo'shiladi.
 
 **Parol unutilsa** (kompyuterda, `backend` papkasida): `npm run user -- admin YangiParol123`
 
-5 marta noto'g'ri parol kiritilsa, foydalanuvchi 10 daqiqaga bloklanadi. Barcha o'zgarishlar (kim, qachon, nimani, qaysi qiymatdan qaysi qiymatga) jurnalga yoziladi va 13 oy saqlanadi.
+Ikki kishi bir kunlik hisobotni bir vaqtda tahrirlasa, ikkinchisi saqlashda ogohlantirish oladi va boshqaning ishi ustiga yozilmaydi. Saqlanmagan o'zgarishlar bo'lsa, boshqa bo'limga o'tish yoki sahifani yopishdan oldin so'raladi.
+
+Bitta qurilmadan (IP) bir login uchun 5 marta noto'g'ri parol kiritilsa, shu login o'sha qurilmada 10 daqiqaga bloklanadi — boshqa joydan kirayotgan haqiqiy egasi bunga bog'liq emas. Bitta IP'dan barcha loginlarga jami 30 ta xato urinishdan keyin shu IP 15 daqiqaga bloklanadi. Administrator parolni tiklasa (yoki `npm run user`), shu loginning barcha bloklari olib tashlanadi. Barcha o'zgarishlar (kim, qachon, nimani, qaysi qiymatdan qaysi qiymatga) jurnalga yoziladi va 13 oy saqlanadi.
 
 ## Zaxira nusxa
 
@@ -94,6 +97,8 @@ cd backend
 npm run restore -- pto-backup-2026-09-24-18-30.json         # nima tiklanishini ko'rsatadi
 npm run restore -- pto-backup-2026-09-24-18-30.json --yes   # tiklaydi
 ```
+
+Tiklashdan oldin joriy baza avtomatik ravishda `pto-before-restore-….json` fayliga saqlanadi. Almashtirish bitta tranzaksiyada bajariladi: o'rtada xato chiqsa, baza o'zgarmay qoladi.
 
 ## API
 
@@ -116,6 +121,7 @@ Barcha so'rovlarda `Authorization: Bearer <token>` sarlavhasi bo'lishi kerak (`/
 ## Hisoblash qoidalari
 
 - **Sarf normasi (Норма)**: mahsulotning to'g'ridan-to'g'ri normalari, bunga qo'shimcha beton markasi koeffitsiyentlari bo'yicha qum, sement va sheben (masalan, М400: 0,609 / 0,59 / 1,036 t/m³) va elektrod (metall og'irligining 1,5 %, 3 xonagacha yaxlitlanadi).
+- **Elektrod**: «Materiallar» bo'limida bitta materialga «Bu material — elektrod» belgisi qo'yiladi. Belgi yo'q bo'lsa, nomi «Электрод» bo'lgan material olinadi.
 - **Ombor**: boshlang'ich qoldiq + kirim − haqiqiy sarf; tayyor mahsulot uchun boshlang'ich qoldiq + fakt − jo'natish.
 - **Kalkulyatsiya** (Excel'dagi tartib bilan): materiallar → ФОТ, ЕСП → Производственная СС → Другие затраты → Итого → Маржа → НДС. Beton narxi retseptdan hisoblanadi.
 

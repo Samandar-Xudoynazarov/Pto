@@ -3,7 +3,8 @@ import { promisify } from "node:util";
 
 const scrypt = promisify(crypto.scrypt);
 
-export const ROLES = ["admin", "pto", "rahbar"];
+// kurator — rahbar kabi faqat ko'radi (WRITE_ROLES da yo'q)
+export const ROLES = ["admin", "pto", "rahbar", "kurator"];
 export const WRITE_ROLES = ["admin", "pto"];
 const TOKEN_DAYS = 30;
 

@@ -3,6 +3,10 @@ import "./globals.css";
 export const metadata = {
   title: "ПТО ish stoli",
   description: "Temir-beton zavodi ПТО bo'limi: ishlab chiqarish, buyurtmalar, materiallar sarfi, kalkulyatsiya",
+  applicationName: "ПТО",
+  // iPhone: "Bosh ekranga qo'shish"dan keyin brauzer panelisiz, ilova kabi ochiladi
+  appleWebApp: { capable: true, title: "ПТО", statusBarStyle: "default" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport = {
