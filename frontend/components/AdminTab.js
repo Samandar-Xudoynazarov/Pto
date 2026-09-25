@@ -1,4 +1,5 @@
 "use client";
+import { tr } from "@/lib/i18n";
 import { useCallback, useEffect, useState } from "react";
 import { api, download } from "@/lib/api";
 import { ROLES, roleLabel, useUser } from "@/lib/role";
@@ -23,10 +24,12 @@ const FIELD = {
   vat: "QQS, %", status: "holat", deadline: "muddat", date: "sana", electrodePct: "elektrod, %", company: "korxona",
   signers: "imzolar", opening: "Boshlang'ich qoldiq", role: "rol", active: "faol", username: "login", password: "parol",
   mustChangePassword: "parolni almashtirishi kerak", value: "qiymat", type: "turi", sort: "tartib", no: "№", notes: "izohlar",
-  calcTemplate: "kalkulyatsiya andozasi",
+  calcTemplate: "kalkulyatsiya andozasi", minQty: "minimal qoldiq", archived: "arxivda", kind: "turi",
+  departmentId: "bo'lim / sex", vehicleId: "texnika", person: "mas'ul shaxs", supplier: "yetkazib beruvchi", docNumber: "nakladnoy",
 };
 const ENTITY = {
   day: "Kunlik hisobot", material: "Material", product: "Mahsulot", order: "Buyurtma", settings: "Sozlamalar", user: "Foydalanuvchi", backup: "Zaxira nusxa",
+  movement: "Ombor harakati", target: "Sex / texnika",
 };
 const ACTION = {
   create: ["Qo'shildi", "st-tayyor"],
@@ -44,7 +47,9 @@ function nameOf(id, data) {
   if (p) return p.code;
   const o = data.orders.find((x) => x.id === id);
   if (o) return `№${o.no} ${o.customer}`;
-  return "o'chirilgan";
+  const t = data.targets?.find((x) => x.id === id);
+  if (t) return t.name;
+  return tr("o'chirilgan");
 }
 function pathLabel(p, data) {
   return p
@@ -52,18 +57,18 @@ function pathLabel(p, data) {
     .map((seg) => {
       const m = ID_RE.exec(seg);
       if (m) return nameOf(m[1], data) + (m[2] ? ` ${m[2]}` : "");
-      if (/^\d+$/.test(seg)) return `${+seg + 1}-qator`;
-      return FIELD[seg] || seg;
+      if (/^\d+$/.test(seg)) return tr("{n}-qator", { n: +seg + 1 });
+      return tr(FIELD[seg] || seg);
     })
     .join(" › ");
 }
 function valueLabel(v, data) {
   if (v === null || v === undefined || v === "") return "—";
-  if (v === true) return "ha";
-  if (v === false) return "yo'q";
+  if (v === true) return tr("ha");
+  if (v === false) return tr("yo'q");
   if (typeof v === "number") return fmtN(v, 4);
   if (typeof v === "string" && ID_RE.test(v)) return nameOf(v, data);
-  if (typeof v === "string") return ROLES.find(([k]) => k === v)?.[1] || v;
+  if (typeof v === "string") return tr(ROLES.find(([k]) => k === v)?.[1] || v);
   return JSON.stringify(v);
 }
 
@@ -84,7 +89,7 @@ function Users({ openForm, notify }) {
 
   function userForm(u) {
     openForm({
-      title: u ? `Foydalanuvchi: ${u.username}` : "Yangi foydalanuvchi",
+      title: u ? tr("Foydalanuvchi: {u}", { u: u.username }) : tr("Yangi foydalanuvchi"),
       values: u ? { name: u.name, role: u.role } : { role: "pto" },
       fields: u
         ? [
@@ -107,7 +112,7 @@ function Users({ openForm, notify }) {
   }
   function resetForm(u) {
     openForm({
-      title: `${u.username} — yangi parol`,
+      title: tr("{u} — yangi parol", { u: u.username }),
       fields: [{ name: "password", label: "Yangi vaqtinchalik parol", type: "password", req: true, unit: "kamida 6 belgi", wide: true }],
       submitLabel: "Parolni o'rnatish",
       onSubmit: async (v) => {
@@ -137,23 +142,22 @@ function Users({ openForm, notify }) {
   return (
     <div>
       <div className="bar">
-        <h3 style={{ margin: 0 }}>Foydalanuvchilar</h3>
+        <h3 style={{ margin: 0 }}>{tr("Foydalanuvchilar")}</h3>
         <button className="btn primary" onClick={() => userForm()}>
-          <Icon name="plus" /> Foydalanuvchi qo&apos;shish
-        </button>
+          <Icon name="plus" /> {tr("Foydalanuvchi qo'shish")}</button>
       </div>
       <div className="tbl-wrap" style={{ marginTop: 10 }}>
         {!list ? (
-          <div className="loading">Yuklanmoqda…</div>
+          <div className="loading">{tr("Yuklanmoqda…")}</div>
         ) : (
           <table>
             <thead>
               <tr>
-                <th>Login</th>
-                <th>Ism</th>
-                <th>Rol</th>
-                <th>Holat</th>
-                <th>Oxirgi kirish</th>
+                <th>{tr("Login")}</th>
+                <th>{tr("Ism")}</th>
+                <th>{tr("Rol")}</th>
+                <th>{tr("Holat")}</th>
+                <th>{tr("Oxirgi kirish")}</th>
                 <th></th>
               </tr>
             </thead>
@@ -162,27 +166,23 @@ function Users({ openForm, notify }) {
                 <tr key={u.id}>
                   <td>
                     <span className="code">{u.username}</span>
-                    {u.id === me?.id && <span className="sub">bu siz</span>}
+                    {u.id === me?.id && <span className="sub">{tr("bu siz")}</span>}
                   </td>
                   <td>{u.name}</td>
-                  <td>{roleLabel(u.role)}</td>
+                  <td>{tr(roleLabel(u.role))}</td>
                   <td>
-                    {u.active ? <span className="pill st-tayyor">Faol</span> : <span className="pill st-topshirildi">O&apos;chirilgan</span>}
-                    {u.mustChangePassword && <span className="sub">parolni almashtirishi kerak</span>}
+                    {u.active ? <span className="pill st-tayyor">{tr("Faol")}</span> : <span className="pill st-topshirildi">{tr("O'chirilgan")}</span>}
+                    {u.mustChangePassword && <span className="sub">{tr("parolni almashtirishi kerak")}</span>}
                   </td>
                   <td className="num">{fmtDateTime(u.lastLoginAt)}</td>
                   <td>
                     <div className="acts">
-                      <button className="btn sm" onClick={() => userForm(u)}>
-                        Tahrirlash
-                      </button>
-                      <button className="btn sm" onClick={() => resetForm(u)}>
-                        Parol
-                      </button>
+                      <button className="btn sm" onClick={() => userForm(u)}>{tr("Tahrirlash")}</button>
+                      <button className="btn sm" onClick={() => resetForm(u)}>{tr("Parol")}</button>
                       {u.id !== me?.id && (
                         <>
                           <button className="btn sm" onClick={() => setActive(u, !u.active)}>
-                            {u.active ? "Bloklash" : "Faollashtirish"}
+                            {u.active ? tr("Bloklash") : tr("Faollashtirish")}
                           </button>
                           <DeleteButton onConfirm={() => del(u)} />
                         </>
@@ -196,10 +196,9 @@ function Users({ openForm, notify }) {
         )}
       </div>
       <p className="hint" style={{ marginTop: 8 }}>
-        <strong>Administrator</strong> hamma narsani va foydalanuvchilarni boshqaradi. <strong>ПТО muhandisi</strong> hisobot, ombor, buyurtma, katalog va
-        materiallarni tahrirlaydi. <strong>Rahbar</strong> va <strong>Kurator</strong> hamma bo&apos;limni ko&apos;radi, lekin hech narsani o&apos;zgartira olmaydi. Bloklangan foydalanuvchi
-        darhol tizimdan chiqariladi.
-      </p>
+        <strong>{tr("Administrator")}</strong> {tr("hamma narsani va foydalanuvchilarni boshqaradi.")} <strong>{tr("ПТО muhandisi")}</strong> {tr("hisobot, ombor, buyurtma, katalog va materiallarni tahrirlaydi.")} <strong>{tr("Omborchi")}</strong> {tr("ombor kirim-chiqimini, sex va texnikani yuritadi.")} <strong>{tr("Rahbar")}</strong> {tr("va")} <strong>{tr("Kurator")}</strong> {tr(
+          "hamma bo'limni ko'radi, lekin hech narsani o'zgartira olmaydi. Bloklangan foydalanuvchi darhol tizimdan chiqariladi."
+        )}</p>
     </div>
   );
 }
@@ -246,18 +245,18 @@ function Audit({ data, notify, users }) {
   return (
     <div>
       <div className="bar">
-        <h3 style={{ margin: 0 }}>O&apos;zgarishlar tarixi</h3>
+        <h3 style={{ margin: 0 }}>{tr("O'zgarishlar tarixi")}</h3>
         <div className="r">
-          <select id="au-entity" value={entity} onChange={(e) => setEntity(e.target.value)} aria-label="Bo'lim">
-            <option value="">Barcha bo&apos;limlar</option>
+          <select id="au-entity" value={entity} onChange={(e) => setEntity(e.target.value)} aria-label={tr("Bo'lim")}>
+            <option value="">{tr("Barcha bo'limlar")}</option>
             {Object.entries(ENTITY).map(([k, l]) => (
               <option key={k} value={k}>
-                {l}
+                {tr(l)}
               </option>
             ))}
           </select>
-          <select id="au-user" value={userId} onChange={(e) => setUserId(e.target.value)} aria-label="Foydalanuvchi">
-            <option value="">Barcha foydalanuvchilar</option>
+          <select id="au-user" value={userId} onChange={(e) => setUserId(e.target.value)} aria-label={tr("Foydalanuvchi")}>
+            <option value="">{tr("Barcha foydalanuvchilar")}</option>
             {(users || []).map((u) => (
               <option key={u.id} value={u.id}>
                 {u.name || u.username}
@@ -268,16 +267,16 @@ function Audit({ data, notify, users }) {
       </div>
       <div className="tbl-wrap" style={{ marginTop: 10 }}>
         {!items.length && !loading ? (
-          <div className="empty">Hozircha yozuv yo&apos;q.</div>
+          <div className="empty">{tr("Hozircha yozuv yo'q.")}</div>
         ) : (
           <table className="audit">
             <thead>
               <tr>
-                <th>Vaqt</th>
-                <th>Kim</th>
-                <th>Amal</th>
-                <th>Nima</th>
-                <th className="n">Farqlar</th>
+                <th>{tr("Vaqt")}</th>
+                <th>{tr("Kim")}</th>
+                <th>{tr("Amal")}</th>
+                <th>{tr("Nima")}</th>
+                <th className="n">{tr("Farqlar")}</th>
               </tr>
             </thead>
             <tbody>
@@ -290,18 +289,18 @@ function Audit({ data, notify, users }) {
                     <td className="num">{fmtDateTime(it.createdAt)}</td>
                     <td>{it.user?.name || it.user?.username}</td>
                     <td>
-                      <span className={`pill ${aCls}`}>{aLabel}</span>
+                      <span className={`pill ${aCls}`}>{tr(aLabel)}</span>
                     </td>
                     <td>
-                      <span className="muted">{ENTITY[it.entity] || it.entity}</span>{" "}
+                      <span className="muted">{tr(ENTITY[it.entity] || it.entity)}</span>{" "}
                       {it.entity === "day" ? it.label.split("-").reverse().join(".") : it.label}
                     </td>
-                    <td className="n">{n ? <button className="linkbtn">{isOpen ? "yopish" : `${n} ta`}</button> : ""}</td>
+                    <td className="n">{n ? <button className="linkbtn">{isOpen ? tr("yopish") : tr("{n} ta", { n })}</button> : ""}</td>
                   </tr>,
                   isOpen && (
                     <tr key={`${it.id}-d`} className="audit-detail">
                       <td colSpan={5}>
-                        <table className="changes">
+                        <table className="changes no-rt">
                           <tbody>
                             {it.changes.map((c, i) => (
                               <tr key={i}>
@@ -313,9 +312,7 @@ function Audit({ data, notify, users }) {
                             ))}
                             {it.more > 0 && (
                               <tr>
-                                <td colSpan={4} className="muted">
-                                  … yana {it.more} ta o&apos;zgarish
-                                </td>
+                                <td colSpan={4} className="muted">{tr("… yana {n} ta o'zgarish", { n: it.more })}</td>
                               </tr>
                             )}
                           </tbody>
@@ -329,15 +326,13 @@ function Audit({ data, notify, users }) {
           </table>
         )}
       </div>
-      {loading && <div className="loading">Yuklanmoqda…</div>}
+      {loading && <div className="loading">{tr("Yuklanmoqda…")}</div>}
       {hasMore && !loading && (
-        <button className="btn sm" style={{ marginTop: 8 }} onClick={() => load(true, items)}>
-          Yana ko&apos;rsatish
-        </button>
+        <button className="btn sm" style={{ marginTop: 8 }} onClick={() => load(true, items)}>{tr("Yana ko'rsatish")}</button>
       )}
-      <p className="hint" style={{ marginTop: 8 }}>
-        Qatorni bosing — nima, qaysi qiymatdan qaysi qiymatga o&apos;zgargani ko&apos;rinadi. Yozuvlar 13 oy saqlanadi.
-      </p>
+      <p className="hint" style={{ marginTop: 8 }}>{tr(
+        "Qatorni bosing — nima, qaysi qiymatdan qaysi qiymatga o'zgargani ko'rinadi. Yozuvlar 13 oy saqlanadi."
+      )}</p>
     </div>
   );
 }
@@ -362,7 +357,7 @@ function Backup({ notify }) {
     setBusy(true);
     try {
       const name = await download("/backup", "pto-backup.json");
-      notify(`${name} yuklab olindi`);
+      notify(tr("{f} yuklab olindi", { f: name }));
       await loadLast();
     } catch (e) {
       notify(e.message);
@@ -374,37 +369,38 @@ function Backup({ notify }) {
 
   return (
     <div>
-      <h3>Zaxira nusxa</h3>
+      <h3>{tr("Zaxira nusxa")}</h3>
       <div className="backup-card">
         <div>
-          <div className="strong">Butun bazani bitta faylga yuklab olish</div>
-          <p className="hint" style={{ marginTop: 4 }}>
-            Materiallar, mahsulotlar, barcha kunlik hisobotlar, buyurtmalar va sozlamalar. Parollar faylga yozilmaydi.
-          </p>
+          <div className="strong">{tr("Butun bazani bitta faylga yuklab olish")}</div>
+          <p className="hint" style={{ marginTop: 4 }}>{tr(
+            "Materiallar, mahsulotlar, barcha kunlik hisobotlar, buyurtmalar va sozlamalar. Parollar faylga yozilmaydi."
+          )}</p>
           <p className={`hint ${last === null || days > 7 ? "warn-text" : ""}`} style={{ marginTop: 6 }}>
             {last === undefined
               ? ""
               : last === null
-                ? "Hali birorta ham zaxira nusxa olinmagan."
-                : `Oxirgi nusxa: ${fmtDateTime(last.createdAt)} (${last.user?.name || last.user?.username})${days > 7 ? ` — ${days} kun oldin, yangisini oling` : ""}`}
+                ? tr("Hali birorta ham zaxira nusxa olinmagan.")
+                : tr("Oxirgi nusxa: {d} ({u})", { d: fmtDateTime(last.createdAt), u: last.user?.name || last.user?.username }) +
+                  (days > 7 ? tr(" — {n} kun oldin, yangisini oling", { n: days }) : "")}
           </p>
         </div>
         <button className="btn primary" onClick={run} disabled={busy}>
-          <Icon name="download" /> {busy ? "Tayyorlanmoqda…" : "Yuklab olish"}
+          <Icon name="download" /> {busy ? tr("Tayyorlanmoqda…") : tr("Yuklab olish")}
         </button>
       </div>
       <details className="howto">
-        <summary>Zaxiradan qanday tiklanadi?</summary>
+        <summary>{tr("Zaxiradan qanday tiklanadi?")}</summary>
         <ol>
-          <li>Faylni kompyuterdagi <code>backend</code> papkasiga nusxalang.</li>
-          <li>
-            Avval tekshiring (hech narsa o&apos;zgarmaydi): <code>npm run restore -- pto-backup-….json</code>
+          <li>{tr("Faylni kompyuterdagi")} <code>backend</code> {tr("papkasiga nusxalang.")}</li>
+          <li>{tr("Avval tekshiring (hech narsa o'zgarmaydi):")} <code>npm run restore -- pto-backup-….json</code>
           </li>
-          <li>
-            Tiklash: <code>npm run restore -- pto-backup-….json --yes</code>
+          <li>{tr("Tiklash:")} <code>npm run restore -- pto-backup-….json --yes</code>
           </li>
         </ol>
-        <p className="hint">Tiklashda bazadagi hozirgi ma&apos;lumotlar zaxiradagisi bilan almashtiriladi. Foydalanuvchilar tegilmaydi.</p>
+        <p className="hint">{tr(
+          "Tiklashda bazadagi hozirgi ma'lumotlar zaxiradagisi bilan almashtiriladi. Foydalanuvchilar tegilmaydi."
+        )}</p>
       </details>
     </div>
   );

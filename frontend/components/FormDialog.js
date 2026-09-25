@@ -1,4 +1,5 @@
 "use client";
+import { tr } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 
 /**
@@ -35,7 +36,7 @@ export default function FormDialog({ form, onClose }) {
       await form.onSubmit(out);
       onClose();
     } catch (err) {
-      setError(err.message || "Saqlanmadi");
+      setError(tr(err.message || "Saqlanmadi"));
     } finally {
       setBusy(false);
     }
@@ -44,7 +45,7 @@ export default function FormDialog({ form, onClose }) {
   return (
     <dialog ref={ref} onClose={onClose}>
       <form onSubmit={submit} key={form.key}>
-        <h2>{form.title}</h2>
+        <h2>{tr(form.title)}</h2>
         <div className="form-grid">
           {form.fields.map((f) => {
             const id = `f-${f.name}`;
@@ -52,13 +53,13 @@ export default function FormDialog({ form, onClose }) {
             return (
               <div className="field" key={f.name} style={f.wide ? { gridColumn: "1/-1" } : undefined}>
                 <label htmlFor={id}>
-                  {f.label} {f.unit && <span className="u">({f.unit})</span>}
+                  {tr(f.label)} {f.unit && <span className="u">({tr(f.unit)})</span>}
                 </label>
                 {f.type === "select" ? (
                   <select id={id} name={f.name} defaultValue={String(v ?? "")} required={f.req}>
                     {f.options.map(([k, l]) => (
                       <option key={k} value={k}>
-                        {l}
+                        {f.raw ? l : tr(l)}
                       </option>
                     ))}
                   </select>
@@ -79,11 +80,9 @@ export default function FormDialog({ form, onClose }) {
         </div>
         {error && <p className="err">{error}</p>}
         <div className="dlg-actions">
-          <button type="button" className="btn" onClick={onClose}>
-            Bekor qilish
-          </button>
+          <button type="button" className="btn" onClick={onClose}>{tr("Bekor qilish")}</button>
           <button className="btn primary" disabled={busy}>
-            {busy ? "Saqlanmoqda…" : form.submitLabel || "Saqlash"}
+            {busy ? tr("Saqlanmoqda…") : tr(form.submitLabel || "Saqlash")}
           </button>
         </div>
       </form>

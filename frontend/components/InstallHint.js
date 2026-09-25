@@ -1,4 +1,5 @@
 "use client";
+import { tr } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 import { lsGet, lsSet } from "@/lib/calc";
 import Icon from "./Icon";
@@ -43,21 +44,17 @@ export default function InstallHint() {
     <div className="install no-print" role="note">
       <div className="install-ico">ПТО</div>
       <div className="install-txt">
-        <strong>Telefonga ilova qilib o&apos;rnating</strong>
+        <strong>{tr("Telefonga ilova qilib o'rnating")}</strong>
         {mode === "ios" ? (
-          <span>
-            Safari pastidagi <b>Ulashish</b> <Icon name="shareIos" size={15} /> tugmasini bosing, so&apos;ng <b>«На экран Домой» / «Add to Home Screen»</b> ni tanlang.
-          </span>
+          <span>{tr("Safari pastidagi")} <b>{tr("Ulashish")}</b> <Icon name="shareIos" size={15} /> {tr("tugmasini bosing, so'ng")} <b>{tr("«На экран Домой» / «Add to Home Screen»")}</b> {tr("ni tanlang.")}</span>
         ) : (
-          <span>Bosh ekranda ikonka paydo bo&apos;ladi va ilova brauzersiz ochiladi.</span>
+          <span>{tr("Bosh ekranda ikonka paydo bo'ladi va ilova brauzersiz ochiladi.")}</span>
         )}
       </div>
       {mode === "android" && (
-        <button className="btn primary sm" onClick={install}>
-          O&apos;rnatish
-        </button>
+        <button className="btn primary sm" onClick={install}>{tr("O'rnatish")}</button>
       )}
-      <button className="icon-btn install-x" onClick={hide} aria-label="Yopish">
+      <button className="icon-btn install-x" onClick={hide} aria-label={tr("Yopish")}>
         <Icon name="close" size={16} />
       </button>
     </div>

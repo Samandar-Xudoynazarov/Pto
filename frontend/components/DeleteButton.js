@@ -1,4 +1,5 @@
 "use client";
+import { tr } from "@/lib/i18n";
 import { useEffect, useState } from "react";
 
 /** Ikki bosqichli o'chirish: birinchi bosish — "Tasdiqlash", ikkinchisi — o'chiradi */
@@ -15,7 +16,7 @@ export default function DeleteButton({ onConfirm, label = "O'chirish" }) {
       className={`btn sm danger${armed ? " armed" : ""}`}
       onClick={() => (armed ? (setArmed(false), onConfirm()) : setArmed(true))}
     >
-      {armed ? "Tasdiqlash" : label}
+      {armed ? tr("Tasdiqlash") : tr(label)}
     </button>
   );
 }

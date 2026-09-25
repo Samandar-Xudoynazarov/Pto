@@ -1,4 +1,5 @@
 "use client";
+import { tr } from "@/lib/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
@@ -39,15 +40,17 @@ function OpeningDialog({ open, onClose, data, onSaved, notify }) {
   return (
     <dialog ref={ref} onClose={onClose} className="wide-dlg">
       <form onSubmit={save}>
-        <h2>Boshlang&apos;ich qoldiq</h2>
-        <p className="hint">Omborni hisoblash shu sananing BOSHIDAGI qoldiqdan boshlanadi. Undan oldingi kunlik hisobotlar hisobga olinmaydi.</p>
+        <h2>{tr("Boshlang'ich qoldiq")}</h2>
+        <p className="hint">{tr(
+          "Omborni hisoblash shu sananing BOSHIDAGI qoldiqdan boshlanadi. Undan oldingi kunlik hisobotlar hisobga olinmaydi."
+        )}</p>
         <div className="field" style={{ maxWidth: 220 }}>
-          <label htmlFor="op-date">Sana</label>
+          <label htmlFor="op-date">{tr("Sana")}</label>
           <input id="op-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
         </div>
         <div className="grid2">
           <div>
-            <h3>Materiallar</h3>
+            <h3>{tr("Materiallar")}</h3>
             <div className="tbl-wrap scroll-y">
               <table className="edit">
                 <tbody>
@@ -67,7 +70,7 @@ function OpeningDialog({ open, onClose, data, onSaved, notify }) {
             </div>
           </div>
           <div>
-            <h3>Tayyor mahsulot, dona</h3>
+            <h3>{tr("Tayyor mahsulot, dona")}</h3>
             <div className="tbl-wrap scroll-y">
               <table className="edit">
                 <tbody>
@@ -87,11 +90,9 @@ function OpeningDialog({ open, onClose, data, onSaved, notify }) {
           </div>
         </div>
         <div className="dlg-actions">
-          <button type="button" className="btn" onClick={onClose}>
-            Bekor qilish
-          </button>
+          <button type="button" className="btn" onClick={onClose}>{tr("Bekor qilish")}</button>
           <button className="btn primary" disabled={busy}>
-            {busy ? "Saqlanmoqda…" : "Saqlash"}
+            {busy ? tr("Saqlanmoqda…") : tr("Saqlash")}
           </button>
         </div>
       </form>
@@ -99,7 +100,7 @@ function OpeningDialog({ open, onClose, data, onSaved, notify }) {
   );
 }
 
-export default function StockTab({ data, notify, reloadSettings }) {
+export default function StockTab({ data, notify, reloadSettings, version }) {
   const { canEdit } = useUser();
   const { materials, products, mats, prods, settings, orders } = data;
   const [date, setDate] = useState(today());
@@ -116,7 +117,7 @@ export default function StockTab({ data, notify, reloadSettings }) {
   }, [date, notify]);
   useEffect(() => {
     load();
-  }, [load, settings]);
+  }, [load, settings, version]);
 
   const matRows = materials
     .filter((m) => m.stock && (group === "all" || m.group === group))
@@ -163,48 +164,44 @@ export default function StockTab({ data, notify, reloadSettings }) {
     <section className="sheet">
       <div className="bar">
         <div className="l">
-          <h2>Ombor</h2>
-          <label className="check" htmlFor="st-date">
-            holatiga
-          </label>
+          <h2>{tr("Ombor")}</h2>
+          <label className="check" htmlFor="st-date">{tr("holatiga")}</label>
           <input id="st-date" type="date" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} />
         </div>
         <div className="r">
           {canEdit && (
-            <button className="btn" onClick={() => setOpenDlg(true)}>
-              Boshlang&apos;ich qoldiq
-            </button>
+            <button className="btn" onClick={() => setOpenDlg(true)}>{tr("Boshlang'ich qoldiq")}</button>
           )}
         </div>
       </div>
       {stock && (
         <p className="hint">
           {stock.openingDate
-            ? `Qoldiq ${fmtDate(stock.openingDate)} boshidagi boshlang'ich qoldiq + ${fmtDate(date)} oxirigacha barcha kunlik hisobotlardan hisoblandi.`
-            : "Boshlang'ich qoldiq kiritilmagan — hisob noldan boshlanadi."}
+            ? tr("Qoldiq {a} boshidagi boshlang'ich qoldiq + {b} oxirigacha barcha kunlik hisobotlar va ombor harakatlaridan hisoblandi.", { a: fmtDate(stock.openingDate), b: fmtDate(date) })
+            : tr("Boshlang'ich qoldiq kiritilmagan — hisob noldan boshlanadi.")}
         </p>
       )}
 
       <div className="kpis kpis-3">
         <div className="kpi">
-          <div className="k">Materiallar qiymati</div>
+          <div className="k">{tr("Materiallar qiymati")}</div>
           <div className="v">
             {fmt(matValue / 1e6, 1)}
-            <small>mln so&apos;m</small>
+            <small>{tr("mln so'm")}</small>
           </div>
         </div>
         <div className="kpi">
-          <div className="k">Tayyor mahsulot</div>
+          <div className="k">{tr("Tayyor mahsulot")}</div>
           <div className="v">
             {fmtN(prodRows.reduce((s, r) => s + r.q, 0))}
-            <small>dona</small>
+            <small>{tr("dona")}</small>
           </div>
         </div>
         <div className="kpi">
-          <div className="k">Tayyor mahsulot qiymati</div>
+          <div className="k">{tr("Tayyor mahsulot qiymati")}</div>
           <div className="v">
             {fmt(prodValue / 1e6, 1)}
-            <small>mln so&apos;m</small>
+            <small>{tr("mln so'm")}</small>
           </div>
         </div>
       </div>
@@ -212,12 +209,12 @@ export default function StockTab({ data, notify, reloadSettings }) {
       <div className="grid2">
         <div>
           <div className="bar">
-            <h3 style={{ margin: 0 }}>Materiallar qoldig&apos;i</h3>
-            <select id="st-group" value={group} onChange={(e) => setGroup(e.target.value)} aria-label="Guruh">
-              <option value="all">Barcha guruhlar</option>
+            <h3 style={{ margin: 0 }}>{tr("Materiallar qoldig'i")}</h3>
+            <select id="st-group" value={group} onChange={(e) => setGroup(e.target.value)} aria-label={tr("Guruh")}>
+              <option value="all">{tr("Barcha guruhlar")}</option>
               {GROUPS.filter(([k]) => k !== "beton" && k !== "xizmat").map(([k, l]) => (
                 <option key={k} value={k}>
-                  {l}
+                  {tr(l)}
                 </option>
               ))}
             </select>
@@ -226,18 +223,20 @@ export default function StockTab({ data, notify, reloadSettings }) {
             <table>
               <thead>
                 <tr>
-                  <th>Material</th>
-                  <th className="n">Qoldiq</th>
-                  <th>Birlik</th>
-                  <th className="n">Qiymat, so&apos;m</th>
+                  <th>{tr("Material")}</th>
+                  <th className="n">{tr("Qoldiq")}</th>
+                  <th>{tr("Birlik")}</th>
+                  <th className="n">{tr("Qiymat, so'm")}</th>
                 </tr>
               </thead>
               <tbody>
                 {matRows.map((r) => (
                   <tr key={r.m.id}>
-                    <td>{r.m.name}</td>
+                    <td>
+                      {r.m.name} <span className="unit-s">{r.m.unit}</span>
+                    </td>
                     <td className={`n strong ${r.q < -1e-9 ? "late" : ""}`}>{fmtN(r.q, 3)}</td>
-                    <td>{r.m.unit}</td>
+                    <td className="hide-s">{r.m.unit}</td>
                     <td className="n">{r.q ? fmt(r.value) : ""}</td>
                   </tr>
                 ))}
@@ -246,18 +245,18 @@ export default function StockTab({ data, notify, reloadSettings }) {
           </div>
         </div>
         <div>
-          <h3>Tayyor mahsulot qoldig&apos;i</h3>
+          <h3>{tr("Tayyor mahsulot qoldig'i")}</h3>
           <div className="tbl-wrap">
             {!prodRows.length ? (
-              <div className="empty">Qoldiq yo&apos;q.</div>
+              <div className="empty">{tr("Qoldiq yo'q.")}</div>
             ) : (
               <table>
                 <thead>
                   <tr>
-                    <th>Mahsulot</th>
-                    <th className="n">Qoldiq, dona</th>
-                    <th className="n">Narx (QQS bilan)</th>
-                    <th className="n">Qiymat, so&apos;m</th>
+                    <th>{tr("Mahsulot")}</th>
+                    <th className="n">{tr("Qoldiq, dona")}</th>
+                    <th className="n">{tr("Narx (QQS bilan)")}</th>
+                    <th className="n">{tr("Qiymat, so'm")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -277,27 +276,26 @@ export default function StockTab({ data, notify, reloadSettings }) {
             )}
           </div>
 
-          <h3 style={{ marginTop: 20 }}>Faol buyurtmalar uchun material ehtiyoji</h3>
+          <h3 style={{ marginTop: 20 }}>{tr("Faol buyurtmalar uchun material ehtiyoji")}</h3>
           {!need.toMake.length ? (
-            <div className="empty tbl-wrap">Faol buyurtmalarda qoldiq yo&apos;q.</div>
+            <div className="empty tbl-wrap">{tr("Faol buyurtmalarda qoldiq yo'q.")}</div>
           ) : (
             <>
-              <p className="hint">
-                Buyurtma qoldig&apos;i (jo&apos;natilmagan) minus ombordagi tayyor mahsulot ={" "}
+              <p className="hint">{tr("Buyurtma qoldig'i (jo'natilmagan) minus ombordagi tayyor mahsulot =")}{" "}
                 {need.toMake
                   .filter((x) => x.qty)
-                  .map((x) => `${prods.get(x.productId)?.code} ${x.qty} dona`)
-                  .join(", ") || "hammasi omborda bor"}
+                  .map((x) => `${prods.get(x.productId)?.code} ${x.qty} ${tr("dona")}`)
+                  .join(", ") || tr("hammasi omborda bor")}
                 .
               </p>
               <div className="tbl-wrap">
                 <table>
                   <thead>
                     <tr>
-                      <th>Material</th>
-                      <th className="n">Kerak</th>
-                      <th className="n">Omborda</th>
-                      <th className="n">Yetishmaydi</th>
+                      <th>{tr("Material")}</th>
+                      <th className="n">{tr("Kerak")}</th>
+                      <th className="n">{tr("Omborda")}</th>
+                      <th className="n">{tr("Yetishmaydi")}</th>
                     </tr>
                   </thead>
                   <tbody>

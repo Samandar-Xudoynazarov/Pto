@@ -2,17 +2,21 @@
  * Ombor qoldig'ini hisoblash (sof funksiya — DB'ga bog'liq emas).
  *
  * opening: { date, materials: {id: qty}, products: {id: qty} } — `date` kuni BOSHIGA qoldiq
- * days:    kunlik hisobotlar (date bo'yicha istalgan tartibda)
+ * days:    kunlik hisobotlar (date bo'yicha istalgan tartibda) — ПТО: ishlab chiqarish sarfi (va eski kirimlar)
+ * moves:   omborchi harakatlari { type: in|out, date, materialId, qty }
  * from,to: davr (YYYY-MM-DD, ikkalasi ham kiradi)
  *
- * Natija: har bir material va mahsulot uchun davr boshidagi qoldiq, harakatlar va oxirgi qoldiq.
+ * Material: start + kirim − sarf − chiqim = end
+ *   kirim  = kunlik hisobotdagi kirim + omborchi kirimi (moveIn — alohida ham beriladi)
+ *   sarf   = kunlik hisobotdagi ishlab chiqarish sarfi
+ *   chiqim = omborchi chiqimi (sex, texnika, shaxsga)
  */
-export function stockReport(opening, days, from, to) {
+export function stockReport(opening, days, from, to, moves = []) {
   const openDate = opening?.date || "0000-00-00";
   const mats = new Map();
   const prods = new Map();
   const m = (id) => {
-    if (!mats.has(id)) mats.set(id, { start: 0, kirim: 0, sarf: 0, end: 0 });
+    if (!mats.has(id)) mats.set(id, { start: 0, kirim: 0, sarf: 0, chiqim: 0, moveIn: 0, end: 0 });
     return mats.get(id);
   };
   const p = (id) => {
@@ -45,12 +49,23 @@ export function stockReport(opening, days, from, to) {
       else r.start -= +l.qty || 0;
     }
   }
+  for (const mv of moves) {
+    if (mv.date < openDate || mv.date > to) continue;
+    const r = m(String(mv.materialId));
+    const q = +mv.qty || 0;
+    const inRange = mv.date >= from;
+    if (mv.type === "in") {
+      if (inRange) {
+        r.kirim += q;
+        r.moveIn += q;
+      } else r.start += q;
+    } else if (inRange) r.chiqim += q;
+    else r.start -= q;
+  }
   const round = (x) => Math.round(x * 1e6) / 1e6;
   for (const r of mats.values()) {
-    r.end = round(r.start + r.kirim - r.sarf);
-    r.start = round(r.start);
-    r.kirim = round(r.kirim);
-    r.sarf = round(r.sarf);
+    r.end = round(r.start + r.kirim - r.sarf - r.chiqim);
+    for (const k of ["start", "kirim", "sarf", "chiqim", "moveIn"]) r[k] = round(r[k]);
   }
   for (const r of prods.values()) r.end = r.start + r.fact - r.shipped;
 

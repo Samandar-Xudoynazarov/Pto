@@ -2,9 +2,9 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import { connectDB } from "./db.js";
-import { Material, Product, Day, Order, Settings, User, AuditLog, Counter, DATE_RE } from "./models.js";
+import { Material, Product, Day, Order, Settings, User, AuditLog, Counter, Target, Movement, DATE_RE, MOVE_TYPES, TARGET_KINDS } from "./models.js";
 import { stockReport } from "./stock.js";
-import { ROLES, WRITE_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
+import { ROLES, WRITE_ROLES, STORE_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
 import { audit, diff } from "./audit.js";
 import { USER_LIMIT, USER_LOCK_MIN, IP_LIMIT, IP_LOCK_MIN, clientIp, userKey, ipKey, takeAttempt, lock, loginSucceeded, clearUserLocks } from "./limits.js";
 
@@ -105,11 +105,17 @@ app.use("/api", async (req, res, next) => {
   next();
 });
 
-// "Rahbar" va "Kurator" faqat ko'radi. O'z parolini almashtirish hammaga ruxsat.
+// Yozish huquqlari:
+//   admin, pto  — hammasi (foydalanuvchilar — faqat admin)
+//   omborchi    — ombor harakatlari, sex/texnika, material qo'shish/tahrirlash (narx va retseptsiz)
+//   rahbar, kurator — faqat ko'radi. O'z parolini almashtirish hammaga ruxsat.
+const STORE_PATH = /^\/(movements|targets)(\/|$)/;
 app.use("/api", (req, res, next) => {
   if (req.method === "GET" || req.path === "/me/password") return next();
-  if (!WRITE_ROLES.includes(req.user.role)) return res.status(403).json({ error: "Sizda faqat ko'rish huquqi bor" });
-  next();
+  const role = req.user.role;
+  if (WRITE_ROLES.includes(role)) return next();
+  if (STORE_ROLES.includes(role) && (STORE_PATH.test(req.path) || (/^\/materials(\/|$)/.test(req.path) && req.method !== "DELETE"))) return next();
+  return res.status(403).json({ error: "Sizda bu amal uchun ruxsat yo'q" });
 });
 
 const adminOnly = (req, res, next) =>
@@ -229,20 +235,22 @@ app.get("/api/audit", adminOnly, async (req, res) => {
 
 /* ---------- Zaxira nusxa (faqat admin) ---------- */
 app.get("/api/backup", adminOnly, async (req, res) => {
-  const [materials, products, days, orders, settings, users] = await Promise.all([
+  const [materials, products, days, orders, settings, users, targets, movements] = await Promise.all([
     Material.find().lean(),
     Product.find().lean(),
     Day.find().sort({ date: 1 }).lean(),
     Order.find().sort({ no: 1 }).lean(),
     Settings.find().lean(),
     User.find().select("-passwordHash -tokenVersion -failedLogins -lockUntil").lean(),
+    Target.find().lean(),
+    Movement.find().sort({ date: 1 }).lean(),
   ]);
   const now = new Date();
   const stamp = new Date(now.getTime() + 5 * 36e5).toISOString().slice(0, 16).replace(/[T:]/g, "-");
   await audit(req, {
     action: "backup",
     entity: "backup",
-    label: `${materials.length} material, ${products.length} mahsulot, ${days.length} kun, ${orders.length} buyurtma`,
+    label: `${materials.length} material, ${products.length} mahsulot, ${days.length} kun, ${orders.length} buyurtma, ${movements.length} ombor harakati`,
   });
   res.setHeader("Content-Disposition", `attachment; filename="pto-backup-${stamp}.json"`);
   res.json({
@@ -250,20 +258,22 @@ app.get("/api/backup", adminOnly, async (req, res) => {
     format: 1,
     createdAt: now.toISOString(),
     createdBy: req.user.username,
-    counts: { materials: materials.length, products: products.length, days: days.length, orders: orders.length, users: users.length },
-    data: { materials, products, days, orders, settings, users },
+    counts: { materials: materials.length, products: products.length, days: days.length, orders: orders.length, users: users.length, targets: targets.length, movements: movements.length },
+    data: { materials, products, days, orders, settings, users, targets, movements },
   });
 });
 
 /* ---------- Materiallar ---------- */
-const MATERIAL_FIELDS = ["name", "unit", "group", "price", "stock", "electrodeBase", "recipe", "writeoff", "sort"];
+const MATERIAL_FIELDS = ["name", "unit", "group", "price", "stock", "electrodeBase", "isElectrode", "code", "minQty", "archived", "recipe", "writeoff", "sort"];
+const STORE_MATERIAL_FIELDS = ["name", "unit", "group", "code", "minQty"]; // omborchi shularnigina o'zgartira oladi
+const materialFields = (req) => (WRITE_ROLES.includes(req.user.role) ? MATERIAL_FIELDS : STORE_MATERIAL_FIELDS);
 
 app.get("/api/materials", async (_req, res) => {
   res.json(await Material.find().sort({ sort: 1, name: 1 }));
 });
 app.post("/api/materials", async (req, res) => {
   const last = await Material.findOne().sort({ sort: -1 }).select("sort");
-  const doc = await Material.create({ sort: (last?.sort || 0) + 1, ...pick(req.body, MATERIAL_FIELDS) });
+  const doc = await Material.create({ sort: (last?.sort || 0) + 1, ...pick(req.body, materialFields(req)) });
   await audit(req, { action: "create", entity: "material", entityId: doc._id, label: doc.name, after: doc });
   res.status(201).json(doc);
 });
@@ -271,7 +281,7 @@ app.put("/api/materials/:id", async (req, res) => {
   if (!isId(req.params.id)) return notFound(res);
   const before = await Material.findById(req.params.id).lean();
   if (!before) return notFound(res);
-  const doc = await Material.findByIdAndUpdate(req.params.id, pick(req.body, MATERIAL_FIELDS), upd);
+  const doc = await Material.findByIdAndUpdate(req.params.id, pick(req.body, materialFields(req)), upd);
   if (!doc) return notFound(res);
   await audit(req, { action: "update", entity: "material", entityId: doc._id, label: doc.name, before, after: doc });
   res.json(doc);
@@ -282,8 +292,9 @@ app.delete("/api/materials/:id", async (req, res) => {
   const used =
     (await Product.exists({ $or: [{ "norms.materialId": id }, { "calc.items.materialId": id }] })) ||
     (await Material.exists({ $or: [{ "recipe.materialId": id }, { "writeoff.materialId": id }] })) ||
-    (await Day.exists({ "materials.materialId": id }));
-  if (used) return res.status(409).json({ error: "Material normalarda, retseptda yoki kunlik hisobotda ishlatilgan — o'chirib bo'lmaydi" });
+    (await Day.exists({ "materials.materialId": id })) ||
+    (await Movement.exists({ materialId: id }));
+  if (used) return res.status(409).json({ error: "Material normalarda, retseptda, kunlik hisobotda yoki ombor tarixida ishlatilgan — o'chirib bo'lmaydi. Uni arxivga o'tkazing." });
   const doc = await Material.findByIdAndDelete(id);
   if (!doc) return notFound(res);
   await audit(req, { action: "delete", entity: "material", entityId: doc._id, label: doc.name, before: doc });
@@ -379,8 +390,133 @@ app.get("/api/stock", async (req, res) => {
   if (!validDate(from) || !validDate(to) || from > to) return res.status(400).json({ error: "from va to sanalarini YYYY-MM-DD formatida bering" });
   const s = await getSettings();
   const opening = s.opening?.date ? s.opening : { date: "", materials: {}, products: {} };
-  const days = await Day.find({ date: { $gte: opening.date || "0000-00-00", $lte: to } }).lean();
-  res.json(stockReport(opening, days, from, to));
+  const range = { $gte: opening.date || "0000-00-00", $lte: to };
+  const [days, moves] = await Promise.all([
+    Day.find({ date: range }).lean(),
+    Movement.find({ date: range }).select("type date materialId qty").lean(),
+  ]);
+  res.json(stockReport(opening, days, from, to, moves));
+});
+
+/** Materialning hozirgi (barcha sanalar bo'yicha) qoldig'i */
+async function balanceOf(materialId) {
+  const s = await getSettings();
+  const opening = s.opening?.date ? s.opening : { date: "", materials: {}, products: {} };
+  const range = { $gte: opening.date || "0000-00-00" };
+  const [days, moves] = await Promise.all([
+    Day.find({ date: range, "materials.materialId": materialId }).select("date materials").lean(),
+    Movement.find({ date: range, materialId }).select("type date materialId qty").lean(),
+  ]);
+  const r = stockReport(opening, days, "0000-00-00", "9999-12-31", moves);
+  return r.materials[String(materialId)]?.end || 0;
+}
+
+/* ---------- Ombor: sex va texnika ---------- */
+const TARGET_FIELDS = ["kind", "name", "code", "archived"];
+app.get("/api/targets", async (_req, res) => {
+  res.json(await Target.find().sort({ kind: 1, archived: 1, name: 1 }));
+});
+app.post("/api/targets", async (req, res) => {
+  const doc = await Target.create(pick(req.body, TARGET_FIELDS));
+  await audit(req, { action: "create", entity: "target", entityId: doc._id, label: doc.name, after: doc });
+  res.status(201).json(doc);
+});
+app.put("/api/targets/:id", async (req, res) => {
+  if (!isId(req.params.id)) return notFound(res);
+  const before = await Target.findById(req.params.id).lean();
+  if (!before) return notFound(res);
+  const doc = await Target.findByIdAndUpdate(req.params.id, pick(req.body, ["name", "code", "archived"]), upd);
+  await audit(req, { action: "update", entity: "target", entityId: doc._id, label: doc.name, before, after: doc });
+  res.json(doc);
+});
+app.delete("/api/targets/:id", async (req, res) => {
+  if (!isId(req.params.id)) return notFound(res);
+  const doc = await Target.findById(req.params.id);
+  if (!doc) return notFound(res);
+  // tarixda ishlatilgan bo'lsa o'chirilmaydi — arxivga o'tadi
+  if (await Movement.exists({ $or: [{ departmentId: doc._id }, { vehicleId: doc._id }] })) {
+    doc.archived = true;
+    await doc.save();
+    await audit(req, { action: "update", entity: "target", entityId: doc._id, label: doc.name, changes: [{ p: "archived", a: false, b: true }] });
+    return res.json({ ok: true, archived: true });
+  }
+  await doc.deleteOne();
+  await audit(req, { action: "delete", entity: "target", entityId: doc._id, label: doc.name, before: doc });
+  res.json({ ok: true });
+});
+
+/* ---------- Ombor: kirim / chiqim ---------- */
+const todayTashkent = () => new Date(Date.now() + 5 * 36e5).toISOString().slice(0, 10);
+const round3 = (x) => Math.round(x * 1000) / 1000;
+const moveLabel = (m, mat) => `${m.type === "in" ? "Kirim" : "Chiqim"}: ${mat?.name || "?"} ${m.qty} ${mat?.unit || ""}`.trim();
+
+// ?from=&to=&type=&materialId=&targetId=&limit=&page=
+app.get("/api/movements", async (req, res) => {
+  const { from, to, type, materialId, targetId } = req.query;
+  const q = {};
+  if (validDate(from) || validDate(to)) q.date = { ...(validDate(from) && { $gte: from }), ...(validDate(to) && { $lte: to }) };
+  if (MOVE_TYPES.includes(type)) q.type = type;
+  if (isId(materialId)) q.materialId = materialId;
+  if (isId(targetId)) q.$or = [{ departmentId: targetId }, { vehicleId: targetId }];
+  const limit = Math.min(2000, Math.max(1, +req.query.limit || 100));
+  const page = Math.max(1, +req.query.page || 1);
+  const list = await Movement.find(q).sort({ date: -1, createdAt: -1 }).skip((page - 1) * limit).limit(limit + 1);
+  res.json({ items: list.slice(0, limit), hasMore: list.length > limit, page });
+});
+
+app.post("/api/movements", async (req, res) => {
+  const b = req.body || {};
+  if (!MOVE_TYPES.includes(b.type)) return res.status(400).json({ error: "Harakat turi noto'g'ri (kirim yoki chiqim)" });
+  const date = b.date === undefined || b.date === "" ? todayTashkent() : b.date;
+  if (!validDate(date)) return res.status(400).json({ error: "Sana formati YYYY-MM-DD" });
+  const qty = round3(+b.qty);
+  if (!(qty > 0)) return res.status(400).json({ error: "Miqdorni to'g'ri kiriting" });
+  if (!isId(b.materialId)) return res.status(400).json({ error: "Materialni tanlang" });
+  const mat = await Material.findById(b.materialId).lean();
+  if (!mat || mat.archived) return res.status(400).json({ error: "Material topilmadi" });
+  if (!mat.stock) return res.status(400).json({ error: "Bu material omborda hisobga olinmaydi" });
+
+  const data = { type: b.type, date, materialId: mat._id, qty, note: String(b.note ?? "").slice(0, 300), person: String(b.person ?? "").slice(0, 120) };
+  if (b.type === "in") {
+    data.price = Math.max(0, +b.price || 0);
+    data.supplier = String(b.supplier ?? "").slice(0, 160);
+    data.docNumber = String(b.docNumber ?? "").slice(0, 60);
+  } else {
+    for (const [k, kind] of [["departmentId", "department"], ["vehicleId", "vehicle"]]) {
+      if (b[k] === undefined || b[k] === null || b[k] === "") continue;
+      if (!isId(b[k]) || !(await Target.exists({ _id: b[k], kind }))) return res.status(400).json({ error: kind === "vehicle" ? "Texnika topilmadi" : "Bo'lim topilmadi" });
+      data[k] = b[k];
+    }
+    if (!data.departmentId && !data.vehicleId && !data.person) return res.status(400).json({ error: "Qayerga ketganini kiriting: bo'lim, texnika yoki mas'ul shaxs" });
+    data.price = +mat.price || 0;
+    const bal = await balanceOf(mat._id);
+    if (bal + 1e-9 < qty) return res.status(400).json({ error: `Omborda yetarli emas. Qoldiq: ${round3(bal)} ${mat.unit}` });
+  }
+  const u = req.user;
+  data.createdBy = { id: String(u._id), username: u.username, name: u.name || u.username };
+  const doc = await Movement.create(data);
+  await audit(req, { action: "create", entity: "movement", entityId: doc._id, label: moveLabel(doc, mat), after: doc });
+  res.status(201).json(doc);
+});
+
+// Bekor qilish: admin va ПТО — istalganini; omborchi — o'zi kiritganini 24 soat ichida
+app.delete("/api/movements/:id", async (req, res) => {
+  if (!isId(req.params.id)) return notFound(res);
+  const doc = await Movement.findById(req.params.id);
+  if (!doc) return notFound(res);
+  const u = req.user;
+  if (!WRITE_ROLES.includes(u.role)) {
+    const own = doc.createdBy?.id === String(u._id);
+    if (!own || Date.now() - doc.createdAt > 24 * 36e5) return res.status(403).json({ error: "Faqat o'zingiz kiritgan yozuvni 24 soat ichida bekor qila olasiz" });
+  }
+  const mat = await Material.findById(doc.materialId).lean();
+  if (doc.type === "in") {
+    const bal = await balanceOf(doc.materialId);
+    if (bal + 1e-9 < doc.qty) return res.status(400).json({ error: "Bu kirimdan keyin material ishlatilgan — bekor qilsangiz qoldiq manfiy bo'lib qoladi" });
+  }
+  await doc.deleteOne();
+  await audit(req, { action: "delete", entity: "movement", entityId: doc._id, label: moveLabel(doc, mat), before: doc });
+  res.json({ ok: true });
 });
 
 /* ---------- Buyurtmalar ---------- */

@@ -1,7 +1,8 @@
 "use client";
+import { tr } from "@/lib/i18n";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
-import { addMonthSheets, deliver, newWorkbook } from "@/lib/excel";
+import { addMonthSheets, deliver, mergeMoves, newWorkbook } from "@/lib/excel";
 import Icon from "./Icon";
 import { concreteVolume, consumption, fmt, fmtN, lsGet, lsSet, monthDays, priceOf, today } from "@/lib/calc";
 
@@ -24,7 +25,7 @@ function DailyChart({ month, plan, fact }) {
   for (let v = 0; v <= top + 1e-9; v += step) ticks.push(v);
   const td = today();
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Kunlik beton hajmi: reja va fakt">
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={tr("Kunlik beton hajmi: reja va fakt")}>
       {ticks.map((v) => {
         const y = T + ph * (1 - v / top);
         return (
@@ -46,7 +47,7 @@ function DailyChart({ month, plan, fact }) {
             {plan[i] > 0 && <rect x={x + cw * 0.12} y={T + ph - hp} width={cw * 0.76} height={hp} fill="var(--bar-2)" />}
             {v > 0 && (
               <rect x={x + cw * 0.24} y={T + ph - hf} width={cw * 0.52} height={hf} fill={isToday ? "var(--signal)" : "var(--bar)"}>
-                <title>{`${i + 1}-kun: fakt ${fmtN(v, 2)} m³, reja ${fmtN(plan[i], 2)} m³`}</title>
+                <title>{tr("{d}-kun: fakt {f} m³, reja {p} m³", { d: i + 1, f: fmtN(v, 2), p: fmtN(plan[i], 2) })}</title>
               </rect>
             )}
             {(i === 0 || (i + 1) % 5 === 0) && (
@@ -133,20 +134,28 @@ export default function MonthTab({ data, notify }) {
     .map(([id, g]) => ({ p: prods.get(id), ...g }))
     .sort((a, b) => (a.p?.sort || 0) - (b.p?.sort || 0));
   const matRows = materials
-    .filter((m) => m.stock && (S.actual.get(m.id) || S.norm.get(m.id) || stock?.materials?.[m.id]))
+    .filter((m) => m.stock && !m.archived && (S.actual.get(m.id) || S.norm.get(m.id) || stock?.materials?.[m.id]))
     .map((m) => {
       const a = S.actual.get(m.id) || { sarf: 0, kirim: 0 };
       const n = S.norm.get(m.id) || 0;
-      const st = stock?.materials?.[m.id] || { start: 0, end: 0 };
-      return { m, ...a, norm: n, diff: a.sarf - n, start: st.start, end: st.end, value: a.sarf * priceOf(m, mats) };
+      const st = stock?.materials?.[m.id] || { start: 0, end: 0, kirim: 0, chiqim: 0 };
+      // kirim — ombor kirimi + eski qo'lda yozilganlar (qoldiq hisobidan), chiqim — ombor chiqimi
+      return { m, ...a, kirim: st.kirim || 0, chiqim: st.chiqim || 0, norm: n, diff: a.sarf - n, start: st.start, end: st.end, value: a.sarf * priceOf(m, mats) };
     });
   const sarfValue = matRows.reduce((s, r) => s + r.value, 0);
 
   const [exporting, setExporting] = useState(false);
   async function exportMonth(share) {
     const open = settings.opening?.date || "";
-    const list = (days || []).filter((d) => d.date >= open && (d.production.length || d.materials.length || d.shipments.length));
-    if (!list.length) return notify(open ? `${open.split("-").reverse().join(".")} dan keyin bu oyda kunlik hisobot yo'q` : "Bu oyda kunlik hisobot yo'q");
+    const to = `${month}-${String(monthDays(month)).padStart(2, "0")}`;
+    let moves = [];
+    try {
+      moves = (await api(`/movements?from=${month}-01&to=${to}&limit=2000`)).items;
+    } catch (e) {
+      return notify(e.message);
+    }
+    const list = mergeMoves(days || [], moves).filter((d) => d.date >= open && (d.production.length || d.materials.length || d.shipments.length));
+    if (!list.length) return notify(open ? tr("{d} dan keyin bu oyda kunlik hisobot yo'q", { d: open.split("-").reverse().join(".") }) : "Bu oyda kunlik hisobot yo'q");
     setExporting(true);
     try {
       const first = list[0].date;
@@ -170,8 +179,8 @@ export default function MonthTab({ data, notify }) {
       ["Mahsulot", "Reja (dona)", "Fakt (dona)", "Bajarilishi %", "Jo'natildi (dona)"],
       ...prodRows.map((r) => [r.p?.code || "", r.plan, r.fact, r.plan ? Math.round((r.fact / r.plan) * 100) : "", r.shipped]),
       [],
-      ["Material", "Birlik", "Oy boshida", "Kirim", "Sarf (haqiqiy)", "Sarf (norma)", "Farq", "Oy oxirida"],
-      ...matRows.map((r) => [r.m.name, r.m.unit, r.start, r.kirim, r.sarf, r.norm, r.diff, r.end]),
+      ["Material", "Birlik", "Oy boshida", "Kirim", "Chiqim", "Sarf (haqiqiy)", "Sarf (norma)", "Farq", "Oy oxirida"],
+      ...matRows.map((r) => [r.m.name, r.m.unit, r.start, r.kirim, r.chiqim, r.sarf, r.norm, r.diff, r.end]),
     ];
     const cell = (c) => (typeof c === "number" ? String(Math.round(c * 10000) / 10000).replace(".", ",") : String(c ?? "").replace(/"/g, '""'));
     const csv = "﻿" + lines.map((l) => l.map((c) => `"${cell(c)}"`).join(";")).join("\r\n");
@@ -187,11 +196,11 @@ export default function MonthTab({ data, notify }) {
     <section className="sheet">
       <div className="bar">
         <div className="l">
-          <h2>Oylik hisobot</h2>
+          <h2>{tr("Oylik hisobot")}</h2>
           <input
             id="month"
             type="month"
-            aria-label="Oy"
+            aria-label={tr("Oy")}
             value={month}
             onChange={(e) => {
               if (!e.target.value) return;
@@ -202,17 +211,11 @@ export default function MonthTab({ data, notify }) {
         </div>
         <div className="r">
           <button className="btn" onClick={() => exportMonth(false)} disabled={!days?.length || exporting}>
-            <Icon name="download" /> Oylik Excel (har kun alohida varaq)
-          </button>
+            <Icon name="download" /> {tr("Oylik Excel (har kun alohida varaq)")}</button>
           <button className="btn" onClick={() => exportMonth(true)} disabled={!days?.length || exporting}>
-            <Icon name="share" /> Ulashish
-          </button>
-          <button className="btn" onClick={downloadCsv} disabled={!days?.length}>
-            Hisobot CSV
-          </button>
-          <button className="btn" onClick={() => window.print()}>
-            Chop etish
-          </button>
+            <Icon name="share" /> {tr("Ulashish")}</button>
+          <button className="btn" onClick={downloadCsv} disabled={!days?.length}>{tr("Hisobot CSV")}</button>
+          <button className="btn" onClick={() => window.print()}>{tr("Chop etish")}</button>
         </div>
       </div>
 
@@ -224,10 +227,10 @@ export default function MonthTab({ data, notify }) {
           ["Jo'natildi", fmtN(S.shipped), "dona"],
         ].map(([k, v, u]) => (
           <div className="kpi" key={k}>
-            <div className="k">{k}</div>
+            <div className="k">{tr(k)}</div>
             <div className="v">
               {v}
-              <small>{u}</small>
+              <small>{tr(u)}</small>
             </div>
           </div>
         ))}
@@ -235,38 +238,36 @@ export default function MonthTab({ data, notify }) {
 
       <div className="chart">
         <div className="bar">
-          <h3 style={{ margin: 0 }}>Kunlik beton hajmi, m³</h3>
+          <h3 style={{ margin: 0 }}>{tr("Kunlik beton hajmi, m³")}</h3>
           <div className="legend">
             <span>
-              <i style={{ background: "var(--bar-2)" }} /> reja
-            </span>
+              <i style={{ background: "var(--bar-2)" }} /> {tr("reja")}</span>
             <span>
-              <i style={{ background: "var(--bar)" }} /> fakt
-            </span>
+              <i style={{ background: "var(--bar)" }} /> {tr("fakt")}</span>
           </div>
         </div>
         <DailyChart month={month} plan={S.planM3} fact={S.factM3} />
       </div>
 
       {days === null ? (
-        <div className="loading">Yuklanmoqda…</div>
+        <div className="loading">{tr("Yuklanmoqda…")}</div>
       ) : (
         <>
           <div>
-            <h3>Mahsulotlar bo&apos;yicha</h3>
+            <h3>{tr("Mahsulotlar bo'yicha")}</h3>
             <div className="tbl-wrap">
               {!prodRows.length ? (
-                <div className="empty">Bu oyda yozuv yo&apos;q.</div>
+                <div className="empty">{tr("Bu oyda yozuv yo'q.")}</div>
               ) : (
                 <table>
                   <thead>
                     <tr>
-                      <th>Mahsulot</th>
-                      <th className="n">Reja</th>
-                      <th className="n">Fakt</th>
-                      <th className="n">Bajarilishi</th>
-                      <th className="n">Beton, m³</th>
-                      <th className="n">Jo&apos;natildi</th>
+                      <th>{tr("Mahsulot")}</th>
+                      <th className="n">{tr("Reja")}</th>
+                      <th className="n">{tr("Fakt")}</th>
+                      <th className="n">{tr("Bajarilishi")}</th>
+                      <th className="n">{tr("Beton, m³")}</th>
+                      <th className="n">{tr("Jo'natildi")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -289,7 +290,7 @@ export default function MonthTab({ data, notify }) {
                   </tbody>
                   <tfoot>
                     <tr>
-                      <td>Jami</td>
+                      <td>{tr("Jami")}</td>
                       <td className="n">{fmtN(S.plan)}</td>
                       <td className="n">{fmtN(S.fact)}</td>
                       <td className="n">{S.plan ? `${fmtN((S.fact / S.plan) * 100, 0)} %` : "—"}</td>
@@ -303,20 +304,21 @@ export default function MonthTab({ data, notify }) {
           </div>
 
           <div>
-            <h3>Materiallar: haqiqiy sarf va norma</h3>
+            <h3>{tr("Materiallar: haqiqiy sarf va norma")}</h3>
             <div className="tbl-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Material</th>
-                    <th>Birlik</th>
-                    <th className="n">Oy boshida</th>
-                    <th className="n">Kirim</th>
-                    <th className="n">Sarf (haqiqiy)</th>
-                    <th className="n">Sarf (norma)</th>
-                    <th className="n">Farq</th>
-                    <th className="n">Oy oxirida</th>
-                    <th className="n">Sarf qiymati, so&apos;m</th>
+                    <th>{tr("Material")}</th>
+                    <th>{tr("Birlik")}</th>
+                    <th className="n">{tr("Oy boshida")}</th>
+                    <th className="n">{tr("Kirim")}</th>
+                    <th className="n">{tr("Chiqim")}</th>
+                    <th className="n">{tr("Sarf (haqiqiy)")}</th>
+                    <th className="n">{tr("Sarf (norma)")}</th>
+                    <th className="n">{tr("Farq")}</th>
+                    <th className="n">{tr("Oy oxirida")}</th>
+                    <th className="n">{tr("Sarf qiymati, so'm")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -324,10 +326,13 @@ export default function MonthTab({ data, notify }) {
                     const pct = r.norm ? (r.diff / r.norm) * 100 : null;
                     return (
                       <tr key={r.m.id}>
-                        <td>{r.m.name}</td>
-                        <td>{r.m.unit}</td>
+                        <td>
+                          {r.m.name} <span className="unit-s">{r.m.unit}</span>
+                        </td>
+                        <td className="hide-s">{r.m.unit}</td>
                         <td className="n">{fmtN(r.start, 3)}</td>
-                        <td className="n">{r.kirim ? fmtN(r.kirim, 3) : ""}</td>
+                        <td className="n in-text">{r.kirim ? fmtN(r.kirim, 3) : ""}</td>
+                        <td className="n out-text">{r.chiqim ? fmtN(r.chiqim, 3) : ""}</td>
                         <td className="n">{fmtN(r.sarf, 3)}</td>
                         <td className="n muted">{fmtN(r.norm, 3)}</td>
                         <td className={`n ${pct !== null && Math.abs(pct) > 10 ? "warn" : ""}`}>
@@ -342,15 +347,15 @@ export default function MonthTab({ data, notify }) {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colSpan={8}>Sarflangan materiallar qiymati</td>
+                    <td colSpan={8}>{tr("Sarflangan materiallar qiymati")}</td>
                     <td className="n">{fmt(sarfValue)}</td>
                   </tr>
                 </tfoot>
               </table>
             </div>
-            <p className="hint" style={{ marginTop: 6 }}>
-              «Farq» — haqiqiy sarf minus norma bo&apos;yicha sarf. 10 % dan ortiq farq sariq bilan ajratilgan.
-            </p>
+            <p className="hint" style={{ marginTop: 6 }}>{tr(
+              "«Farq» — haqiqiy sarf minus norma bo'yicha sarf. 10 % dan ortiq farq sariq bilan ajratilgan."
+            )}</p>
           </div>
         </>
       )}

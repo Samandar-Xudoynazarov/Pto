@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "ПТО ish stoli",
-  description: "Temir-beton zavodi ПТО bo'limi: ishlab chiqarish, buyurtmalar, materiallar sarfi, kalkulyatsiya",
+  title: "Zavod ish stoli — ПТО va ombor",
+  description: "Temir-beton zavodi: ishlab chiqarish hisoboti, ombor kirim-chiqimi, buyurtmalar, kalkulyatsiya",
   applicationName: "ПТО",
   // iPhone: "Bosh ekranga qo'shish"dan keyin brauzer panelisiz, ilova kabi ochiladi
   appleWebApp: { capable: true, title: "ПТО", statusBarStyle: "default" },

@@ -1,7 +1,7 @@
 // Foydalanuvchi yaratish yoki parolini tiklash (masalan, administrator parolini unutsa).
 //
 //   npm run user -- admin YangiParol123            — "admin" parolini tiklaydi (yo'q bo'lsa, administrator yaratadi)
-//   npm run user -- aziz Parol123 pto "Aziz Karimov"  — rol: admin | pto | rahbar | kurator
+//   npm run user -- aziz Parol123 pto "Aziz Karimov"  — rol: admin | pto | omborchi | rahbar | kurator
 import mongoose from "mongoose";
 import { connectDB } from "../src/db.js";
 import { User } from "../src/models.js";
@@ -10,7 +10,7 @@ import { ROLES, hashPassword, passwordProblem } from "../src/auth.js";
 
 const [username, password, role = "admin", ...nameParts] = process.argv.slice(2);
 if (!username || !password) {
-  console.log('Foydalanish: npm run user -- <login> <parol> [admin|pto|rahbar|kurator] ["Ism Familiya"]');
+  console.log('Foydalanish: npm run user -- <login> <parol> [admin|pto|omborchi|rahbar|kurator] ["Ism Familiya"]');
   process.exit(1);
 }
 if (!ROLES.includes(role)) {

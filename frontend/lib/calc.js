@@ -10,6 +10,8 @@ export const GROUPS = [
   ["xomashyo", "Xomashyo"],
   ["metall", "Metall"],
   ["zaklad", "Zakladnoy detallar"],
+  ["yoqilgi", "Yoqilg'i va moylar"],
+  ["ehtiyot", "Ehtiyot qismlar"],
   ["boshqa", "Boshqa"],
   ["xizmat", "Xizmat / energiya"],
 ];

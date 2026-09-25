@@ -1,4 +1,5 @@
 "use client";
+import { tr } from "@/lib/i18n";
 import { useMemo, useState } from "react";
 import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
@@ -31,11 +32,11 @@ export default function OrdersTab({ data, openForm, notify, reload }) {
   function orderForm(existing) {
     if (!products.length) return notify("Avval «Katalog»ga mahsulot qo'shing");
     openForm({
-      title: existing ? `Buyurtma №${existing.no}` : "Yangi buyurtma",
+      title: existing ? tr("Buyurtma №{n}", { n: existing.no }) : tr("Yangi buyurtma"),
       values: existing,
       fields: [
         { name: "customer", label: "Buyurtmachi", req: true, wide: true },
-        { name: "productId", label: "Mahsulot", type: "select", options: productOptions(products), req: true, wide: true },
+        { name: "productId", label: "Mahsulot", type: "select", options: productOptions(products), raw: true, req: true, wide: true },
         { name: "qty", label: "Soni", unit: "dona", type: "number", min: 1, step: 1, req: true },
         { name: "price", label: "Narx", unit: "so'm/dona QQS bilan, 0 = kalkulyatsiyadan", type: "number", min: 0, step: 1 },
         { name: "date", label: "Qabul sanasi", type: "date", def: today() },
@@ -77,13 +78,11 @@ export default function OrdersTab({ data, openForm, notify, reload }) {
     <section className="sheet">
       <div className="bar">
         <div className="l">
-          <h2>Buyurtmalar</h2>
+          <h2>{tr("Buyurtmalar")}</h2>
         </div>
         <div className="r">
           {canEdit && (
-            <button className="btn primary" onClick={() => orderForm()}>
-              + Yangi buyurtma
-            </button>
+            <button className="btn primary" onClick={() => orderForm()}>{tr("+ Yangi buyurtma")}</button>
           )}
         </div>
       </div>
@@ -91,26 +90,26 @@ export default function OrdersTab({ data, openForm, notify, reload }) {
       <div className="chips">
         {[["faol", "Faol"], ["hammasi", "Hammasi"], ...STATUSES].map(([k, l]) => (
           <button key={k} className="chip" aria-pressed={filter === k} onClick={() => chooseFilter(k)}>
-            {l} · {counts[k] || 0}
+            {tr(l)} · {counts[k] || 0}
           </button>
         ))}
       </div>
 
       <div className="tbl-wrap">
         {!list.length ? (
-          <div className="empty">Bu filtr bo&apos;yicha buyurtma yo&apos;q.</div>
+          <div className="empty">{tr("Bu filtr bo'yicha buyurtma yo'q.")}</div>
         ) : (
           <table>
             <thead>
               <tr>
                 <th>№</th>
-                <th>Buyurtmachi</th>
-                <th>Mahsulot</th>
-                <th className="n">Soni</th>
-                <th>Jo&apos;natildi</th>
-                <th>Muddat</th>
-                <th>Holat</th>
-                <th className="n">Summa, so&apos;m</th>
+                <th>{tr("Buyurtmachi")}</th>
+                <th>{tr("Mahsulot")}</th>
+                <th className="n">{tr("Soni")}</th>
+                <th>{tr("Jo'natildi")}</th>
+                <th>{tr("Muddat")}</th>
+                <th>{tr("Holat")}</th>
+                <th className="n">{tr("Summa, so'm")}</th>
                 <th></th>
               </tr>
             </thead>
@@ -130,7 +129,7 @@ export default function OrdersTab({ data, openForm, notify, reload }) {
                       {o.note && <span className="sub">{o.note}</span>}
                     </td>
                     <td>
-                      <span className="code">{p?.code || "— o'chirilgan —"}</span>
+                      <span className="code">{p?.code || tr("— o'chirilgan —")}</span>
                     </td>
                     <td className="n">{fmt(o.qty)}</td>
                     <td>
@@ -145,20 +144,20 @@ export default function OrdersTab({ data, openForm, notify, reload }) {
                     </td>
                     <td className={`num${late ? " late" : ""}`}>
                       {fmtDate(o.deadline)}
-                      {late && " · kechikdi"}
+                      {late && tr(" · kechikdi")}
                     </td>
                     <td>
                       <select
                         id={`st-${o.id}`}
                         className={`st st-${o.status}`}
-                        aria-label="Holat"
+                        aria-label={tr("Holat")}
                         value={o.status}
                         disabled={!canEdit}
                         onChange={(e) => setStatus(o, e.target.value)}
                       >
                         {STATUSES.map(([k, l]) => (
                           <option key={k} value={k}>
-                            {l}
+                            {tr(l)}
                           </option>
                         ))}
                       </select>
@@ -167,9 +166,7 @@ export default function OrdersTab({ data, openForm, notify, reload }) {
                     <td>
                       {canEdit && (
                         <div className="acts">
-                          <button className="btn sm" onClick={() => orderForm(o)}>
-                            Tahrirlash
-                          </button>
+                          <button className="btn sm" onClick={() => orderForm(o)}>{tr("Tahrirlash")}</button>
                           <DeleteButton onConfirm={() => del(o.id)} />
                         </div>
                       )}
@@ -180,7 +177,7 @@ export default function OrdersTab({ data, openForm, notify, reload }) {
             </tbody>
             <tfoot>
               <tr>
-                <td colSpan={7}>Jami ({list.length} ta)</td>
+                <td colSpan={7}>{tr("Jami ({n} ta)", { n: list.length })}</td>
                 <td className="n">{fmt(sum)}</td>
                 <td></td>
               </tr>
@@ -188,7 +185,9 @@ export default function OrdersTab({ data, openForm, notify, reload }) {
           </table>
         )}
       </div>
-      <p className="hint">«Jo&apos;natildi» ustuni kunlik hisobotdagi shu buyurtmaga bog&apos;langan jo&apos;natishlardan hisoblanadi. Narx 0 bo&apos;lsa, kalkulyatsiyadagi QQS bilan narx olinadi.</p>
+      <p className="hint">{tr(
+        "«Jo'natildi» ustuni kunlik hisobotdagi shu buyurtmaga bog'langan jo'natishlardan hisoblanadi. Narx 0 bo'lsa, kalkulyatsiyadagi QQS bilan narx olinadi."
+      )}</p>
     </section>
   );
 }

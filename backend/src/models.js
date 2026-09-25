@@ -15,7 +15,9 @@ const opts = { timestamps: true, toJSON: jsonOpts, minimize: false };
 const sub = { _id: false };
 
 export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-export const MATERIAL_GROUPS = ["beton", "xomashyo", "metall", "zaklad", "boshqa", "xizmat"];
+export const MATERIAL_GROUPS = ["beton", "xomashyo", "metall", "zaklad", "yoqilgi", "ehtiyot", "boshqa", "xizmat"];
+export const MOVE_TYPES = ["in", "out"]; // ombor: kirim / chiqim
+export const TARGET_KINDS = ["department", "vehicle"]; // chiqim manzili: bo'lim/sex yoki texnika
 export const ROW_TYPES = ["m3", "kg", "pctPrev", "pctSS", "fixed"];
 export const STATUSES = ["yangi", "jarayonda", "tayyor", "topshirildi"];
 
@@ -33,6 +35,10 @@ const materialSchema = new Schema(
     price: { type: Number, default: 0, min: 0 }, // so'm / birlik (beton uchun retseptdan hisoblanadi)
     stock: { type: Boolean, default: true }, // omborda hisobga olinadimi
     electrodeBase: { type: Boolean, default: false }, // elektrod normasi shu metall og'irligidan
+    isElectrode: { type: Boolean, default: false }, // shu material — elektrod (norma metall og'irligidan avtomatik)
+    code: { type: String, default: "", trim: true, maxlength: 40 }, // artikul / ichki kod
+    minQty: { type: Number, default: 0, min: 0 }, // shundan kam qolsa «Kam qoldi» belgisi
+    archived: { type: Boolean, default: false }, // ro'yxatlarda ko'rinmaydi, tarixi saqlanadi
     recipe: { type: [normLine], default: [] }, // beton: 1 m³ narxi uchun tarkib (kalkulyatsiya)
     writeoff: { type: [normLine], default: [] }, // beton: 1 m³ uchun ombordan yoziladigan xomashyo (Норма)
     sort: { type: Number, default: 0 },
@@ -135,7 +141,7 @@ const settingsSchema = new Schema(
 );
 
 /* ---------- Foydalanuvchilar ---------- */
-export const ROLE_LIST = ["admin", "pto", "rahbar", "kurator"];
+export const ROLE_LIST = ["admin", "pto", "omborchi", "rahbar", "kurator"];
 const userSchema = new Schema(
   {
     username: {
@@ -160,6 +166,41 @@ const userSchema = new Schema(
   },
   opts
 );
+
+/* ---------- Ombor: chiqim manzillari va harakatlar ---------- */
+const targetSchema = new Schema(
+  {
+    kind: { type: String, enum: TARGET_KINDS, required: true },
+    name: { type: String, required: [true, "Nomi kiritilmagan"], trim: true, maxlength: 120 },
+    code: { type: String, default: "", trim: true, maxlength: 40 }, // davlat raqami yoki sex kodi
+    archived: { type: Boolean, default: false },
+  },
+  opts
+);
+targetSchema.index({ kind: 1, name: 1 }, { unique: true });
+
+// Omborchi yozadigan kirim/chiqim. Ombor qoldig'i = boshlang'ich + kunlik hisobot (sarf/kirim) + shu harakatlar
+const movementSchema = new Schema(
+  {
+    type: { type: String, enum: MOVE_TYPES, required: true },
+    date: { type: String, required: true, match: [DATE_RE, "Sana formati YYYY-MM-DD"] },
+    materialId: ref("Material"),
+    qty: { type: Number, required: true, min: [0.0001, "Miqdor 0 dan katta bo'lishi kerak"] },
+    price: { type: Number, default: 0, min: 0 }, // birlik narxi (kirimda — kiritilgan, chiqimda — material narxi)
+    // kirim
+    supplier: { type: String, default: "", trim: true, maxlength: 160 },
+    docNumber: { type: String, default: "", trim: true, maxlength: 60 }, // nakladnoy raqami
+    // chiqim
+    departmentId: { type: Schema.Types.ObjectId, ref: "Target", default: null },
+    vehicleId: { type: Schema.Types.ObjectId, ref: "Target", default: null },
+    person: { type: String, default: "", trim: true, maxlength: 120 }, // kim oldi / kim qabul qildi
+    note: { type: String, default: "", trim: true, maxlength: 300 },
+    createdBy: { id: String, username: String, name: String },
+  },
+  opts
+);
+movementSchema.index({ date: -1, createdAt: -1 });
+movementSchema.index({ materialId: 1, date: 1 });
 
 /* ---------- O'zgarishlar jurnali ---------- */
 const auditSchema = new Schema(
@@ -203,3 +244,5 @@ export const User = models.User || model("User", userSchema);
 export const AuditLog = models.AuditLog || model("AuditLog", auditSchema);
 export const Counter = models.Counter || model("Counter", counterSchema);
 export const LoginAttempt = models.LoginAttempt || model("LoginAttempt", loginAttemptSchema);
+export const Target = models.Target || model("Target", targetSchema);
+export const Movement = models.Movement || model("Movement", movementSchema);

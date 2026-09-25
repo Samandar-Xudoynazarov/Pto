@@ -1,7 +1,7 @@
 // Telefonga "ilova" sifatida o'rnatish uchun (PWA manifest)
 export default function manifest() {
   return {
-    name: "ПТО ish stoli",
+    name: "Zavod ish stoli — ПТО va ombor",
     short_name: "ПТО",
     description: "Temir-beton zavodi ПТО bo'limi: ishlab chiqarish, ombor, buyurtmalar, kalkulyatsiya",
     lang: "uz",

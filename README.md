@@ -1,6 +1,8 @@
-# ПТО ish stoli
+# Zavod ish stoli — ПТО va ombor
 
-Temir-beton zavodi ПТО bo'limi uchun web-ilova: ishlab chiqarish hisoboti, buyurtmalar, materiallar sarfi, kalkulyatsiya va mahsulotlar katalogi.
+Temir-beton zavodi uchun web-ilova: ishlab chiqarish hisoboti, ombor kirim-chiqimi, buyurtmalar, materiallar sarfi, kalkulyatsiya va mahsulotlar katalogi. Oldingi alohida «Zavod ombori» ilovasi shu ilovaga qo'shildi: bitta baza, bitta login.
+
+Telefonda ilova kabi ishlaydi (pastki menyu, «+» tugmasi, jadvallar kartochka ko'rinishida). Uch tilda: O'zbekcha (lotin), Ўзбекча (кирилл), Русский — menyuning pastida almashtiriladi.
 
 ```
 pto-app/
@@ -77,6 +79,7 @@ cd frontend && cp .env.example .env.local && npm install && npm run dev   # http
 |---|---|
 | Administrator | hamma narsa + foydalanuvchilar, zaxira nusxa, o'zgarishlar tarixi («Boshqaruv» bo'limi) |
 | ПТО muhandisi | hisobot, ombor, buyurtma, katalog, materiallarni tahrirlaydi |
+| Omborchi | «Ombor», «Kirim-chiqim tarixi», «Sex va texnika» bo'limlari: kirim/chiqim yozadi, yangi material qo'shadi (narxsiz), o'zi kiritgan yozuvni 24 soat ichida bekor qiladi |
 | Rahbar | hamma bo'limni ko'radi, hech narsani o'zgartira olmaydi |
 | Kurator | kuzatuvchi: hamma bo'limni ko'radi, hech narsani o'zgartira olmaydi |
 
@@ -84,7 +87,7 @@ cd frontend && cp .env.example .env.local && npm install && npm run dev   # http
 
 **Parol unutilsa** (kompyuterda, `backend` papkasida): `npm run user -- admin YangiParol123`
 
-Ikki kishi bir kunlik hisobotni bir vaqtda tahrirlasa, ikkinchisi saqlashda ogohlantirish oladi va boshqaning ishi ustiga yozilmaydi. Saqlanmagan o'zgarishlar bo'lsa, boshqa bo'limga o'tish yoki sahifani yopishdan oldin so'raladi.
+Kunlik hisobotda saqlanmagan o'zgarishlar bo'lsa, boshqa bo'limga o'tish, chiqish yoki sahifani yopishdan oldin so'raladi.
 
 Bitta qurilmadan (IP) bir login uchun 5 marta noto'g'ri parol kiritilsa, shu login o'sha qurilmada 10 daqiqaga bloklanadi — boshqa joydan kirayotgan haqiqiy egasi bunga bog'liq emas. Bitta IP'dan barcha loginlarga jami 30 ta xato urinishdan keyin shu IP 15 daqiqaga bloklanadi. Administrator parolni tiklasa (yoki `npm run user`), shu loginning barcha bloklari olib tashlanadi. Barcha o'zgarishlar (kim, qachon, nimani, qaysi qiymatdan qaysi qiymatga) jurnalga yoziladi va 13 oy saqlanadi.
 
@@ -98,7 +101,7 @@ npm run restore -- pto-backup-2026-09-24-18-30.json         # nima tiklanishini 
 npm run restore -- pto-backup-2026-09-24-18-30.json --yes   # tiklaydi
 ```
 
-Tiklashdan oldin joriy baza avtomatik ravishda `pto-before-restore-….json` fayliga saqlanadi. Almashtirish bitta tranzaksiyada bajariladi: o'rtada xato chiqsa, baza o'zgarmay qoladi.
+Tiklashdan oldin zaxiradagi har bir yozuv tekshiriladi (xato bo'lsa, bazaga tegilmaydi), joriy baza esa `pto-avto-zaxira-….json` fayliga saqlanadi. Almashtirish o'rtasida xato chiqsa, o'zgargan jadvallar avvalgi holatiga qaytariladi.
 
 ## API
 
@@ -113,6 +116,8 @@ Barcha so'rovlarda `Authorization: Bearer <token>` sarlavhasi bo'lishi kerak (`/
 | GET | `/api/stock?from=&to=` | ombor: davr boshi, harakat, oxiri |
 | GET/POST, PUT/DELETE `:id` | `/api/orders` | buyurtmalar; GET javobida `shipped` bor |
 | GET/PUT | `/api/settings` | boshlang'ich qoldiq, elektrod %, imzolar |
+| GET/POST, DELETE `:id` | `/api/movements` | ombor kirim/chiqimi; `?from=&to=&type=&materialId=&targetId=` |
+| GET/POST, PUT/DELETE `:id` | `/api/targets` | chiqim manzillari: bo'lim/sex va texnika |
 | GET, PUT `password` | `/api/me` | joriy foydalanuvchi, o'z parolini almashtirish |
 | GET/POST, PUT/DELETE `:id` | `/api/users` | foydalanuvchilar (admin) |
 | GET | `/api/audit` | o'zgarishlar tarixi (admin) |
@@ -122,7 +127,8 @@ Barcha so'rovlarda `Authorization: Bearer <token>` sarlavhasi bo'lishi kerak (`/
 
 - **Sarf normasi (Норма)**: mahsulotning to'g'ridan-to'g'ri normalari, bunga qo'shimcha beton markasi koeffitsiyentlari bo'yicha qum, sement va sheben (masalan, М400: 0,609 / 0,59 / 1,036 t/m³) va elektrod (metall og'irligining 1,5 %, 3 xonagacha yaxlitlanadi).
 - **Elektrod**: «Materiallar» bo'limida bitta materialga «Bu material — elektrod» belgisi qo'yiladi. Belgi yo'q bo'lsa, nomi «Электрод» bo'lgan material olinadi.
-- **Ombor**: boshlang'ich qoldiq + kirim − haqiqiy sarf; tayyor mahsulot uchun boshlang'ich qoldiq + fakt − jo'natish.
+- **Ombor (materiallar)**: boshlang'ich qoldiq + kirim − ishlab chiqarish sarfi − chiqim. Kirim va chiqimni omborchi yozadi (chiqim — sex, texnika yoki mas'ul shaxsga); ishlab chiqarish sarfini ПТО kunlik hisobotda yozadi. Qoldiqdan ortiq chiqim qilib bo'lmaydi. Kunlik hisobotdagi «Kirim» va «Chiqim» ustunlari hamda Excel shaklidagi «Приход»/«Расход» shu harakatlardan avtomatik to'ladi.
+- **Tayyor mahsulot**: boshlang'ich qoldiq + fakt − jo'natish.
 - **Kalkulyatsiya** (Excel'dagi tartib bilan): materiallar → ФОТ, ЕСП → Производственная СС → Другие затраты → Итого → Маржа → НДС. Beton narxi retseptdan hisoblanadi.
 
 ## Kunlik hisobotni Excel'da olish

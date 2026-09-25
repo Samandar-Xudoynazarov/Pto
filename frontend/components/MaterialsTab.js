@@ -1,4 +1,5 @@
 "use client";
+import { tr } from "@/lib/i18n";
 import { useEffect, useRef, useState } from "react";
 import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
@@ -18,8 +19,8 @@ function LinesEditor({ idp, lines, setLines, materials, mats, showPrice }) {
               return (
                 <tr key={i}>
                   <td className="wide">
-                    <select id={`${idp}-m-${i}`} value={l.materialId} aria-label="Material" onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, materialId: e.target.value } : x)))}>
-                      <option value="">— material —</option>
+                    <select id={`${idp}-m-${i}`} value={l.materialId} aria-label={tr("Material")} onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, materialId: e.target.value } : x)))}>
+                      <option value="">{tr("— material —")}</option>
                       {materials
                         .filter((x) => x.group !== "beton")
                         .map((x) => (
@@ -30,12 +31,12 @@ function LinesEditor({ idp, lines, setLines, materials, mats, showPrice }) {
                     </select>
                   </td>
                   <td className="n">
-                    <input id={`${idp}-q-${i}`} type="number" step="any" min="0" value={l.norm} aria-label="Norma" onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, norm: e.target.value } : x)))} />
+                    <input id={`${idp}-q-${i}`} type="number" step="any" min="0" value={l.norm} aria-label={tr("Norma")} onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, norm: e.target.value } : x)))} />
                   </td>
                   <td className="muted">{m?.unit}</td>
                   {showPrice && <td className="n">{m ? fmt((+l.norm || 0) * priceOf(m, mats)) : ""}</td>}
                   <td>
-                    <button type="button" className="btn sm danger" aria-label="O'chirish" onClick={() => setLines(lines.filter((_, j) => j !== i))}>
+                    <button type="button" className="btn sm danger" aria-label={tr("O'chirish")} onClick={() => setLines(lines.filter((_, j) => j !== i))}>
                       ×
                     </button>
                   </td>
@@ -45,9 +46,7 @@ function LinesEditor({ idp, lines, setLines, materials, mats, showPrice }) {
           </tbody>
         </table>
       </div>
-      <button type="button" className="btn sm" style={{ marginTop: 6 }} onClick={() => setLines([...lines, { materialId: "", norm: "" }])}>
-        + Qator
-      </button>
+      <button type="button" className="btn sm" style={{ marginTop: 6 }} onClick={() => setLines([...lines, { materialId: "", norm: "" }])}>{tr("+ Qator")}</button>
     </>
   );
 }
@@ -93,14 +92,14 @@ function MaterialEditor({ material, open, onClose, data, notify, onSaved }) {
     <dialog ref={ref} onClose={onClose} className={isBeton ? "wide-dlg" : undefined}>
       {d && (
         <form onSubmit={save}>
-          <h2>{material ? material.name : "Yangi material"}</h2>
+          <h2>{material ? material.name : tr("Yangi material")}</h2>
           <div className="form-grid">
             <div className="field" style={{ gridColumn: "1/-1" }}>
-              <label htmlFor="me-name">Nomi</label>
+              <label htmlFor="me-name">{tr("Nomi")}</label>
               <input id="me-name" value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} required />
             </div>
             <div className="field">
-              <label htmlFor="me-unit">Birlik</label>
+              <label htmlFor="me-unit">{tr("Birlik")}</label>
               <input id="me-unit" list="me-units" value={d.unit} onChange={(e) => setD({ ...d, unit: e.target.value })} required />
               <datalist id="me-units">
                 {["кг", "т", "м3", "л", "шт", "п/м", "кВт·ч"].map((u) => (
@@ -109,19 +108,18 @@ function MaterialEditor({ material, open, onClose, data, notify, onSaved }) {
               </datalist>
             </div>
             <div className="field">
-              <label htmlFor="me-group">Guruh</label>
+              <label htmlFor="me-group">{tr("Guruh")}</label>
               <select id="me-group" value={d.group} onChange={(e) => setD({ ...d, group: e.target.value })}>
                 {GROUPS.map(([k, l]) => (
                   <option key={k} value={k}>
-                    {l}
+                    {tr(l)}
                   </option>
                 ))}
               </select>
             </div>
             {!isBeton && (
               <div className="field">
-                <label htmlFor="me-price">
-                  Narx <span className="u">(so&apos;m / {d.unit || "birlik"})</span>
+                <label htmlFor="me-price">{tr("Narx")} <span className="u">{tr("(so'm /")} {d.unit || "birlik"})</span>
                 </label>
                 <input id="me-price" type="number" step="any" min="0" value={d.price} onChange={(e) => setD({ ...d, price: e.target.value })} />
               </div>
@@ -129,39 +127,33 @@ function MaterialEditor({ material, open, onClose, data, notify, onSaved }) {
           </div>
           <div className="checks">
             <label className="check">
-              <input id="me-stock" type="checkbox" checked={d.stock} onChange={(e) => setD({ ...d, stock: e.target.checked })} /> Omborda hisobga olinadi
-            </label>
+              <input id="me-stock" type="checkbox" checked={d.stock} onChange={(e) => setD({ ...d, stock: e.target.checked })} /> {tr("Omborda hisobga olinadi")}</label>
             <label className="check">
-              <input id="me-el" type="checkbox" checked={d.electrodeBase} onChange={(e) => setD({ ...d, electrodeBase: e.target.checked })} /> Elektrod normasi shu metalldan hisoblanadi
-            </label>
+              <input id="me-el" type="checkbox" checked={d.electrodeBase} onChange={(e) => setD({ ...d, electrodeBase: e.target.checked })} /> {tr("Elektrod normasi shu metalldan hisoblanadi")}</label>
             <label className="check">
-              <input id="me-iel" type="checkbox" checked={Boolean(d.isElectrode)} onChange={(e) => setD({ ...d, isElectrode: e.target.checked })} /> Bu material — elektrod (norma metall og&apos;irligidan avtomatik)
-            </label>
+              <input id="me-iel" type="checkbox" checked={Boolean(d.isElectrode)} onChange={(e) => setD({ ...d, isElectrode: e.target.checked })} /> {tr("Bu material — elektrod (norma metall og'irligidan avtomatik)")}</label>
           </div>
           {isBeton && (
             <div className="grid2">
               <div>
-                <h4>1 m³ narxi uchun tarkib (kalkulyatsiya)</h4>
+                <h4>{tr("1 m³ narxi uchun tarkib (kalkulyatsiya)")}</h4>
                 <LinesEditor idp="rc" lines={d.recipe || []} setLines={(l) => setD({ ...d, recipe: l })} materials={data.materials} mats={data.mats} showPrice />
-                <p className="hint" style={{ marginTop: 6 }}>
-                  1 m³ narxi: <strong>{fmt(recipePrice, 1)} so&apos;m</strong>
+                <p className="hint" style={{ marginTop: 6 }}>{tr("1 m³ narxi:")} <strong>{fmt(recipePrice, 1)} {tr("so'm")}</strong>
                 </p>
               </div>
               <div>
-                <h4>1 m³ uchun ombordan yoziladi (Норма)</h4>
+                <h4>{tr("1 m³ uchun ombordan yoziladi (Норма)")}</h4>
                 <LinesEditor idp="wo" lines={d.writeoff || []} setLines={(l) => setD({ ...d, writeoff: l })} materials={data.materials} mats={data.mats} />
-                <p className="hint" style={{ marginTop: 6 }}>
-                  Kunlik hisobotdagi «Norma» ustuni va material ehtiyoji shu koeffitsiyentlar bilan hisoblanadi.
-                </p>
+                <p className="hint" style={{ marginTop: 6 }}>{tr(
+                  "Kunlik hisobotdagi «Norma» ustuni va material ehtiyoji shu koeffitsiyentlar bilan hisoblanadi."
+                )}</p>
               </div>
             </div>
           )}
           <div className="dlg-actions">
-            <button type="button" className="btn" onClick={onClose}>
-              Bekor qilish
-            </button>
+            <button type="button" className="btn" onClick={onClose}>{tr("Bekor qilish")}</button>
             <button className="btn primary" disabled={busy}>
-              {busy ? "Saqlanmoqda…" : "Saqlash"}
+              {busy ? tr("Saqlanmoqda…") : tr("Saqlash")}
             </button>
           </div>
         </form>
@@ -210,20 +202,18 @@ export default function MaterialsTab({ data, notify, reload, reloadSettings }) {
     <section className="sheet">
       <div className="bar">
         <div className="l">
-          <h2>Materiallar va narxlar</h2>
+          <h2>{tr("Materiallar va narxlar")}</h2>
         </div>
         <div className="r">
           {canEdit && (
-            <button className="btn primary" onClick={() => setEdit("new")}>
-              + Material qo&apos;shish
-            </button>
+            <button className="btn primary" onClick={() => setEdit("new")}>{tr("+ Material qo'shish")}</button>
           )}
         </div>
       </div>
       <div className="chips">
         {[["all", "Hammasi"], ...GROUPS].map(([k, l]) => (
           <button key={k} className="chip" aria-pressed={group === k} onClick={() => setGroup(k)}>
-            {l} · {k === "all" ? materials.length : materials.filter((m) => m.group === k).length}
+            {tr(l)} · {k === "all" ? materials.length : materials.filter((m) => m.group === k).length}
           </button>
         ))}
       </div>
@@ -231,11 +221,11 @@ export default function MaterialsTab({ data, notify, reload, reloadSettings }) {
         <table>
           <thead>
             <tr>
-              <th>Nomi</th>
-              <th>Birlik</th>
-              <th>Guruh</th>
-              <th className="n">Narx, so&apos;m</th>
-              <th>Ombor</th>
+              <th>{tr("Nomi")}</th>
+              <th>{tr("Birlik")}</th>
+              <th>{tr("Guruh")}</th>
+              <th className="n">{tr("Narx, so'm")}</th>
+              <th>{tr("Ombor")}</th>
               <th></th>
             </tr>
           </thead>
@@ -251,19 +241,17 @@ export default function MaterialsTab({ data, notify, reload, reloadSettings }) {
                   )}
                 </td>
                 <td>{m.unit}</td>
-                <td>{groupLabel[m.group]}</td>
+                <td>{tr(groupLabel[m.group])}</td>
                 <td className="n">
                   {fmt(priceOf(m, mats), m.group === "beton" ? 1 : 0)}
-                  {m.group === "beton" && <span className="sub">retseptdan</span>}
-                  {!priceOf(m, mats) && m.group !== "beton" && <span className="sub warn-text">narx yo&apos;q</span>}
+                  {m.group === "beton" && <span className="sub">{tr("retseptdan")}</span>}
+                  {!priceOf(m, mats) && m.group !== "beton" && <span className="sub warn-text">{tr("narx yo'q")}</span>}
                 </td>
                 <td>{m.stock ? "ha" : "—"}</td>
                 <td>
                   {canEdit && (
                     <div className="acts">
-                      <button className="btn sm" onClick={() => setEdit(m)}>
-                        Tahrirlash
-                      </button>
+                      <button className="btn sm" onClick={() => setEdit(m)}>{tr("Tahrirlash")}</button>
                       <DeleteButton onConfirm={() => del(m.id)} />
                     </div>
                   )}
@@ -275,29 +263,26 @@ export default function MaterialsTab({ data, notify, reload, reloadSettings }) {
       </div>
 
       <form onSubmit={saveSettings}>
-        <h3>Sozlamalar</h3>
+        <h3>{tr("Sozlamalar")}</h3>
         <fieldset className="plain" disabled={!canEdit}>
         <div className="form-grid">
           <div className="field">
-            <label htmlFor="set-pct">
-              Elektrod normasi <span className="u">(% metall og&apos;irligidan)</span>
+            <label htmlFor="set-pct">{tr("Elektrod normasi")} <span className="u">{tr("(% metall og'irligidan)")}</span>
             </label>
             <input id="set-pct" type="number" step="any" min="0" value={pct} onChange={(e) => setPct(e.target.value)} />
           </div>
           <div className="field" style={{ gridColumn: "span 2" }}>
-            <label htmlFor="set-company">Korxona nomi (chop etishda)</label>
+            <label htmlFor="set-company">{tr("Korxona nomi (chop etishda)")}</label>
             <input id="set-company" value={company} onChange={(e) => setCompany(e.target.value)} />
           </div>
           <div className="field" style={{ gridColumn: "1/-1" }}>
-            <label htmlFor="set-signers">Imzo qo&apos;yuvchilar (har biri yangi qatorda)</label>
+            <label htmlFor="set-signers">{tr("Imzo qo'yuvchilar (har biri yangi qatorda)")}</label>
             <textarea id="set-signers" rows={2} value={signers} onChange={(e) => setSigners(e.target.value)} />
           </div>
         </div>
         </fieldset>
         {canEdit && (
-          <button className="btn primary" style={{ marginTop: 10 }}>
-            Sozlamalarni saqlash
-          </button>
+          <button className="btn primary" style={{ marginTop: 10 }}>{tr("Sozlamalarni saqlash")}</button>
         )}
       </form>
 

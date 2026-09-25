@@ -1,6 +1,7 @@
 "use client";
+import { tr } from "@/lib/i18n";
 import { useUser } from "@/lib/role";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ROW_TYPES, costCard, fmt, fmtN, lsGet, lsSet } from "@/lib/calc";
 
 const typeHint = (r, card) => {
@@ -14,23 +15,23 @@ export function CostCard({ product, mats }) {
   const c = costCard(product, mats);
   return (
     <div className="tbl-wrap">
-      <table className="card-tbl">
+      <table className="card-tbl no-rt">
         <thead>
           <tr>
-            <th>Nomi</th>
-            <th>Birlik</th>
-            <th className="n">Norma</th>
-            <th className="n">Narx</th>
-            <th className="n">Summa, so&apos;m</th>
+            <th>{tr("Nomi")}</th>
+            <th className="hide-s">{tr("Birlik")}</th>
+            <th className="n">{tr("Norma")}</th>
+            <th className="n hide-s">{tr("Narx")}</th>
+            <th className="n">{tr("Summa, so'm")}</th>
           </tr>
         </thead>
         <tbody>
           {c.items.map((it, i) => (
             <tr key={i}>
-              <td>{it.m?.name || "— o'chirilgan —"}</td>
-              <td>{it.m?.unit}</td>
+              <td>{it.m?.name || tr("— o'chirilgan —")}</td>
+              <td className="hide-s">{it.m?.unit}</td>
               <td className="n">{fmtN(it.norm, 3)}</td>
-              <td className="n">{fmt(it.price, it.price % 1 ? 1 : 0)}</td>
+              <td className="n hide-s">{fmt(it.price, it.price % 1 ? 1 : 0)}</td>
               <td className="n">{fmt(it.sum)}</td>
             </tr>
           ))}
@@ -61,11 +62,11 @@ export function CostCard({ product, mats }) {
             </tr>
           ))}
           <tr className="sum">
-            <td colSpan={4}>Другие затраты, jami</td>
+            <td colSpan={4}>{tr("Другие затраты, jami")}</td>
             <td className="n">{fmt(c.other)}</td>
           </tr>
           <tr className="sum">
-            <td colSpan={4}>Итого (tannarx)</td>
+            <td colSpan={4}>{tr("Итого (tannarx)")}</td>
             <td className="n">{fmt(c.itogo)}</td>
           </tr>
           <tr>
@@ -111,22 +112,58 @@ export default function CostTab({ data, onEdit }) {
   );
   const shown = rows.filter((r) => !q || `${r.p.code} ${r.p.name} ${r.p.group}`.toLowerCase().includes(q.toLowerCase()));
   const cur = rows.find((r) => r.p.id === sel) || rows[0];
+  const [sheet, setSheet] = useState(false);
+  const sheetRef = useRef(null);
   const choose = (id) => {
     setSel(id);
     lsSet("pto.costSel", id);
+    // telefonda karta pastdan chiqadigan oynada ochiladi
+    if (window.matchMedia("(max-width: 980px)").matches) setSheet(true);
   };
+  useEffect(() => {
+    const d = sheetRef.current;
+    if (sheet && d && !d.open) d.showModal();
+    if (!sheet && d?.open) d.close();
+  }, [sheet]);
+  const side = cur && (
+          <div>
+            <div className="bar">
+              <div>
+                <h3 style={{ margin: 0 }}>
+                  {cur.p.name} {cur.p.code}
+                </h3>
+                <p className="hint">{cur.p.group}</p>
+              </div>
+              {canEdit && (
+                <button className="btn no-print" onClick={() => { setSheet(false); onEdit(cur.p); }}>{tr("Tahrirlash")}</button>
+              )}
+            </div>
+            {!cur.has ? (
+              <div className="empty tbl-wrap">{tr("Kalkulyatsiya kiritilmagan. «Tahrirlash» orqali materiallarni qo'shing.")}</div>
+            ) : (
+              <>
+                <CostCard product={cur.p} mats={mats} />
+                {cur.p.excelPrice ? (
+                  <p className={`hint ${Math.abs(cur.c.final - cur.p.excelPrice) > 1 ? "warn-text" : ""}`} style={{ marginTop: 8 }}>{Math.abs(cur.c.final - cur.p.excelPrice) > 1
+                    ? tr("Excel faylidagi narx: {p} so'm — farq {d} so'm", { p: fmt(cur.p.excelPrice), d: `${cur.c.final > cur.p.excelPrice ? "+" : ""}${fmt(cur.c.final - cur.p.excelPrice)}` })
+                    : tr("Excel faylidagi narx: {p} so'm — mos.", { p: fmt(cur.p.excelPrice) })}
+                  </p>
+                ) : null}
+                {cur.p.notes?.length ? <p className="hint">{cur.p.notes.join(". ")}</p> : null}
+              </>
+            )}
+          </div>
+  );
 
   return (
     <section className="sheet">
       <div className="bar">
         <div className="l">
-          <h2>Kalkulyatsiya</h2>
-          <input id="cost-q" type="search" placeholder="Qidirish: Ф5, лоток…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Qidirish" />
+          <h2>{tr("Kalkulyatsiya")}</h2>
+          <input id="cost-q" type="search" placeholder={tr("Qidirish: Ф5, лоток…")} value={q} onChange={(e) => setQ(e.target.value)} aria-label={tr("Qidirish")} />
         </div>
         <div className="r">
-          <button className="btn" onClick={() => window.print()}>
-            Chop etish
-          </button>
+          <button className="btn" onClick={() => window.print()}>{tr("Chop etish")}</button>
         </div>
       </div>
       <div className="split">
@@ -134,10 +171,10 @@ export default function CostTab({ data, onEdit }) {
           <table>
             <thead>
               <tr>
-                <th>Mahsulot</th>
-                <th className="n">Beton, m³</th>
-                <th className="n">Tannarx</th>
-                <th className="n">Narx QQS bilan</th>
+                <th>{tr("Mahsulot")}</th>
+                <th className="n">{tr("Beton, m³")}</th>
+                <th className="n">{tr("Tannarx")}</th>
+                <th className="n">{tr("Narx QQS bilan")}</th>
               </tr>
             </thead>
             <tbody>
@@ -155,41 +192,23 @@ export default function CostTab({ data, onEdit }) {
             </tbody>
           </table>
         </div>
-        {cur && (
-          <div>
-            <div className="bar">
-              <div>
-                <h3 style={{ margin: 0 }}>
-                  {cur.p.name} {cur.p.code}
-                </h3>
-                <p className="hint">{cur.p.group}</p>
-              </div>
-              {canEdit && (
-                <button className="btn no-print" onClick={() => onEdit(cur.p)}>
-                  Tahrirlash
-                </button>
-              )}
+        {cur && <div className="cost-side">{side}</div>}
+      </div>
+      <dialog ref={sheetRef} className="bsheet cost-sheet" onClose={() => setSheet(false)}>
+        {sheet && cur && (
+          <div className="bsheet-body">
+            <div className="bsheet-grip" aria-hidden="true" />
+            <div className="bsheet-head">
+              <span />
+              <button type="button" className="icon-btn" onClick={() => setSheet(false)} aria-label={tr("Yopish")}>
+                ✕
+              </button>
             </div>
-            {!cur.has ? (
-              <div className="empty tbl-wrap">Kalkulyatsiya kiritilmagan. «Tahrirlash» orqali materiallarni qo&apos;shing.</div>
-            ) : (
-              <>
-                <CostCard product={cur.p} mats={mats} />
-                {cur.p.excelPrice ? (
-                  <p className={`hint ${Math.abs(cur.c.final - cur.p.excelPrice) > 1 ? "warn-text" : ""}`} style={{ marginTop: 8 }}>
-                    Excel faylidagi narx: {fmt(cur.p.excelPrice)} so&apos;m
-                    {Math.abs(cur.c.final - cur.p.excelPrice) > 1
-                      ? ` — farq ${cur.c.final > cur.p.excelPrice ? "+" : ""}${fmt(cur.c.final - cur.p.excelPrice)} so'm`
-                      : " — mos."}
-                  </p>
-                ) : null}
-                {cur.p.notes?.length ? <p className="hint">{cur.p.notes.join(". ")}</p> : null}
-              </>
-            )}
+            {side}
           </div>
         )}
-      </div>
-      <p className="hint">Qator turlari: {ROW_TYPES.map(([, l]) => l).join(" · ")}.</p>
+      </dialog>
+      <p className="hint">{tr("Qator turlari:")} {ROW_TYPES.map(([, l]) => tr(l)).join(" · ")}.</p>
     </section>
   );
 }

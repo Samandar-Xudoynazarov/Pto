@@ -1,4 +1,5 @@
 "use client";
+import { tr } from "@/lib/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { ROW_TYPES, calcMetalKg, costCard, expandNorms, fmt, fmtN, priceOf } from "@/lib/calc";
@@ -8,8 +9,8 @@ const blankCalc = (tpl) => ({ items: [], metalKg: 0, prodRows: [], otherRows: []
 
 function MatSelect({ id, value, onChange, materials, filter }) {
   return (
-    <select id={id} value={value} onChange={(e) => onChange(e.target.value)} aria-label="Material">
-      <option value="">— material —</option>
+    <select id={id} value={value} onChange={(e) => onChange(e.target.value)} aria-label={tr("Material")}>
+      <option value="">{tr("— material —")}</option>
       {materials.filter(filter || (() => true)).map((m) => (
         <option key={m.id} value={m.id}>
           {m.name} ({m.unit})
@@ -28,10 +29,10 @@ function RowsEditor({ title, rows, setRows, computed, idp }) {
         <table className="edit">
           <thead>
             <tr>
-              <th>Nomi</th>
-              <th>Hisoblash turi</th>
-              <th className="n">Qiymat</th>
-              <th className="n">Summa</th>
+              <th>{tr("Nomi")}</th>
+              <th>{tr("Hisoblash turi")}</th>
+              <th className="n">{tr("Qiymat")}</th>
+              <th className="n">{tr("Summa")}</th>
               <th></th>
             </tr>
           </thead>
@@ -39,23 +40,23 @@ function RowsEditor({ title, rows, setRows, computed, idp }) {
             {rows.map((r, i) => (
               <tr key={i}>
                 <td className="wide">
-                  <input id={`${idp}-n-${i}`} value={r.name} onChange={(e) => set(i, { name: e.target.value })} aria-label="Nomi" />
+                  <input id={`${idp}-n-${i}`} value={r.name} onChange={(e) => set(i, { name: e.target.value })} aria-label={tr("Nomi")} />
                 </td>
                 <td>
-                  <select id={`${idp}-t-${i}`} value={r.type} onChange={(e) => set(i, { type: e.target.value })} aria-label="Turi">
+                  <select id={`${idp}-t-${i}`} value={r.type} onChange={(e) => set(i, { type: e.target.value })} aria-label={tr("Turi")}>
                     {ROW_TYPES.map(([k, l]) => (
                       <option key={k} value={k}>
-                        {l}
+                        {tr(l)}
                       </option>
                     ))}
                   </select>
                 </td>
                 <td className="n">
-                  <input id={`${idp}-v-${i}`} type="number" step="any" value={r.value} onChange={(e) => set(i, { value: e.target.value })} aria-label="Qiymat" />
+                  <input id={`${idp}-v-${i}`} type="number" step="any" value={r.value} onChange={(e) => set(i, { value: e.target.value })} aria-label={tr("Qiymat")} />
                 </td>
                 <td className="n">{fmt(computed[i]?.amount)}</td>
                 <td>
-                  <button type="button" className="btn sm danger" aria-label="O'chirish" onClick={() => setRows(rows.filter((_, j) => j !== i))}>
+                  <button type="button" className="btn sm danger" aria-label={tr("O'chirish")} onClick={() => setRows(rows.filter((_, j) => j !== i))}>
                     ×
                   </button>
                 </td>
@@ -64,9 +65,7 @@ function RowsEditor({ title, rows, setRows, computed, idp }) {
           </tbody>
         </table>
       </div>
-      <button type="button" className="btn sm" style={{ marginTop: 6 }} onClick={() => setRows([...rows, { name: "", type: "m3", value: 0 }])}>
-        + Qator
-      </button>
+      <button type="button" className="btn sm" style={{ marginTop: 6 }} onClick={() => setRows([...rows, { name: "", type: "m3", value: 0 }])}>{tr("+ Qator")}</button>
     </div>
   );
 }
@@ -140,18 +139,18 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
     <dialog ref={ref} onClose={onClose} className="wide-dlg">
       {d && (
         <form onSubmit={save}>
-          <h2>{product ? `${product.code} — tahrirlash` : "Yangi mahsulot"}</h2>
+          <h2>{product ? tr("{c} — tahrirlash", { c: product.code }) : tr("Yangi mahsulot")}</h2>
           <div className="form-grid">
             <div className="field">
-              <label htmlFor="pe-code">Marka</label>
+              <label htmlFor="pe-code">{tr("Marka")}</label>
               <input id="pe-code" value={d.code} onChange={(e) => setD({ ...d, code: e.target.value })} required />
             </div>
             <div className="field">
-              <label htmlFor="pe-name">Nomi</label>
+              <label htmlFor="pe-name">{tr("Nomi")}</label>
               <input id="pe-name" value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} />
             </div>
             <div className="field">
-              <label htmlFor="pe-group">Guruh</label>
+              <label htmlFor="pe-group">{tr("Guruh")}</label>
               <input id="pe-group" list="pe-groups" value={d.group} onChange={(e) => setD({ ...d, group: e.target.value })} />
               <datalist id="pe-groups">
                 {groups.map((g) => (
@@ -162,18 +161,14 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
           </div>
 
           <div className="chips">
-            <button type="button" className="chip" aria-pressed={tab === "norm"} onClick={() => setTab("norm")}>
-              Sarf normasi (Норма)
-            </button>
-            <button type="button" className="chip" aria-pressed={tab === "calc"} onClick={() => setTab("calc")}>
-              Kalkulyatsiya · {card ? fmt(card.final) : 0} so&apos;m
-            </button>
+            <button type="button" className="chip" aria-pressed={tab === "norm"} onClick={() => setTab("norm")}>{tr("Sarf normasi (Норма)")}</button>
+            <button type="button" className="chip" aria-pressed={tab === "calc"} onClick={() => setTab("calc")}>{tr("Kalkulyatsiya ·")} {card ? fmt(card.final) : 0} {tr("so'm")}</button>
           </div>
 
           {tab === "norm" && (
             <div className="grid2">
               <div>
-                <h4>1 dona uchun sarf</h4>
+                <h4>{tr("1 dona uchun sarf")}</h4>
                 <div className="tbl-wrap">
                   <table className="edit">
                     <tbody>
@@ -183,11 +178,11 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
                             <MatSelect id={`pn-m-${i}`} value={l.materialId} materials={materials} filter={(m) => m.group !== "xizmat"} onChange={(v) => setNorms(norms.map((x, j) => (j === i ? { ...x, materialId: v } : x)))} />
                           </td>
                           <td className="n">
-                            <input id={`pn-q-${i}`} type="number" step="any" min="0" value={l.norm} onChange={(e) => setNorms(norms.map((x, j) => (j === i ? { ...x, norm: e.target.value } : x)))} aria-label="Norma" />
+                            <input id={`pn-q-${i}`} type="number" step="any" min="0" value={l.norm} onChange={(e) => setNorms(norms.map((x, j) => (j === i ? { ...x, norm: e.target.value } : x)))} aria-label={tr("Norma")} />
                           </td>
                           <td className="muted">{mats.get(l.materialId)?.unit}</td>
                           <td>
-                            <button type="button" className="btn sm danger" aria-label="O'chirish" onClick={() => setNorms(norms.filter((_, j) => j !== i))}>
+                            <button type="button" className="btn sm danger" aria-label={tr("O'chirish")} onClick={() => setNorms(norms.filter((_, j) => j !== i))}>
                               ×
                             </button>
                           </td>
@@ -196,15 +191,15 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
                     </tbody>
                   </table>
                 </div>
-                <button type="button" className="btn sm" style={{ marginTop: 6 }} onClick={() => setNorms([...norms, { materialId: "", norm: "" }])}>
-                  + Material
-                </button>
+                <button type="button" className="btn sm" style={{ marginTop: 6 }} onClick={() => setNorms([...norms, { materialId: "", norm: "" }])}>{tr("+ Material")}</button>
               </div>
               <div>
-                <h4>Avtomatik qo&apos;shiladi</h4>
+                <h4>{tr("Avtomatik qo'shiladi")}</h4>
                 <div className="tbl-wrap">
                   {!derivedRows.length ? (
-                    <div className="empty">Beton yoki metall qo&apos;shilganda bu yerda qum, sement, sheben va elektrod chiqadi.</div>
+                    <div className="empty">{tr(
+                      "Beton yoki metall qo'shilganda bu yerda qum, sement, sheben va elektrod chiqadi."
+                    )}</div>
                   ) : (
                     <table>
                       <tbody>
@@ -219,9 +214,10 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
                     </table>
                   )}
                 </div>
-                <p className="hint" style={{ marginTop: 6 }}>
-                  Qum, sement, sheben — beton markasi koeffitsiyentlaridan («Materiallar» bo&apos;limi). Elektrod — metall og&apos;irligining {fmtN(settings.electrodePct, 2)} %.
-                </p>
+                <p className="hint" style={{ marginTop: 6 }}>{tr(
+                    "Qum, sement, sheben — beton markasi koeffitsiyentlaridan («Materiallar» bo'limi). Elektrod — metall og'irligining"
+                  )} {fmtN(settings.electrodePct, 2)}%.
+                                  </p>
               </div>
             </div>
           )}
@@ -229,7 +225,7 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
           {tab === "calc" && card && (
             <div className="calc-edit">
               <div className="bar">
-                <h4 style={{ margin: 0 }}>Materiallar</h4>
+                <h4 style={{ margin: 0 }}>{tr("Materiallar")}</h4>
                 <button
                   type="button"
                   className="btn sm"
@@ -242,18 +238,16 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
                       .map(([materialId, r]) => ({ materialId, norm: Math.round(r.qty * 10000) / 10000 }));
                     setCalc({ items: rows });
                   }}
-                >
-                  Sarf normasidan nusxa olish
-                </button>
+                >{tr("Sarf normasidan nusxa olish")}</button>
               </div>
               <div className="tbl-wrap">
                 <table className="edit">
                   <thead>
                     <tr>
-                      <th>Material</th>
-                      <th className="n">Norma</th>
-                      <th className="n">Narx</th>
-                      <th className="n">Summa</th>
+                      <th>{tr("Material")}</th>
+                      <th className="n">{tr("Norma")}</th>
+                      <th className="n">{tr("Narx")}</th>
+                      <th className="n">{tr("Summa")}</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -267,12 +261,12 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
                             <MatSelect id={`pc-m-${i}`} value={l.materialId} materials={materials} onChange={(v) => setCalc({ items: calc.items.map((x, j) => (j === i ? { ...x, materialId: v } : x)) })} />
                           </td>
                           <td className="n">
-                            <input id={`pc-q-${i}`} type="number" step="any" min="0" value={l.norm} onChange={(e) => setCalc({ items: calc.items.map((x, j) => (j === i ? { ...x, norm: e.target.value } : x)) })} aria-label="Norma" />
+                            <input id={`pc-q-${i}`} type="number" step="any" min="0" value={l.norm} onChange={(e) => setCalc({ items: calc.items.map((x, j) => (j === i ? { ...x, norm: e.target.value } : x)) })} aria-label={tr("Norma")} />
                           </td>
                           <td className="n muted">{m ? fmt(price) : ""}</td>
                           <td className="n">{fmt(price * (+l.norm || 0))}</td>
                           <td>
-                            <button type="button" className="btn sm danger" aria-label="O'chirish" onClick={() => setCalc({ items: calc.items.filter((_, j) => j !== i) })}>
+                            <button type="button" className="btn sm danger" aria-label={tr("O'chirish")} onClick={() => setCalc({ items: calc.items.filter((_, j) => j !== i) })}>
                               ×
                             </button>
                           </td>
@@ -289,20 +283,15 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
                   </tfoot>
                 </table>
               </div>
-              <button type="button" className="btn sm" style={{ marginTop: 6 }} onClick={() => setCalc({ items: [...calc.items, { materialId: "", norm: "" }] })}>
-                + Material
-              </button>
+              <button type="button" className="btn sm" style={{ marginTop: 6 }} onClick={() => setCalc({ items: [...calc.items, { materialId: "", norm: "" }] })}>{tr("+ Material")}</button>
 
               <div className="form-grid" style={{ marginTop: 14 }}>
                 <div className="field">
-                  <label htmlFor="pe-kg">
-                    Metall og&apos;irligi <span className="u">(kg, «Логистика метала» uchun)</span>
+                  <label htmlFor="pe-kg">{tr("Metall og'irligi")} <span className="u">{tr("(kg, «Логистика метала» uchun)")}</span>
                   </label>
                   <div style={{ display: "flex", gap: 6 }}>
                     <input id="pe-kg" type="number" step="any" min="0" value={calc.metalKg} onChange={(e) => setCalc({ metalKg: e.target.value })} />
-                    <button type="button" className="btn sm" onClick={() => setCalc({ metalKg: Math.round(calcMetalKg(numeric, mats) * 1000) / 1000 })}>
-                      Hisoblash
-                    </button>
+                    <button type="button" className="btn sm" onClick={() => setCalc({ metalKg: Math.round(calcMetalKg(numeric, mats) * 1000) / 1000 })}>{tr("Hisoblash")}</button>
                   </div>
                 </div>
                 <div className="field">
@@ -323,19 +312,17 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
               <RowsEditor title="Другие затраты" idp="or" rows={calc.otherRows} setRows={(r) => setCalc({ otherRows: r })} computed={card.otherRows} />
 
               <div className="totals">
-                <span>Tannarx: {fmt(card.itogo)}</span>
-                <span>Narx QQSsiz: {fmt(card.noVat)}</span>
-                <strong>Narx QQS bilan: {fmt(card.final)} so&apos;m</strong>
+                <span>{tr("Tannarx:")} {fmt(card.itogo)}</span>
+                <span>{tr("Narx QQSsiz:")} {fmt(card.noVat)}</span>
+                <strong>{tr("Narx QQS bilan:")} {fmt(card.final)} {tr("so'm")}</strong>
               </div>
             </div>
           )}
 
           <div className="dlg-actions">
-            <button type="button" className="btn" onClick={onClose}>
-              Bekor qilish
-            </button>
+            <button type="button" className="btn" onClick={onClose}>{tr("Bekor qilish")}</button>
             <button className="btn primary" disabled={busy}>
-              {busy ? "Saqlanmoqda…" : "Saqlash"}
+              {busy ? tr("Saqlanmoqda…") : tr("Saqlash")}
             </button>
           </div>
         </form>

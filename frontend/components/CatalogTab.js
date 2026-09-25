@@ -1,4 +1,5 @@
 "use client";
+import { tr } from "@/lib/i18n";
 import { useState } from "react";
 import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
@@ -30,21 +31,19 @@ export default function CatalogTab({ data, notify, reload, onEdit }) {
     <section className="sheet">
       <div className="bar">
         <div className="l">
-          <h2>Mahsulotlar katalogi</h2>
-          <input id="cat-q" type="search" placeholder="Qidirish" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Qidirish" />
+          <h2>{tr("Mahsulotlar katalogi")}</h2>
+          <input id="cat-q" type="search" placeholder={tr("Qidirish")} value={q} onChange={(e) => setQ(e.target.value)} aria-label={tr("Qidirish")} />
         </div>
         <div className="r">
           {canEdit && (
-            <button className="btn primary" onClick={() => onEdit(null)}>
-              + Mahsulot qo&apos;shish
-            </button>
+            <button className="btn primary" onClick={() => onEdit(null)}>{tr("+ Mahsulot qo'shish")}</button>
           )}
         </div>
       </div>
       <div className="chips">
         {[["all", "Hammasi"], ...groups.map((g) => [g, g])].map(([k, l]) => (
           <button key={k} className="chip" aria-pressed={group === k} onClick={() => setGroup(k)}>
-            {l} · {k === "all" ? products.length : products.filter((p) => p.group === k).length}
+            {k === "all" ? tr(l) : l} · {k === "all" ? products.length : products.filter((p) => p.group === k).length}
           </button>
         ))}
       </div>
@@ -52,12 +51,12 @@ export default function CatalogTab({ data, notify, reload, onEdit }) {
         <table>
           <thead>
             <tr>
-              <th>Marka</th>
-              <th>Nomi</th>
-              <th>Beton</th>
-              <th className="n">Beton, m³</th>
-              <th className="n">Metall, kg</th>
-              <th className="n">Og&apos;irligi, t</th>
+              <th>{tr("Marka")}</th>
+              <th>{tr("Nomi")}</th>
+              <th>{tr("Beton")}</th>
+              <th className="n">{tr("Beton, m³")}</th>
+              <th className="n">{tr("Metall, kg")}</th>
+              <th className="n">{tr("Og'irligi, t")}</th>
               <th></th>
             </tr>
           </thead>
@@ -83,9 +82,7 @@ export default function CatalogTab({ data, notify, reload, onEdit }) {
                   <td>
                     {canEdit && (
                       <div className="acts">
-                        <button className="btn sm" onClick={() => onEdit(p)}>
-                          Tahrirlash
-                        </button>
+                        <button className="btn sm" onClick={() => onEdit(p)}>{tr("Tahrirlash")}</button>
                         <DeleteButton onConfirm={() => del(p.id)} />
                       </div>
                     )}
@@ -96,7 +93,7 @@ export default function CatalogTab({ data, notify, reload, onEdit }) {
           </tbody>
         </table>
       </div>
-      <p className="hint">Og&apos;irlik taxminan: beton hajmi × 2,5 t/m³ + metall.</p>
+      <p className="hint">{tr("Og'irlik taxminan: beton hajmi × 2,5 t/m³ + metall.")}</p>
     </section>
   );
 }

@@ -233,6 +233,23 @@ export async function deliver(wb, filename, { share = false } = {}) {
 }
 
 /**
+ * Ombor harakatlarini kunlik hisobotlarga qo'shadi (Excel shakli uchun):
+ * Приход += ombor kirimi, Расход += ombor chiqimi. Faqat harakat bo'lgan kunlar ham varaq bo'ladi.
+ */
+export function mergeMoves(days, moves) {
+  const map = new Map(days.map((d) => [d.date, { ...d, materials: (d.materials || []).map((l) => ({ ...l })) }]));
+  for (const mv of moves || []) {
+    if (!map.has(mv.date)) map.set(mv.date, { date: mv.date, production: [], materials: [], shipments: [] });
+    const d = map.get(mv.date);
+    let l = d.materials.find((x) => x.materialId === mv.materialId);
+    if (!l) d.materials.push((l = { materialId: mv.materialId, sarf: 0, kirim: 0 }));
+    if (mv.type === "in") l.kirim = (+l.kirim || 0) + mv.qty;
+    else l.sarf = (+l.sarf || 0) + mv.qty;
+  }
+  return [...map.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
+/**
  * Oylik fayl: har bir kunlik hisobot alohida varaqda (02, 03, …), «В начала» oldingi varaqning «Остатка»siga formula bilan bog'lanadi.
  * startMat/startProd — birinchi kun boshidagi qoldiq (Map).
  */
