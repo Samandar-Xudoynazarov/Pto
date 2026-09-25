@@ -6,6 +6,7 @@ import { useUser } from "@/lib/role";
 import { GROUPS, fmt, fmtDate, fmtN, priceOf, today } from "@/lib/calc";
 import Icon from "./Icon";
 import ExportButtons from "./ExportButtons";
+import { meterFactor } from "@/lib/metal";
 import { fileDate } from "@/lib/xlsx-export";
 
 /** Ombor: materiallar qoldig'i — telefonda kartochkalar, qidiruv, «kam qoldi» */
@@ -161,7 +162,13 @@ export default function WarehouseTab({ data, notify, version, openMove, reloadMa
                 </span>
                 <span className="card-num">
                   <strong className={r.qty < -1e-9 ? "late" : ""}>{fmtN(r.qty, 3)}</strong>
-                  <span className="muted">{r.m.unit}</span>
+                  <span className="muted">
+                    {r.m.unit}
+                    {(() => {
+                      const f = meterFactor(r.m);
+                      return f && r.qty > 0 ? ` ≈ ${fmtN(r.qty / f.perM, 0)} ${t("m")}` : "";
+                    })()}
+                  </span>
                   {r.low && <span className={`pill ${r.low === "out" ? "st-bad" : "st-jarayonda"}`}>{t(r.low === "out" ? "Tugagan" : "Kam qoldi")}</span>}
                 </span>
               </button>

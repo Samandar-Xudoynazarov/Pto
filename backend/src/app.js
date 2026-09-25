@@ -6,6 +6,7 @@ import { Material, Product, Day, Order, Settings, User, AuditLog, Counter, Targe
 import { stockReport } from "./stock.js";
 import { ROLES, WRITE_ROLES, STORE_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
 import { audit, diff } from "./audit.js";
+import { meterFactor } from "./metal.js";
 import { USER_LIMIT, USER_LOCK_MIN, IP_LIMIT, IP_LOCK_MIN, clientIp, userKey, ipKey, takeAttempt, lock, loginSucceeded, clearUserLocks } from "./limits.js";
 
 const app = express();
@@ -264,7 +265,7 @@ app.get("/api/backup", adminOnly, async (req, res) => {
 });
 
 /* ---------- Materiallar ---------- */
-const MATERIAL_FIELDS = ["name", "unit", "group", "price", "stock", "electrodeBase", "isElectrode", "code", "minQty", "archived", "recipe", "writeoff", "sort"];
+const MATERIAL_FIELDS = ["name", "unit", "group", "price", "stock", "electrodeBase", "isElectrode", "code", "minQty", "kgPerM", "archived", "recipe", "writeoff", "sort"];
 const STORE_MATERIAL_FIELDS = ["name", "unit", "group", "code", "minQty"]; // omborchi shularnigina o'zgartira oladi
 const materialFields = (req) => (WRITE_ROLES.includes(req.user.role) ? MATERIAL_FIELDS : STORE_MATERIAL_FIELDS);
 
@@ -469,14 +470,25 @@ app.post("/api/movements", async (req, res) => {
   if (!MOVE_TYPES.includes(b.type)) return res.status(400).json({ error: "Harakat turi noto'g'ri (kirim yoki chiqim)" });
   const date = b.date === undefined || b.date === "" ? todayTashkent() : b.date;
   if (!validDate(date)) return res.status(400).json({ error: "Sana formati YYYY-MM-DD" });
-  const qty = round3(+b.qty);
-  if (!(qty > 0)) return res.status(400).json({ error: "Miqdorni to'g'ri kiriting" });
   if (!isId(b.materialId)) return res.status(400).json({ error: "Materialni tanlang" });
   const mat = await Material.findById(b.materialId).lean();
   if (!mat || mat.archived) return res.status(400).json({ error: "Material topilmadi" });
   if (!mat.stock) return res.status(400).json({ error: "Bu material omborda hisobga olinmaydi" });
 
-  const data = { type: b.type, date, materialId: mat._id, qty, note: String(b.note ?? "").slice(0, 300), person: String(b.person ?? "").slice(0, 120) };
+  // metrda yozilgan bo'lsa — koeffitsiyent serverda hisoblanadi (brauzerga ishonilmaydi)
+  let qty;
+  let conv = {};
+  if (b.inputUnit === "m") {
+    const f = meterFactor(mat);
+    if (!f) return res.status(400).json({ error: "Bu material uchun metrdan aylantirish koeffitsiyenti yo'q" });
+    const inputQty = round3(+b.inputQty);
+    if (!(inputQty > 0)) return res.status(400).json({ error: "Miqdorni to'g'ri kiriting" });
+    qty = Math.round(inputQty * f.perM * 1e6) / 1e6;
+    conv = { inputQty, inputUnit: "m", factor: f.perM };
+  } else qty = round3(+b.qty);
+  if (!(qty > 0)) return res.status(400).json({ error: "Miqdorni to'g'ri kiriting" });
+
+  const data = { type: b.type, date, materialId: mat._id, qty, ...conv, note: String(b.note ?? "").slice(0, 300), person: String(b.person ?? "").slice(0, 120) };
   if (b.type === "in") {
     data.price = Math.max(0, +b.price || 0);
     data.supplier = String(b.supplier ?? "").slice(0, 160);

@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 import { fmtN, today, GROUPS } from "@/lib/calc";
 import Icon from "./Icon";
+import { meterFactor } from "@/lib/metal";
 
 /**
  * Ombor kirimi / chiqimi — telefonda pastdan chiqadigan oyna.
@@ -60,7 +61,12 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
   const depts = targets.filter((x) => x.kind === "department" && !x.archived);
   const cars = targets.filter((x) => x.kind === "vehicle" && !x.archived);
-  const qty = +f.qty || 0;
+  // metall: metrda yozish mumkin — material birligiga (kg) avtomatik aylantiriladi
+  const factor = meterFactor(mat);
+  const [inM, setInM] = useState(true);
+  const byMeter = Boolean(factor && inM);
+  const entered = +f.qty || 0;
+  const qty = byMeter ? Math.round(entered * factor.perM * 1e6) / 1e6 : entered;
   const after = bal === null ? null : type === "in" ? bal + qty : bal - qty;
 
   async function submit(e) {
@@ -72,8 +78,12 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
     setBusy(true);
     setErr("");
     try {
-      const body = { type, materialId, qty, date: f.date, person: f.person, note: f.note };
-      if (type === "in") Object.assign(body, { price: +f.price || 0, supplier: f.supplier, docNumber: f.docNumber });
+      const body = byMeter
+        ? { type, materialId, inputUnit: "m", inputQty: entered, date: f.date, person: f.person, note: f.note }
+        : { type, materialId, qty, date: f.date, person: f.person, note: f.note };
+      // metr rejimida narx 1 metr uchun kiritiladi → material birligi (kg) narxiga o'tkaziladi
+      const price = byMeter ? (+f.price || 0) / factor.perM : +f.price || 0;
+      if (type === "in") Object.assign(body, { price: Math.round(price * 100) / 100, supplier: f.supplier, docNumber: f.docNumber });
       else Object.assign(body, { departmentId: f.departmentId || null, vehicleId: f.vehicleId || null });
       await api("/movements", { method: "POST", body });
       notify(t(type === "in" ? "Kirim saqlandi" : "Chiqim saqlandi"));
@@ -147,15 +157,37 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
           <div className="form-grid two">
             <div className="field">
               <label htmlFor="mv-qty">
-                {t("Miqdor")} {mat && <span className="u">({mat.unit})</span>}
+                {t("Miqdor")} {mat && <span className="u">({byMeter ? t("metr") : mat.unit})</span>}
               </label>
               <input id="mv-qty" ref={qtyRef} className="big" type="number" inputMode="decimal" min="0" step="any" value={f.qty} onChange={set("qty")} required />
+              {factor && (
+                <div className="unit-seg" role="group" aria-label={t("Birlik")}>
+                  <button type="button" aria-pressed={byMeter} onClick={() => setInM(true)}>
+                    {t("metr")}
+                  </button>
+                  <button type="button" aria-pressed={!byMeter} onClick={() => setInM(false)}>
+                    {mat.unit}
+                  </button>
+                </div>
+              )}
             </div>
             <div className="field">
               <label htmlFor="mv-date">{t("Sana")}</label>
               <input id="mv-date" type="date" value={f.date} max={today()} onChange={set("date")} required />
             </div>
           </div>
+          {byMeter && entered > 0 && (
+            <div className="conv">
+              <span>
+                {fmtN(entered, 3)} {t("m")} × {fmtN(factor.kgPerM, 3)} {t("kg/m")}
+                {factor.perM !== factor.kgPerM ? ` ÷ 1000` : ""} =
+              </span>
+              <strong>
+                {fmtN(qty, 3)} {mat.unit}
+              </strong>
+              <span className="muted">{factor.auto ? `${t("avtomatik")}: ${factor.how}` : t("ПТО kiritgan koeffitsiyent")}</span>
+            </div>
+          )}
           {after !== null && qty > 0 && (
             <p className={`hint ${after < 0 ? "warn-text" : ""}`}>
               {t("Keyin qoladi")}: <strong>{fmtN(after, 3)} {mat?.unit}</strong>
@@ -167,7 +199,7 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
             <div className="form-grid two">
               <div className="field">
                 <label htmlFor="mv-price">
-                  {t("Birlik narxi")} <span className="u">({t("so'm")})</span>
+                  {t("Birlik narxi")} <span className="u">({t("so'm")} / {byMeter ? t("m") : mat?.unit || t("birlik")})</span>
                 </label>
                 <input id="mv-price" type="number" inputMode="decimal" min="0" step="any" value={f.price} onChange={set("price")} />
               </div>

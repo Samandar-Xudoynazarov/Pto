@@ -317,7 +317,7 @@ dialog.bsheet{overflow-x:hidden}
 .bsheet-grip{display:none}
 .bsheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .bsheet-head h2{overflow-wrap:anywhere}
-.form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
 .form-grid.two input,.form-grid.two select{width:100%}
 input.big{font-size:22px;font-weight:700;padding:10px 12px}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:var(--muted-soft);border-radius:12px}
@@ -371,6 +371,14 @@ td.out-text,.out-text{color:var(--out);font-weight:600}
 }
 
 .export-btns{display:inline-flex;flex-wrap:wrap;gap:8px}
+
+/* metr → kg */
+.unit-seg{display:inline-flex;gap:2px;padding:3px;border-radius:999px;background:var(--muted-soft);justify-self:start;margin-top:6px}
+.unit-seg button{border:0;background:transparent;color:var(--ink-2);font:600 13px var(--f-body);padding:6px 14px;border-radius:999px;cursor:pointer}
+.unit-seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.conv{display:grid;gap:2px;padding:10px 14px;border-radius:var(--r);background:var(--accent-soft);font-variant-numeric:tabular-nums}
+.conv strong{font-size:22px;color:var(--accent)}
+.conv .muted{font-size:12px}
 
 /* til tanlash */
 .lang{display:inline-flex;gap:2px;padding:3px;border-radius:999px;background:var(--muted-soft);justify-self:start}

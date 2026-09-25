@@ -38,6 +38,7 @@ const materialSchema = new Schema(
     isElectrode: { type: Boolean, default: false }, // shu material — elektrod (norma metall og'irligidan avtomatik)
     code: { type: String, default: "", trim: true, maxlength: 40 }, // artikul / ichki kod
     minQty: { type: Number, default: 0, min: 0 }, // shundan kam qolsa «Kam qoldi» belgisi
+    kgPerM: { type: Number, default: null, min: 0 }, // 1 metr og'irligi, kg (bo'sh — nomdan avtomatik, src/metal.js)
     archived: { type: Boolean, default: false }, // ro'yxatlarda ko'rinmaydi, tarixi saqlanadi
     recipe: { type: [normLine], default: [] }, // beton: 1 m³ narxi uchun tarkib (kalkulyatsiya)
     writeoff: { type: [normLine], default: [] }, // beton: 1 m³ uchun ombordan yoziladigan xomashyo (Норма)
@@ -185,7 +186,11 @@ const movementSchema = new Schema(
     type: { type: String, enum: MOVE_TYPES, required: true },
     date: { type: String, required: true, match: [DATE_RE, "Sana formati YYYY-MM-DD"] },
     materialId: ref("Material"),
-    qty: { type: Number, required: true, min: [0.0001, "Miqdor 0 dan katta bo'lishi kerak"] },
+    qty: { type: Number, required: true, min: [0.0001, "Miqdor 0 dan katta bo'lishi kerak"] }, // material birligida (kg, t, dona…)
+    // omborchi boshqa birlikda yozgan bo'lsa (masalan, 120 m armatura): kiritilgan son, birlik va koeffitsiyent
+    inputQty: { type: Number, default: null },
+    inputUnit: { type: String, default: "" }, // "m" — metr
+    factor: { type: Number, default: null }, // 1 inputUnit = factor × material birligi
     price: { type: Number, default: 0, min: 0 }, // birlik narxi (kirimda — kiritilgan, chiqimda — material narxi)
     // kirim
     supplier: { type: String, default: "", trim: true, maxlength: 160 },

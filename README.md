@@ -129,6 +129,7 @@ Barcha so'rovlarda `Authorization: Bearer <token>` sarlavhasi bo'lishi kerak (`/
 - **Elektrod**: «Materiallar» bo'limida bitta materialga «Bu material — elektrod» belgisi qo'yiladi. Belgi yo'q bo'lsa, nomi «Электрод» bo'lgan material olinadi.
 - **Ombor (materiallar)**: boshlang'ich qoldiq + kirim − ishlab chiqarish sarfi − chiqim. Kirim va chiqimni omborchi yozadi (chiqim — sex, texnika yoki mas'ul shaxsga); ishlab chiqarish sarfini ПТО kunlik hisobotda yozadi. Qoldiqdan ortiq chiqim qilib bo'lmaydi. Kunlik hisobotdagi «Kirim» va «Chiqim» ustunlari hamda Excel shaklidagi «Приход»/«Расход» shu harakatlardan avtomatik to'ladi.
 - **Tayyor mahsulot**: boshlang'ich qoldiq + fakt − jo'natish.
+- **Metr → kg**: kg yoki t da yuritiladigan metall uchun omborchi miqdorni metrda yozishi mumkin — avtomatik kg ga aylantiriladi. 1 metr og'irligi nomdan olinadi: armatura, prutok, krug — «мм» oldidagi diametr bo'yicha GOST 5781 (Ø12 → 0,888 kg/m); burchak «Уголок 140х9» — GOST 8509 (19,41 kg/m). Boshqa profillar yoki aniqroq qiymat uchun «Materiallar» bo'limida «1 metr og'irligi» maydoniga qo'lda kiritiladi. Hisob serverda qilinadi; tarixda kiritilgan metr ham saqlanadi.
 - **Kalkulyatsiya** (Excel'dagi tartib bilan): materiallar → ФОТ, ЕСП → Производственная СС → Другие затраты → Итого → Маржа → НДС. Beton narxi retseptdan hisoblanadi.
 
 ## Kunlik hisobotni Excel'da olish

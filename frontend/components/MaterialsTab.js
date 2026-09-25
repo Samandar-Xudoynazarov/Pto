@@ -1,5 +1,6 @@
 "use client";
 import { tr } from "@/lib/i18n";
+import { autoKgPerM } from "@/lib/metal";
 import { useEffect, useRef, useState } from "react";
 import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
@@ -71,7 +72,8 @@ function MaterialEditor({ material, open, onClose, data, notify, onSaved }) {
     e.preventDefault();
     setBusy(true);
     const clean = (arr) => (arr || []).filter((l) => l.materialId).map((l) => ({ materialId: l.materialId, norm: +l.norm || 0 }));
-    const body = { name: d.name.trim(), unit: d.unit.trim(), group: d.group, price: +d.price || 0, stock: d.stock, electrodeBase: d.electrodeBase, isElectrode: Boolean(d.isElectrode), recipe: clean(d.recipe), writeoff: clean(d.writeoff) };
+    const body = { name: d.name.trim(), unit: d.unit.trim(), group: d.group, price: +d.price || 0, stock: d.stock, electrodeBase: d.electrodeBase, isElectrode: Boolean(d.isElectrode), recipe: clean(d.recipe), writeoff: clean(d.writeoff),
+      kgPerM: d.kgPerM === "" || d.kgPerM === null || d.kgPerM === undefined ? null : +d.kgPerM || null };
     try {
       if (material?.id) await api(`/materials/${material.id}`, { method: "PUT", body });
       else await api("/materials", { method: "POST", body });
@@ -124,6 +126,26 @@ function MaterialEditor({ material, open, onClose, data, notify, onSaved }) {
                 <input id="me-price" type="number" step="any" min="0" value={d.price} onChange={(e) => setD({ ...d, price: e.target.value })} />
               </div>
             )}
+            {/^(кг|kg|т|t|тонна)$/i.test(String(d.unit || "").trim()) && (() => {
+              const auto = autoKgPerM(d.name);
+              return (
+                <div className="field">
+                  <label htmlFor="me-kgm">
+                    {tr("1 metr og'irligi")} <span className="u">({tr("kg/m — omborchi metrda yozsa")})</span>
+                  </label>
+                  <input
+                    id="me-kgm"
+                    type="number"
+                    step="any"
+                    min="0"
+                    value={d.kgPerM ?? ""}
+                    placeholder={auto ? `${tr("avtomatik")}: ${String(auto.kgPerM).replace(".", ",")}` : tr("yo'q")}
+                    onChange={(e) => setD({ ...d, kgPerM: e.target.value })}
+                  />
+                  <span className="u">{auto ? `${tr("Bo'sh qoldirilsa — avtomatik")} (${auto.how})` : tr("Metrdan aylantirish kerak bo'lsa, kiriting")}</span>
+                </div>
+              );
+            })()}
           </div>
           <div className="checks">
             <label className="check">

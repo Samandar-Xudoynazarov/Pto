@@ -111,6 +111,7 @@ export default function MovesTab({ data, notify, version, onChanged }) {
             { header: t("Turi"), key: "type", width: 9 },
             { header: t("Material"), key: "mat", width: 32 },
             { header: t("Birlik"), key: "unit", width: 7 },
+            { header: t("Metrda"), key: "meters", type: "num", width: 10 },
             { header: t("Kirim"), key: "in", type: "num", total: "sum", width: 11 },
             { header: t("Chiqim"), key: "out", type: "num", total: "sum", width: 11 },
             { header: t("Narx"), key: "price", type: "money", width: 12 },
@@ -128,6 +129,7 @@ export default function MovesTab({ data, notify, version, onChanged }) {
               type: t(m.type === "in" ? "Kirim" : "Chiqim"),
               mat: mat?.name || "?",
               unit: mat?.unit,
+              meters: m.inputUnit === "m" ? m.inputQty : null,
               in: m.type === "in" ? m.qty : null,
               out: m.type === "out" ? m.qty : null,
               price: m.price || null,
@@ -261,7 +263,10 @@ export default function MovesTab({ data, notify, version, onChanged }) {
                             {m.type === "in" ? "+" : "−"}
                             {fmtN(m.qty, 3)}
                           </strong>
-                          <span className="muted">{mat?.unit}</span>
+                          <span className="muted">
+                            {mat?.unit}
+                            {m.inputUnit === "m" && ` · ${fmtN(m.inputQty, 3)} ${t("m")}`}
+                          </span>
                         </span>
                       </button>
                       {open === m.id && (
