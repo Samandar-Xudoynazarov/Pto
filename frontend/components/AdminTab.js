@@ -196,7 +196,7 @@ function Users({ openForm, notify }) {
         )}
       </div>
       <p className="hint" style={{ marginTop: 8 }}>
-        <strong>{tr("Administrator")}</strong> {tr("hamma narsani va foydalanuvchilarni boshqaradi.")} <strong>{tr("ПТО muhandisi")}</strong> {tr("hisobot, ombor, buyurtma, katalog va materiallarni tahrirlaydi.")} <strong>{tr("Omborchi")}</strong> {tr("ombor kirim-chiqimini, sex va texnikani yuritadi.")} <strong>{tr("Rahbar")}</strong> {tr("va")} <strong>{tr("Kurator")}</strong> {tr(
+        <strong>{tr("Administrator")}</strong> {tr("hamma narsani va foydalanuvchilarni boshqaradi.")} <strong>{tr("ПТО muhandisi")}</strong> {tr("hisobot, ombor, buyurtma, katalog va materiallarni tahrirlaydi.")} <strong>{tr("Sex boshlig'i (usta)")}</strong> {tr("kunlik rejani tuzadi, faktni, xomashyo sarfini va izohni yozadi (jo'natish va kirimni o'zgartira olmaydi).")} <strong>{tr("Omborchi")}</strong> {tr("ombor kirim-chiqimini, sex va texnikani yuritadi.")} <strong>{tr("Rahbar")}</strong> {tr("va")} <strong>{tr("Kurator")}</strong> {tr(
           "hamma bo'limni ko'radi, lekin hech narsani o'zgartira olmaydi. Bloklangan foydalanuvchi darhol tizimdan chiqariladi."
         )}</p>
     </div>

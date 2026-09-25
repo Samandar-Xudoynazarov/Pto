@@ -5,6 +5,7 @@ import { createContext, useContext } from "react";
 export const ROLES = [
   ["admin", "Administrator"],
   ["pto", "ПТО muhandisi"],
+  ["usta", "Sex boshlig'i (usta)"],
   ["omborchi", "Omborchi"],
   ["rahbar", "Rahbar (faqat ko'rish)"],
   ["kurator", "Kurator (faqat ko'rish)"],
@@ -21,6 +22,7 @@ export function useUser() {
     user,
     canEdit: user?.role === "admin" || user?.role === "pto", // ПТО ma'lumotlari
     canStore: canStoreRole(user?.role), // ombor kirim/chiqimi
+    canDay: ["admin", "pto", "usta"].includes(user?.role), // kunlik hisobot: reja, fakt, sarf, izoh
     isAdmin: user?.role === "admin",
   };
 }

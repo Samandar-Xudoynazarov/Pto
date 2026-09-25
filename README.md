@@ -79,6 +79,7 @@ cd frontend && cp .env.example .env.local && npm install && npm run dev   # http
 |---|---|
 | Administrator | hamma narsa + foydalanuvchilar, zaxira nusxa, o'zgarishlar tarixi («Boshqaruv» bo'limi) |
 | ПТО muhandisi | hisobot, ombor, buyurtma, katalog, materiallarni tahrirlaydi |
+| Sex boshlig'i (usta) | «Kunlik hisobot»da rejani tuzadi, fakt, xomashyo sarfi va izohni yozadi; jo'natish va kirimni o'zgartira olmaydi, kunni o'chira olmaydi. «Oylik hisobot» va «Ombor»ni ko'radi |
 | Omborchi | «Ombor», «Kirim-chiqim tarixi», «Sex va texnika» bo'limlari: kirim/chiqim yozadi, yangi material qo'shadi (narxsiz), o'zi kiritgan yozuvni 24 soat ichida bekor qiladi |
 | Rahbar | hamma bo'limni ko'radi, hech narsani o'zgartira olmaydi |
 | Kurator | kuzatuvchi: hamma bo'limni ko'radi, hech narsani o'zgartira olmaydi |

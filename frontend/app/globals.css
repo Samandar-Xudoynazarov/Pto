@@ -380,6 +380,8 @@ td.out-text,.out-text{color:var(--out);font-weight:600}
 .conv strong{font-size:22px;color:var(--accent)}
 .conv .muted{font-size:12px}
 
+table.edit input:disabled{background:transparent;border-color:transparent;color:var(--ink);-webkit-text-fill-color:var(--ink);opacity:1}
+
 /* til tanlash */
 .lang{display:inline-flex;gap:2px;padding:3px;border-radius:999px;background:var(--muted-soft);justify-self:start}
 .lang button{border:0;background:transparent;color:var(--ink-2);font:600 12px var(--f-body);padding:5px 10px;border-radius:999px;cursor:pointer}

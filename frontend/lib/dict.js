@@ -570,6 +570,8 @@ export const DICT = {
     "Metrdan aylantirish kerak bo'lsa, kiriting": "Заполните, если нужен пересчёт из метров",
     Metrda: "В метрах",
     "Bu material uchun metrdan aylantirish koeffitsiyenti yo'q": "Для этого материала нет коэффициента пересчёта из метров",
+    "Sex boshlig'i (usta)": "Начальник цеха (мастер)",
+    "kunlik rejani tuzadi, faktni, xomashyo sarfini va izohni yozadi (jo'natish va kirimni o'zgartira olmaydi).": "составляет дневной план, вносит факт, расход сырья и примечания (отгрузку и приход менять не может).",
     /* ---------- server xabarlari ---------- */
     "Login yoki parol noto'g'ri": "Неверный логин или пароль",
     "Login va parolni kiriting": "Введите логин и пароль",

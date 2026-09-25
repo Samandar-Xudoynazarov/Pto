@@ -25,23 +25,25 @@ import MoveSheet from "@/components/MoveSheet";
 
 // [kalit, nomi, izoh, kimlarga (bo'sh — hammaga)]
 const NO_STORE = ["admin", "pto", "rahbar", "kurator"];
+const WITH_USTA = [...NO_STORE, "usta"]; // sex boshlig'i: kunlik va oylik hisobot, ombor qoldig'i
 const TABS = [
-  ["day", "Kunlik hisobot", "Reja / fakt, xomashyo sarfi, jo'natish", NO_STORE],
-  ["month", "Oylik hisobot", "Reja bajarilishi, haqiqiy sarf va norma farqi", NO_STORE],
+  ["day", "Kunlik hisobot", "Reja / fakt, xomashyo sarfi, jo'natish", WITH_USTA],
+  ["month", "Oylik hisobot", "Reja bajarilishi, haqiqiy sarf va norma farqi", WITH_USTA],
   ["wh", "Ombor", "Materiallar qoldig'i, kirim va chiqim"],
-  ["moves", "Kirim-chiqim tarixi", "Ombordagi barcha harakatlar"],
+  ["moves", "Kirim-chiqim tarixi", "Ombordagi barcha harakatlar", [...NO_STORE, "omborchi"]],
   ["stock", "Qoldiq va ehtiyoj", "Material va tayyor mahsulot qiymati, buyurtmalar uchun ehtiyoj", NO_STORE],
   ["ord", "Buyurtmalar", "Buyurtmachilar, muddatlar va jo'natish holati", NO_STORE],
   ["cost", "Kalkulyatsiya", "Tannarx va sotuv narxi — Excel tartibida", NO_STORE],
   ["cat", "Katalog", "Mahsulotlar, sarf normalari va kalkulyatsiya kartalari", NO_STORE],
   ["mat", "Materiallar", "Narxlar, beton retseptlari va sozlamalar", NO_STORE],
-  ["targets", "Sex va texnika", "Chiqim manzillari: bo'limlar va mashinalar"],
+  ["targets", "Sex va texnika", "Chiqim manzillari: bo'limlar va mashinalar", [...NO_STORE, "omborchi"]],
   ["admin", "Boshqaruv", "Foydalanuvchilar, zaxira nusxa va o'zgarishlar tarixi", ["admin"]],
 ];
 const tabsFor = (user) => TABS.filter((t) => !t[3] || t[3].includes(user?.role));
 // Telefondagi pastki menyu: rol bo'yicha 4 ta asosiy bo'lim (+ o'rtada «+» tugmasi)
 const BOTTOM = {
   omborchi: ["wh", "moves", "targets"],
+  usta: ["day", "month", "wh"],
   admin: ["day", "wh", "moves"],
   pto: ["day", "wh", "moves"],
   rahbar: ["day", "month", "wh", "moves"],

@@ -3,9 +3,10 @@ import { promisify } from "node:util";
 
 const scrypt = promisify(crypto.scrypt);
 
-export const ROLES = ["admin", "pto", "omborchi", "rahbar", "kurator"];
+export const ROLES = ["admin", "pto", "usta", "omborchi", "rahbar", "kurator"];
 export const WRITE_ROLES = ["admin", "pto"]; // ПТО ma'lumotlarini (hisobot, katalog, buyurtma, narx) o'zgartiradi
 export const STORE_ROLES = ["admin", "pto", "omborchi"]; // ombor kirim/chiqimi, sex/texnika, yangi material
+export const DAY_ROLES = ["admin", "pto", "usta"]; // kunlik hisobotni saqlaydi (usta — reja, fakt, sarf va izoh; kirim va jo'natishsiz)
 // rahbar va kurator — faqat ko'radi
 const TOKEN_DAYS = 30;
 

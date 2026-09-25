@@ -12,7 +12,7 @@ const emptyProd = () => ({ productId: "", plan: "", fact: "", note: "" });
 const emptyShip = () => ({ productId: "", qty: "", customer: "", vehicle: "", orderId: "" });
 
 export default function DayTab({ data, notify, onSaved, onDirtyChange, version }) {
-  const { canEdit } = useUser();
+  const { canEdit, canDay } = useUser(); // canDay: ПТО, admin va sex boshlig'i (usta — jo'natish va kunni o'chirishsiz)
   const { materials, products, mats, prods, settings, orders } = data;
   const [date, setDate] = useState(() => lsGet("pto.day", today()));
   const [loading, setLoading] = useState(true);
@@ -247,7 +247,7 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
           {canEdit && exists && (
             <button className="btn danger" onClick={removeDay}>{tr("Kunni o'chirish")}</button>
           )}
-          {canEdit && (
+          {canDay && (
             <button className="btn primary" onClick={save} disabled={saving || loading}>
               <Icon name="save" /> {saving ? tr("Saqlanmoqda…") : tr("Saqlash")}
             </button>
@@ -266,7 +266,7 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
           <div>
             <h3>{tr("Mahsulotlar: reja / fakt")}</h3>
             <div className="tbl-wrap">
-              <fieldset className="plain" disabled={!canEdit}><table className="edit">
+              <fieldset className="plain" disabled={!canDay}><table className="edit">
                 <thead>
                   <tr>
                     <th>{tr("Mahsulot")}</th>
@@ -322,7 +322,7 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
                 </tfoot>
               </table></fieldset>
             </div>
-            {canEdit && (
+            {canDay && (
               <button className="btn sm no-print" style={{ marginTop: 8 }} onClick={touch(() => setProd((rows) => [...rows, emptyProd()]))}>{tr("+ Mahsulot qo'shish")}</button>
             )}
           </div>
@@ -334,13 +334,13 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
               <div className="r no-print">
                 <label className="check">
                   <input id="day-showall" type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} /> {tr("Barcha materiallar")}</label>
-                {canEdit && (
+                {canDay && (
                   <button className="btn sm" onClick={fillFromNorm}>{tr("Sarfni normadan to'ldirish")}</button>
                 )}
               </div>
             </div>
             <div className="tbl-wrap" style={{ marginTop: 8 }}>
-              <fieldset className="plain" disabled={!canEdit}><table className="edit">
+              <fieldset className="plain" disabled={!canDay}><table className="edit">
                 <thead>
                   <tr>
                     <th>{tr("Material")}</th>
@@ -495,7 +495,7 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
 
           <div className="field no-print">
             <label htmlFor="day-note">{tr("Izoh")}</label>
-            <textarea id="day-note" rows={2} readOnly={!canEdit} value={note} onChange={touch((e) => setNote(e.target.value))} />
+            <textarea id="day-note" rows={2} readOnly={!canDay} value={note} onChange={touch((e) => setNote(e.target.value))} />
           </div>
 
           <div className="print-only signers">

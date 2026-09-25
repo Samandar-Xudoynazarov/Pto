@@ -142,7 +142,7 @@ const settingsSchema = new Schema(
 );
 
 /* ---------- Foydalanuvchilar ---------- */
-export const ROLE_LIST = ["admin", "pto", "omborchi", "rahbar", "kurator"];
+export const ROLE_LIST = ["admin", "pto", "usta", "omborchi", "rahbar", "kurator"];
 const userSchema = new Schema(
   {
     username: {

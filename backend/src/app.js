@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import { connectDB } from "./db.js";
 import { Material, Product, Day, Order, Settings, User, AuditLog, Counter, Target, Movement, DATE_RE, MOVE_TYPES, TARGET_KINDS } from "./models.js";
 import { stockReport } from "./stock.js";
-import { ROLES, WRITE_ROLES, STORE_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
+import { ROLES, WRITE_ROLES, STORE_ROLES, DAY_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
 import { audit, diff } from "./audit.js";
 import { meterFactor } from "./metal.js";
 import { USER_LIMIT, USER_LOCK_MIN, IP_LIMIT, IP_LOCK_MIN, clientIp, userKey, ipKey, takeAttempt, lock, loginSucceeded, clearUserLocks } from "./limits.js";
@@ -116,6 +116,8 @@ app.use("/api", (req, res, next) => {
   const role = req.user.role;
   if (WRITE_ROLES.includes(role)) return next();
   if (STORE_ROLES.includes(role) && (STORE_PATH.test(req.path) || (/^\/materials(\/|$)/.test(req.path) && req.method !== "DELETE"))) return next();
+  // sex boshlig'i (usta): faqat kunlik hisobotni saqlaydi, o'chira olmaydi
+  if (DAY_ROLES.includes(role) && req.method === "PUT" && /^\/days\/[^/]+$/.test(req.path)) return next();
   return res.status(403).json({ error: "Sizda bu amal uchun ruxsat yo'q" });
 });
 
@@ -366,6 +368,21 @@ app.put("/api/days/:date", async (req, res) => {
     if (!Array.isArray(data[k])) return res.status(400).json({ error: `«${k}» ro'yxat (massiv) bo'lishi kerak` });
     data[k] = data[k].filter((l) => l && typeof l === "object" && !Array.isArray(l));
   }
+  const before = await Day.findOne({ date }).lean();
+  // Sex boshlig'i (usta) reja, fakt, xomashyo sarfi va izohni o'zgartiradi: kirim va jo'natish avvalgidek qoladi
+  if (!WRITE_ROLES.includes(req.user.role)) {
+    const old = before || { production: [], materials: [], shipments: [] };
+    if (data.materials) {
+      const kirim = new Map((old.materials || []).map((l) => [String(l.materialId), +l.kirim || 0]));
+      const ids = new Set();
+      data.materials = data.materials.map((l) => {
+        ids.add(String(l.materialId));
+        return { materialId: l.materialId, sarf: l.sarf, kirim: kirim.get(String(l.materialId)) || 0 };
+      });
+      for (const [id, k] of kirim) if (!ids.has(id) && k) data.materials.push({ materialId: id, sarf: 0, kirim: k });
+    }
+    delete data.shipments;
+  }
   // bo'sh qatorlarni tashlab yuboramiz
   if (data.production) data.production = data.production.filter((l) => l.productId && ((+l.plan || 0) || (+l.fact || 0) || l.note));
   if (data.materials) data.materials = data.materials.filter((l) => l.materialId && ((+l.sarf || 0) || (+l.kirim || 0)));
@@ -373,7 +390,6 @@ app.put("/api/days/:date", async (req, res) => {
     data.shipments = data.shipments
       .filter((l) => l.productId && +l.qty > 0)
       .map((l) => ({ ...l, orderId: isId(l.orderId) ? l.orderId : null }));
-  const before = await Day.findOne({ date }).lean();
   const doc = await Day.findOneAndUpdate({ date }, { $set: { ...data, date } }, { ...upd, upsert: true, setDefaultsOnInsert: true });
   await audit(req, { action: before ? "update" : "create", entity: "day", entityId: date, label: date, before, after: doc });
   res.json(doc);
