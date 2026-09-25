@@ -39,7 +39,14 @@ td.n,th.n{text-align:right;white-space:nowrap}
 
 /* ================= karkas: chap panel + asosiy qism ================= */
 .app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
-.side{position:sticky;top:0;height:100vh;background:var(--side);color:var(--side-ink);display:flex;flex-direction:column;padding:18px 14px;gap:18px;z-index:30}
+.side{position:sticky;top:0;height:100vh;height:100dvh;background:var(--side);color:var(--side-ink);display:flex;flex-direction:column;padding:18px 14px;gap:18px;z-index:30;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--side-line) transparent}
+.side > *{flex:none}
+/* past ekran (noutbuk): menyu ixchamroq, sig'masa ichida aylanadi */
+@media (max-height:820px){
+  .side{padding-block:12px;gap:12px}
+  .nav button{padding:7px 12px}
+  .side-foot{padding-top:10px}
+}
 .brand{display:flex;align-items:center;gap:10px;padding:0 6px}
 .brand-mark{width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px;letter-spacing:.02em;flex:none}
 .brand-name{color:var(--side-hi);font-weight:700;font-size:15px}
@@ -362,6 +369,8 @@ td.out-text,.out-text{color:var(--out);font-weight:600}
   .list-pane{max-height:none}
   .cost-sheet .bsheet-head{margin-bottom:-8px}
 }
+
+.export-btns{display:inline-flex;flex-wrap:wrap;gap:8px}
 
 /* til tanlash */
 .lang{display:inline-flex;gap:2px;padding:3px;border-radius:999px;background:var(--muted-soft);justify-self:start}

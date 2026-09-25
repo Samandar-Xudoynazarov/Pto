@@ -5,6 +5,8 @@ import { useT } from "@/lib/i18n";
 import { useUser } from "@/lib/role";
 import { GROUPS, fmt, fmtDate, fmtN, priceOf, today } from "@/lib/calc";
 import Icon from "./Icon";
+import ExportButtons from "./ExportButtons";
+import { fileDate } from "@/lib/xlsx-export";
 
 /** Ombor: materiallar qoldig'i — telefonda kartochkalar, qidiruv, «kam qoldi» */
 export default function WarehouseTab({ data, notify, version, openMove, reloadMaterials }) {
@@ -77,13 +79,53 @@ export default function WarehouseTab({ data, notify, version, openMove, reloadMa
           <Icon name="search" />
           <input type="search" placeholder={t("Material qidirish…")} value={q} onChange={(e) => setQ(e.target.value)} aria-label={t("Qidirish")} />
         </div>
-        {canStore && (
-          <div className="r">
+        <div className="r">
+          <ExportButtons
+            company={data.settings?.company}
+            notify={notify}
+            disabled={!stock}
+            build={() => ({
+              filename: `Ombor_qoldigi_${fileDate()}.xlsx`,
+              sheets: [
+                {
+                  name: t("Ombor qoldig'i"),
+                  title: t("Ombor qoldig'i — {d} holatiga", { d: fmtDate(today()) }),
+                  subtitle: [group !== "all" && t(GROUPS.find(([k]) => k === group)?.[1] || ""), onlyLow && t("Kam qoldi"), q && `«${q}»`].filter(Boolean).join(", "),
+                  columns: [
+                    { header: "№", key: "i", type: "int", width: 6 },
+                    { header: t("Material"), key: "name", width: 36 },
+                    { header: t("Guruh"), key: "group", width: 20 },
+                    { header: t("Kod / artikul"), key: "code", width: 14 },
+                    { header: t("Birlik"), key: "unit", width: 8 },
+                    { header: t("Qoldiq"), key: "qty", type: "num" },
+                    { header: t("Minimal qoldiq"), key: "min", type: "num" },
+                    { header: t("Holat"), key: "state", width: 14 },
+                    { header: t("Narx, so'm"), key: "price", type: "money" },
+                    { header: t("Qiymat, so'm"), key: "value", type: "money", total: "sum", width: 18 },
+                  ],
+                  rows: rows.map((r, i) => ({
+                    i: i + 1,
+                    name: r.m.name,
+                    group: t(GROUPS.find(([k]) => k === r.m.group)?.[1] || ""),
+                    code: r.m.code,
+                    unit: r.m.unit,
+                    qty: Math.round(r.qty * 1000) / 1000,
+                    min: r.m.minQty || null,
+                    state: r.low ? t(r.low === "out" ? "Tugagan" : "Kam qoldi") : "",
+                    price: priceOf(r.m, mats) || null,
+                    value: Math.round(r.value),
+                    _cell: r.low ? { state: r.low === "out" ? "bad" : "warn", qty: r.low === "out" ? "bad" : "warn" } : undefined,
+                  })),
+                },
+              ],
+            })}
+          />
+          {canStore && (
             <button className="btn" onClick={() => setAdding(true)}>
               <Icon name="plus" /> {t("Yangi material")}
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       <div className="chips scroll-x">
         <button className="chip" aria-pressed={group === "all"} onClick={() => setGroup("all")}>

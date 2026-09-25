@@ -338,7 +338,7 @@ function App() {
               {active === "moves" && <MovesTab data={data} notify={notify} version={version} onChanged={bump} />}
               {active === "stock" && <StockTab data={data} notify={notify} reloadSettings={reloadSettings} version={version} />}
               {active === "ord" && <OrdersTab data={data} openForm={openForm} notify={notify} reload={reloadOrders} />}
-              {active === "cost" && <CostTab data={data} onEdit={(p) => setEditProduct(p)} />}
+              {active === "cost" && <CostTab data={data} notify={notify} onEdit={(p) => setEditProduct(p)} />}
               {active === "cat" && <CatalogTab data={data} notify={notify} reload={reloadProducts} onEdit={(p) => setEditProduct(p)} />}
               {active === "mat" && <MaterialsTab data={data} notify={notify} reload={reloadMaterials} reloadSettings={reloadSettings} />}
               {active === "targets" && <TargetsTab data={data} notify={notify} reload={reloadTargets} />}

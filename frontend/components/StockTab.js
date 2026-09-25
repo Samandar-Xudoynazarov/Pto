@@ -1,5 +1,6 @@
 "use client";
 import { tr } from "@/lib/i18n";
+import ExportButtons from "./ExportButtons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
@@ -169,6 +170,61 @@ export default function StockTab({ data, notify, reloadSettings, version }) {
           <input id="st-date" type="date" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} />
         </div>
         <div className="r">
+          <ExportButtons
+            company={settings.company}
+            notify={notify}
+            disabled={!stock}
+            build={() => ({
+              filename: `Qoldiq_va_ehtiyoj_${date}.xlsx`,
+              sheets: [
+                {
+                  name: tr("Materiallar"),
+                  title: tr("Materiallar qoldig'i — {d} holatiga", { d: fmtDate(date) }),
+                  columns: [
+                    { header: tr("Material"), key: "name", width: 36 },
+                    { header: tr("Guruh"), key: "group", width: 20 },
+                    { header: tr("Birlik"), key: "unit", width: 8 },
+                    { header: tr("Qoldiq"), key: "q", type: "num" },
+                    { header: tr("Narx, so'm"), key: "price", type: "money" },
+                    { header: tr("Qiymat, so'm"), key: "value", type: "money", total: "sum", width: 18 },
+                  ],
+                  rows: matRows.map((r) => ({
+                    name: r.m.name, group: tr(GROUPS.find(([k]) => k === r.m.group)?.[1] || ""), unit: r.m.unit,
+                    q: Math.round(r.q * 1000) / 1000, price: r.price || null, value: r.q > 0 ? Math.round(r.value) : null,
+                    _cell: r.q < -1e-9 ? { q: "bad" } : undefined,
+                  })),
+                },
+                {
+                  name: tr("Tayyor mahsulot"),
+                  title: tr("Tayyor mahsulot qoldig'i — {d} holatiga", { d: fmtDate(date) }),
+                  columns: [
+                    { header: tr("Marka"), key: "code", width: 18 },
+                    { header: tr("Nomi"), key: "name", width: 32 },
+                    { header: tr("Qoldiq, dona"), key: "q", type: "int", total: "sum" },
+                    { header: tr("Narx (QQS bilan)"), key: "price", type: "money", width: 16 },
+                    { header: tr("Qiymat, so'm"), key: "value", type: "money", total: "sum", width: 18 },
+                  ],
+                  rows: prodRows.map((r) => ({ code: r.p.code, name: r.p.name, q: r.q, price: r.price || null, value: r.price && r.q > 0 ? Math.round(r.value) : null })),
+                },
+                {
+                  name: tr("Ehtiyoj"),
+                  title: tr("Faol buyurtmalar uchun material ehtiyoji"),
+                  columns: [
+                    { header: tr("Material"), key: "name", width: 36 },
+                    { header: tr("Birlik"), key: "unit", width: 8 },
+                    { header: tr("Kerak"), key: "need", type: "num" },
+                    { header: tr("Omborda"), key: "bal", type: "num" },
+                    { header: tr("Yetishmaydi"), key: "short", type: "num" },
+                  ],
+                  rows: need.rows.map((r) => ({
+                    name: r.m.name, unit: r.m.unit, need: Math.round(r.q * 1000) / 1000, bal: Math.round(r.bal * 1000) / 1000,
+                    short: r.short > 0 ? Math.round(r.short * 1000) / 1000 : null, _cell: r.short > 0 ? { short: "bad" } : undefined,
+                  })),
+                  notes: [need.toMake.filter((x) => x.qty).map((x) => `${prods.get(x.productId)?.code} — ${x.qty} ${tr("dona")}`).join(", ")].filter(Boolean),
+                },
+              ],
+            })}
+          />
           {canEdit && (
             <button className="btn" onClick={() => setOpenDlg(true)}>{tr("Boshlang'ich qoldiq")}</button>
           )}

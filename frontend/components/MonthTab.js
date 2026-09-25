@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { addMonthSheets, deliver, mergeMoves, newWorkbook } from "@/lib/excel";
 import Icon from "./Icon";
+import ExportButtons from "./ExportButtons";
 import { concreteVolume, consumption, fmt, fmtN, lsGet, lsSet, monthDays, priceOf, today } from "@/lib/calc";
 
 function niceStep(max) {
@@ -174,23 +175,7 @@ export default function MonthTab({ data, notify }) {
     }
   }
 
-  function downloadCsv() {
-    const lines = [
-      ["Mahsulot", "Reja (dona)", "Fakt (dona)", "Bajarilishi %", "Jo'natildi (dona)"],
-      ...prodRows.map((r) => [r.p?.code || "", r.plan, r.fact, r.plan ? Math.round((r.fact / r.plan) * 100) : "", r.shipped]),
-      [],
-      ["Material", "Birlik", "Oy boshida", "Kirim", "Chiqim", "Sarf (haqiqiy)", "Sarf (norma)", "Farq", "Oy oxirida"],
-      ...matRows.map((r) => [r.m.name, r.m.unit, r.start, r.kirim, r.chiqim, r.sarf, r.norm, r.diff, r.end]),
-    ];
-    const cell = (c) => (typeof c === "number" ? String(Math.round(c * 10000) / 10000).replace(".", ",") : String(c ?? "").replace(/"/g, '""'));
-    const csv = "﻿" + lines.map((l) => l.map((c) => `"${cell(c)}"`).join(";")).join("\r\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `oylik-hisobot-${month}.csv`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
+
 
   return (
     <section className="sheet">
@@ -214,7 +199,72 @@ export default function MonthTab({ data, notify }) {
             <Icon name="download" /> {tr("Oylik Excel (har kun alohida varaq)")}</button>
           <button className="btn" onClick={() => exportMonth(true)} disabled={!days?.length || exporting}>
             <Icon name="share" /> {tr("Ulashish")}</button>
-          <button className="btn" onClick={downloadCsv} disabled={!days?.length}>{tr("Hisobot CSV")}</button>
+          <ExportButtons
+            label="Oylik xulosa (Excel)"
+            shareLabel="Xulosani ulashish"
+            company={settings.company}
+            notify={notify}
+            disabled={!days?.length}
+            build={() => {
+              const [y, m] = month.split("-");
+              const period = `${m}.${y}`;
+              return {
+                filename: `Oylik_hisobot_${y}-${m}.xlsx`,
+                sheets: [
+                  {
+                    name: tr("Mahsulotlar"),
+                    title: tr("Oylik hisobot — {p}: mahsulotlar", { p: period }),
+                    subtitle: tr("Ishlab chiqarildi: {f} dona, reja bajarilishi {r} %, beton {b} m³, jo'natildi {s} dona", {
+                      f: fmtN(S.fact), r: S.plan ? fmtN((S.fact / S.plan) * 100, 0) : "—", b: fmtN(S.m3, 1), s: fmtN(S.shipped),
+                    }),
+                    columns: [
+                      { header: tr("Marka"), key: "code", width: 18 },
+                      { header: tr("Nomi"), key: "name", width: 30 },
+                      { header: tr("Reja"), key: "plan", type: "int", total: "sum", width: 10 },
+                      { header: tr("Fakt"), key: "fact", type: "int", total: "sum", width: 10 },
+                      { header: tr("Bajarilishi"), key: "pct", type: "pct", width: 14 },
+                      { header: tr("Beton, m³"), key: "m3", type: "num", total: "sum", width: 12 },
+                      { header: tr("Jo'natildi"), key: "shipped", type: "int", total: "sum", width: 12 },
+                    ],
+                    rows: prodRows.map((r) => {
+                      const pct = r.plan ? Math.round((r.fact / r.plan) * 100) : null;
+                      return {
+                        code: r.p?.code || "?", name: r.p?.name, plan: r.plan, fact: r.fact, pct,
+                        m3: Math.round(concreteVolume(r.p, mats) * r.fact * 1000) / 1000, shipped: r.shipped,
+                        _cell: pct === null ? undefined : { pct: pct >= 100 ? "ok" : "warn" },
+                      };
+                    }),
+                  },
+                  {
+                    name: tr("Materiallar"),
+                    title: tr("Oylik hisobot — {p}: materiallar", { p: period }),
+                    columns: [
+                      { header: tr("Material"), key: "name", width: 34 },
+                      { header: tr("Birlik"), key: "unit", width: 8 },
+                      { header: tr("Oy boshida"), key: "start", type: "num" },
+                      { header: tr("Kirim"), key: "kirim", type: "num" },
+                      { header: tr("Chiqim"), key: "chiqim", type: "num" },
+                      { header: tr("Sarf (haqiqiy)"), key: "sarf", type: "num" },
+                      { header: tr("Sarf (norma)"), key: "norm", type: "num" },
+                      { header: tr("Farq"), key: "diff", type: "num" },
+                      { header: tr("Oy oxirida"), key: "end", type: "num" },
+                      { header: tr("Sarf qiymati, so'm"), key: "value", type: "money", total: "sum", width: 17 },
+                    ],
+                    rows: matRows.map((r) => {
+                      const pct = r.norm ? (r.diff / r.norm) * 100 : null;
+                      const R = (x) => (x ? Math.round(x * 1000) / 1000 : null);
+                      return {
+                        name: r.m.name, unit: r.m.unit, start: R(r.start), kirim: R(r.kirim), chiqim: R(r.chiqim), sarf: R(r.sarf),
+                        norm: R(r.norm), diff: R(r.diff), end: Math.round(r.end * 1000) / 1000, value: Math.round(r.value) || null,
+                        _cell: { ...(pct !== null && Math.abs(pct) > 10 ? { diff: "warn" } : {}), ...(r.end < -1e-9 ? { end: "bad" } : {}) },
+                      };
+                    }),
+                    notes: [tr("«Farq» — haqiqiy sarf minus norma bo'yicha sarf. 10 % dan ortiq farq sariq bilan ajratilgan.")],
+                  },
+                ],
+              };
+            }}
+          />
           <button className="btn" onClick={() => window.print()}>{tr("Chop etish")}</button>
         </div>
       </div>

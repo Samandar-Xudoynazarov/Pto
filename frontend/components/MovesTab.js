@@ -4,7 +4,7 @@ import { api } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 import { useUser } from "@/lib/role";
 import { fmt, fmtDate, fmtN, shiftDate, today } from "@/lib/calc";
-import { deliver, newWorkbook } from "@/lib/excel";
+import ExportButtons from "./ExportButtons";
 import Icon from "./Icon";
 
 const PERIODS = [
@@ -86,48 +86,79 @@ export default function MovesTab({ data, notify, version, onChanged }) {
     }
   }
 
-  async function exportExcel() {
-    try {
-      const wb = await newWorkbook();
-      const ws = wb.addWorksheet(t("Tarix"));
-      ws.columns = [
-        { header: t("Sana"), width: 12 },
-        { header: t("Turi"), width: 9 },
-        { header: t("Material"), width: 34 },
-        { header: t("Miqdor"), width: 12 },
-        { header: t("Birlik"), width: 8 },
-        { header: t("Narx"), width: 13 },
-        { header: t("Summa"), width: 15 },
-        { header: t("Qayerdan / qayerga"), width: 32 },
-        { header: t("Mas'ul shaxs"), width: 20 },
-        { header: t("Nakladnoy"), width: 12 },
-        { header: t("Izoh"), width: 24 },
-        { header: t("Kim kiritdi"), width: 18 },
-      ];
-      ws.getRow(1).font = { bold: true };
-      for (const m of items || []) {
-        const mat = mats.get(m.materialId);
-        ws.addRow([
-          fmtDate(m.date),
-          t(m.type === "in" ? "Kirim" : "Chiqim"),
-          mat?.name || "?",
-          m.type === "in" ? m.qty : -m.qty,
-          mat?.unit || "",
-          m.price || 0,
-          Math.round(m.qty * (m.price || 0)),
-          m.type === "in" ? m.supplier : [tname(m.departmentId)?.name, tname(m.vehicleId)?.name].filter(Boolean).join(", "),
-          m.person,
-          m.docNumber,
-          m.note,
-          m.createdBy?.name || "",
-        ]);
-      }
-      for (const c of [4, 6, 7]) ws.getColumn(c).numFmt = "#,##0.###";
-      const r = await deliver(wb, `Ombor_tarix_${from}_${to}.xlsx`, { share: true });
-      if (r === "downloaded-fallback") notify(t("Fayl yuklab olindi"));
-    } catch (e) {
-      notify(e.message || t("Excel faylni tayyorlab bo'lmadi"));
+  // Excel: 1-varaq — barcha yozuvlar, 2-varaq — material bo'yicha jami
+  function buildExport() {
+    const list = items || [];
+    const where = (m) => (m.type === "in" ? m.supplier : [tname(m.departmentId)?.name, tname(m.vehicleId)?.name].filter(Boolean).join(", "));
+    const sum = new Map();
+    for (const m of list) {
+      const r = sum.get(m.materialId) || { inQ: 0, outQ: 0, inS: 0, outS: 0 };
+      if (m.type === "in") (r.inQ += m.qty), (r.inS += m.qty * (m.price || 0));
+      else (r.outQ += m.qty), (r.outS += m.qty * (m.price || 0));
+      sum.set(m.materialId, r);
     }
+    const period = `${fmtDate(from)} — ${fmtDate(to)}`;
+    const filt = [type && t(type === "in" ? "Faqat kirim" : "Faqat chiqim"), materialId && mats.get(materialId)?.name, targetId && tname(targetId)?.name].filter(Boolean).join(", ");
+    return {
+      filename: `Kirim-chiqim_${from}_${to}.xlsx`,
+      sheets: [
+        {
+          name: t("Kirim-chiqim tarixi"),
+          title: `${t("Kirim-chiqim tarixi")}: ${period}`,
+          subtitle: filt,
+          columns: [
+            { header: t("Sana"), key: "date", type: "date", width: 11 },
+            { header: t("Turi"), key: "type", width: 9 },
+            { header: t("Material"), key: "mat", width: 32 },
+            { header: t("Birlik"), key: "unit", width: 7 },
+            { header: t("Kirim"), key: "in", type: "num", total: "sum", width: 11 },
+            { header: t("Chiqim"), key: "out", type: "num", total: "sum", width: 11 },
+            { header: t("Narx"), key: "price", type: "money", width: 12 },
+            { header: t("Summa, so'm"), key: "sum", type: "money", width: 15 },
+            { header: t("Qayerdan / qayerga"), key: "where", width: 28 },
+            { header: t("Mas'ul shaxs"), key: "person", width: 18 },
+            { header: t("Nakladnoy"), key: "doc", width: 12 },
+            { header: t("Izoh"), key: "note", width: 22 },
+            { header: t("Kim kiritdi"), key: "who", width: 16 },
+          ],
+          rows: [...list].reverse().map((m) => {
+            const mat = mats.get(m.materialId);
+            return {
+              date: fmtDate(m.date),
+              type: t(m.type === "in" ? "Kirim" : "Chiqim"),
+              mat: mat?.name || "?",
+              unit: mat?.unit,
+              in: m.type === "in" ? m.qty : null,
+              out: m.type === "out" ? m.qty : null,
+              price: m.price || null,
+              sum: Math.round(m.qty * (m.price || 0)) || null,
+              where: where(m),
+              person: m.person,
+              doc: m.docNumber,
+              note: m.note,
+              who: m.createdBy?.name,
+              _cell: { type: m.type === "in" ? "ok" : "warn" },
+            };
+          }),
+        },
+        {
+          name: t("Material bo'yicha"),
+          title: `${t("Material bo'yicha jami")}: ${period}`,
+          subtitle: filt,
+          columns: [
+            { header: t("Material"), key: "mat", width: 34 },
+            { header: t("Birlik"), key: "unit", width: 8 },
+            { header: t("Kirim"), key: "inQ", type: "num" },
+            { header: t("Chiqim"), key: "outQ", type: "num" },
+            { header: t("Kirim summasi"), key: "inS", type: "money", total: "sum", width: 17 },
+            { header: t("Chiqim summasi"), key: "outS", type: "money", total: "sum", width: 17 },
+          ],
+          rows: [...sum.entries()]
+            .map(([id, r]) => ({ mat: mats.get(id)?.name || "?", unit: mats.get(id)?.unit, inQ: r.inQ || null, outQ: r.outQ || null, inS: Math.round(r.inS) || null, outS: Math.round(r.outS) || null }))
+            .sort((a, b) => a.mat.localeCompare(b.mat)),
+        },
+      ],
+    };
   }
 
   return (
@@ -173,9 +204,7 @@ export default function MovesTab({ data, notify, version, onChanged }) {
             </option>
           ))}
         </select>
-        <button className="btn" onClick={exportExcel} disabled={!items?.length}>
-          <Icon name="download" /> Excel
-        </button>
+        <ExportButtons build={buildExport} company={data.settings?.company} notify={notify} disabled={!items?.length} />
       </div>
 
       {items && (

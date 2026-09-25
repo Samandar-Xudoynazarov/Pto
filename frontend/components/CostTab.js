@@ -1,5 +1,7 @@
 "use client";
 import { tr } from "@/lib/i18n";
+import ExportButtons from "./ExportButtons";
+import { fileDate } from "@/lib/xlsx-export";
 import { useUser } from "@/lib/role";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ROW_TYPES, costCard, fmt, fmtN, lsGet, lsSet } from "@/lib/calc";
@@ -97,7 +99,7 @@ export function CostCard({ product, mats }) {
   );
 }
 
-export default function CostTab({ data, onEdit }) {
+export default function CostTab({ data, onEdit, notify }) {
   const { canEdit } = useUser();
   const { products, mats } = data;
   const [sel, setSel] = useState(() => lsGet("pto.costSel", products[0]?.id));
@@ -163,6 +165,38 @@ export default function CostTab({ data, onEdit }) {
           <input id="cost-q" type="search" placeholder={tr("Qidirish: Ф5, лоток…")} value={q} onChange={(e) => setQ(e.target.value)} aria-label={tr("Qidirish")} />
         </div>
         <div className="r">
+          <ExportButtons
+            label="Narxlar ro'yxati (Excel)"
+            company={data.settings?.company}
+            notify={notify}
+            build={() => ({
+              filename: `Narxlar_${fileDate()}.xlsx`,
+              sheets: [
+                {
+                  name: tr("Narxlar ro'yxati"),
+                  title: tr("Mahsulotlar narxlari (kalkulyatsiya bo'yicha)"),
+                  columns: [
+                    { header: tr("Marka"), key: "code", width: 18 },
+                    { header: tr("Nomi"), key: "name", width: 30 },
+                    { header: tr("Guruh"), key: "group", width: 18 },
+                    { header: tr("Beton, m³"), key: "v", type: "num", width: 11 },
+                    { header: tr("Materiallar"), key: "mat", type: "money", width: 15 },
+                    { header: tr("Tannarx"), key: "ss", type: "money", width: 15 },
+                    { header: tr("Narx QQSsiz"), key: "novat", type: "money", width: 15 },
+                    { header: tr("Narx QQS bilan"), key: "final", type: "money", width: 16 },
+                  ],
+                  rows: shown.map(({ p, c, has }) => ({
+                    code: p.code, name: p.name, group: p.group,
+                    v: has ? Math.round(c.V * 1000) / 1000 : null,
+                    mat: has ? Math.round(c.materials) : null, ss: has ? Math.round(c.itogo) : null,
+                    novat: has ? Math.round(c.noVat) : null, final: has ? Math.round(c.final) : null,
+                    _cell: has ? { final: "bold" } : { name: "warn" },
+                  })),
+                  notes: [tr("Narx bo'sh bo'lsa — kalkulyatsiya kiritilmagan.")],
+                },
+              ],
+            })}
+          />
           <button className="btn" onClick={() => window.print()}>{tr("Chop etish")}</button>
         </div>
       </div>

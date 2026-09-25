@@ -5,6 +5,8 @@ import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
 import { STATUSES, costCard, fmt, fmtDate, lsGet, lsSet, productOptions, today } from "@/lib/calc";
 import DeleteButton from "./DeleteButton";
+import ExportButtons from "./ExportButtons";
+import { fileDate } from "@/lib/xlsx-export";
 
 export default function OrdersTab({ data, openForm, notify, reload }) {
   const { canEdit } = useUser();
@@ -81,6 +83,47 @@ export default function OrdersTab({ data, openForm, notify, reload }) {
           <h2>{tr("Buyurtmalar")}</h2>
         </div>
         <div className="r">
+          <ExportButtons
+            company={data.settings?.company}
+            notify={notify}
+            disabled={!list.length}
+            build={() => ({
+              filename: `Buyurtmalar_${fileDate()}.xlsx`,
+              sheets: [
+                {
+                  name: tr("Buyurtmalar"),
+                  title: tr("Buyurtmalar"),
+                  subtitle: tr([["faol", "Faol"], ["hammasi", "Hammasi"], ...STATUSES].find(([k]) => k === filter)?.[1] || ""),
+                  columns: [
+                    { header: "№", key: "no", type: "int", width: 6 },
+                    { header: tr("Buyurtmachi"), key: "customer", width: 28 },
+                    { header: tr("Mahsulot"), key: "product", width: 18 },
+                    { header: tr("Soni"), key: "qty", type: "int", total: "sum", width: 9 },
+                    { header: tr("Jo'natildi"), key: "shipped", type: "int", total: "sum", width: 11 },
+                    { header: tr("Qoldi"), key: "left", type: "int", total: "sum", width: 9 },
+                    { header: tr("Qabul sanasi"), key: "date", type: "date", width: 12 },
+                    { header: tr("Muddat"), key: "deadline", type: "date", width: 12 },
+                    { header: tr("Holat"), key: "status", width: 13 },
+                    { header: tr("Narx (QQS bilan)"), key: "price", type: "money", width: 15 },
+                    { header: tr("Summa, so'm"), key: "sum", type: "money", total: "sum", width: 17 },
+                    { header: tr("Izoh"), key: "note", width: 24 },
+                  ],
+                  rows: list.map((o) => {
+                    const p = byId.get(o.productId);
+                    const price = +o.price || (p?.calc?.items?.length ? costCard(p, mats).final : 0);
+                    const late = o.deadline && o.deadline < td && !["tayyor", "topshirildi"].includes(o.status);
+                    return {
+                      no: o.no, customer: o.customer, product: p?.code || tr("— o'chirilgan —"), qty: o.qty, shipped: o.shipped || 0,
+                      left: Math.max(0, o.qty - (o.shipped || 0)), date: o.date ? fmtDate(o.date) : "", deadline: o.deadline ? fmtDate(o.deadline) : "",
+                      status: tr(STATUSES.find(([k]) => k === o.status)?.[1] || o.status) + (late ? tr(" · kechikdi") : ""),
+                      price: Math.round(price) || null, sum: Math.round(price * o.qty) || null, note: o.note,
+                      _cell: late ? { deadline: "bad", status: "bad" } : undefined,
+                    };
+                  }),
+                },
+              ],
+            })}
+          />
           {canEdit && (
             <button className="btn primary" onClick={() => orderForm()}>{tr("+ Yangi buyurtma")}</button>
           )}
