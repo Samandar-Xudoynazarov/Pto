@@ -2,14 +2,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { tr, useT } from "@/lib/i18n";
-import { concreteVolume, fmt, fmtN, priceOf } from "@/lib/calc";
+import { concreteVolume, fmt, fmtDate, fmtN, priceOf, today } from "@/lib/calc";
 import Chart from "./Chart";
 import ExportButtons from "./ExportButtons";
 import { fileDate } from "@/lib/xlsx-export";
 
 const MON = ["Yan", "Fev", "Mar", "Apr", "May", "Iyun", "Iyul", "Avg", "Sen", "Okt", "Noy", "Dek"];
 const MON_FULL = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentyabr", "Oktyabr", "Noyabr", "Dekabr"];
-const xfmt = (m, full) => (full ? `${tr(MON_FULL[+m.slice(5, 7) - 1])} ${m.slice(0, 4)}` : tr(MON[+m.slice(5, 7) - 1]));
+const monthName = (m) => `${tr(MON_FULL[+m.slice(5, 7) - 1])} ${m.slice(0, 4)}`;
+// oy ("2026-09") yoki kun ("2026-09-05") yorlig'i
+const xfmt = (k, full) => (k.length > 7 ? (full ? fmtDate(k) : String(+k.slice(8, 10))) : full ? monthName(k) : tr(MON[+k.slice(5, 7) - 1]));
+const shiftMonth = (ym, n) => new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7) - 1 + n, 1)).toISOString().slice(0, 7);
 // material guruhlari → grafikdagi 4 ta qatlam (qolganlari «Boshqa»)
 const COST_GROUPS = [
   ["xomashyo", "Xomashyo", "var(--s1)"],
@@ -23,23 +26,26 @@ const costGroup = (g) => (g === "xomashyo" || g === "beton" ? "xomashyo" : g ===
 export default function DashTab({ data, notify }) {
   const t = useT();
   const { mats, prods } = data;
-  const [n, setN] = useState(12);
+  const [n, setN] = useState(12); // 1 — bitta oy kunma-kun
+  const thisMonth = today().slice(0, 7);
+  const [month, setMonth] = useState(thisMonth);
   const [raw, setRaw] = useState(null);
   useEffect(() => {
     setRaw(null);
-    api(`/dashboard?months=${n}`)
-      .then((r) => setRaw(r.months))
+    const q = n === 1 ? `month=${month}` : `months=${n}`;
+    api(`/dashboard?${q}`)
+      .then((r) => setRaw(n === 1 ? { rows: r.days, cur: r.total, prev: r.prevTotal } : { rows: r.months.map((m) => ({ ...m, key: m.month })) }))
       .catch((e) => notify(e.message));
-  }, [n, notify]);
+  }, [n, month, notify]);
 
-  const rows = useMemo(() => {
+  const derived = useMemo(() => {
     if (!raw) return null;
     const price = new Map();
     const pr = (id) => {
       if (!price.has(id)) price.set(id, priceOf(mats.get(id), mats) || 0);
       return price.get(id);
     };
-    return raw.map((m) => {
+    const derive = (m) => {
       const cost = { xomashyo: 0, metall: 0, yoqilgi: 0, boshqa: 0 };
       let sarfCost = 0;
       for (const [id, q] of Object.entries(m.sarf)) {
@@ -59,26 +65,41 @@ export default function DashTab({ data, notify }) {
         planPct: m.plan ? (m.fact / m.plan) * 100 : null,
         brakPct: made ? (m.brak / made) * 100 : null,
       };
-    });
+    };
+    const rows = raw.rows.map(derive);
+    return raw.cur ? { rows, cur: derive(raw.cur), prev: derive(raw.prev) } : { rows, cur: rows[rows.length - 1], prev: rows[rows.length - 2] };
   }, [raw, mats, prods]);
 
-  const labels = rows?.map((r) => r.month) || [];
-  const cur = rows?.[rows.length - 1];
-  const prev = rows?.[rows.length - 2];
+  const rows = derived?.rows;
+  const labels = rows?.map((r) => r.key) || [];
+  const cur = derived?.cur;
+  const prev = derived?.prev;
+  const daily = n === 1;
   const mln = (v) => `${fmtN(v / 1e6, 1)} ${tr("mln")}`;
 
   return (
     <section className="sheet dash">
       <div className="bar">
         <div className="chips">
-          {[6, 12, 24].map((k) => (
+          {[1, 6, 12, 24].map((k) => (
             <button key={k} className="chip" aria-pressed={n === k} onClick={() => setN(k)}>
               {t("{n} oy", { n: k })}
             </button>
           ))}
+          {daily && (
+            <span className="month-pick">
+              <button type="button" className="btn sm" aria-label={t("Oldingi oy")} onClick={() => setMonth((m) => shiftMonth(m, -1))}>
+                ‹
+              </button>
+              <input type="month" value={month} max={thisMonth} onChange={(e) => e.target.value && e.target.value <= thisMonth && setMonth(e.target.value)} aria-label={t("Oy")} />
+              <button type="button" className="btn sm" aria-label={t("Keyingi oy")} disabled={month >= thisMonth} onClick={() => setMonth((m) => shiftMonth(m, 1))}>
+                ›
+              </button>
+            </span>
+          )}
         </div>
         <div className="r">
-          <ExportButtons company={data.settings?.company} notify={notify} disabled={!rows} build={() => dashExcel(rows)} />
+          <ExportButtons company={data.settings?.company} notify={notify} disabled={!rows} build={() => dashExcel(rows, daily ? month : null)} />
         </div>
       </div>
 
@@ -87,7 +108,7 @@ export default function DashTab({ data, notify }) {
       ) : (
         <>
           <div className="kpis">
-            <Kpi k={t("Ishlab chiqarildi — {m}", { m: xfmt(cur.month, true) })} v={fmt(cur.fact)} u={t("dona")} prev={prev && t("o'tgan oy: {v}", { v: fmt(prev.fact) })} />
+            <Kpi k={t("Ishlab chiqarildi — {m}", { m: monthName(daily ? month : cur.key) })} v={fmt(cur.fact)} u={t("dona")} prev={prev && t("o'tgan oy: {v}", { v: fmt(prev.fact) })} />
             <Kpi k={t("Reja bajarilishi")} v={cur.planPct == null ? "—" : fmtN(cur.planPct, 0)} u="%" prev={prev?.planPct != null && t("o'tgan oy: {v}", { v: `${fmtN(prev.planPct, 0)} %` })} />
             <Kpi k={t("Brak ulushi")} v={cur.brakPct == null ? "—" : fmtN(cur.brakPct, 1)} u="%" warn={cur.brakPct > 2} prev={prev?.brakPct != null && t("o'tgan oy: {v}", { v: `${fmtN(prev.brakPct, 1)} %` })} />
             <Kpi k={t("Material xarajati")} v={fmtN(cur.costTotal / 1e6, 1)} u={t("mln so'm")} prev={prev && t("o'tgan oy: {v}", { v: mln(prev.costTotal) })} />
@@ -161,6 +182,7 @@ export default function DashTab({ data, notify }) {
               series={[{ key: "kirim", label: t("Kirim"), color: "var(--s1)", values: rows.map((r) => r.kirimSum) }]}
             />
           </div>
+          {daily && <p className="hint">{t("{m} — kunma-kun. Boshqa oyni yuqoridagi oy tanlagichdan tanlang.", { m: monthName(month) })}</p>}
           <p className="hint">
             {t("Grafik ustiga bosing (yoki sichqonchani olib boring) — o'sha oyning aniq qiymatlari chiqadi. «Jadval» — raqamlar jadval ko'rinishida. Joriy oy hali tugamagan — uni o'tgan oylar bilan solishtirishda buni hisobga oling.")}
           </p>
@@ -183,15 +205,15 @@ function Kpi({ k, v, u, prev, warn }) {
   );
 }
 
-function dashExcel(rows) {
+function dashExcel(rows, month) {
   return {
-    filename: `Oylik_korsatkichlar_${fileDate()}.xlsx`,
+    filename: month ? `Kunlik_korsatkichlar_${month}.xlsx` : `Oylik_korsatkichlar_${fileDate()}.xlsx`,
     sheets: [
       {
         name: tr("Ko'rsatkichlar"),
-        title: tr("Oyma-oy asosiy ko'rsatkichlar"),
+        title: month ? tr("{m}: kunma-kun ko'rsatkichlar", { m: monthName(month) }) : tr("Oyma-oy asosiy ko'rsatkichlar"),
         columns: [
-          { header: tr("Oy"), key: "m", width: 16 },
+          { header: tr(month ? "Sana" : "Oy"), key: "m", type: month ? "date" : undefined, width: 16 },
           { header: tr("Reja, dona"), key: "plan", type: "int", total: "sum", width: 11 },
           { header: tr("Fakt, dona"), key: "fact", type: "int", total: "sum", width: 11 },
           { header: tr("Bajarilishi, %"), key: "pp", type: "num", width: 12 },
@@ -204,7 +226,7 @@ function dashExcel(rows) {
           { header: tr("Kirim (xarid), so'm"), key: "kirim", type: "money", total: "sum", width: 17 },
         ],
         rows: rows.map((r) => ({
-          m: xfmt(r.month, true), plan: r.plan, fact: r.fact, pp: r.planPct == null ? null : Math.round(r.planPct * 10) / 10, brak: r.brak || null,
+          m: xfmt(r.key, true), plan: r.plan, fact: r.fact, pp: r.planPct == null ? null : Math.round(r.planPct * 10) / 10, brak: r.brak || null,
           bp: r.brakPct == null ? null : Math.round(r.brakPct * 10) / 10, m3: Math.round(r.m3 * 100) / 100, ship: r.shipped, cost: Math.round(r.costTotal),
           perM3: r.perM3 == null ? null : Math.round(r.perM3), kirim: r.kirimSum || null,
         })),

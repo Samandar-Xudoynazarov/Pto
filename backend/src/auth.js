@@ -3,11 +3,12 @@ import { promisify } from "node:util";
 
 const scrypt = promisify(crypto.scrypt);
 
-export const ROLES = ["admin", "pto", "usta", "omborchi", "rahbar", "kurator"];
-export const WRITE_ROLES = ["admin", "pto"]; // ПТО ma'lumotlarini (hisobot, katalog, buyurtma, narx) o'zgartiradi
-export const STORE_ROLES = ["admin", "pto", "omborchi"]; // ombor kirim/chiqimi, sex/texnika, yangi material
-export const DAY_ROLES = ["admin", "pto", "usta"]; // kunlik hisobotni saqlaydi (usta — reja, fakt, sarf va izoh; kirim va jo'natishsiz)
-// rahbar va kurator — faqat ko'radi
+export const ROLES = ["admin", "rahbar", "pto", "usta", "omborchi", "kuzatuvchi", "kurator"];
+export const ADMIN_ROLES = ["admin", "rahbar"]; // to'liq huquq: hamma narsa + foydalanuvchilar, zaxira, o'zgarishlar tarixi
+export const WRITE_ROLES = ["admin", "rahbar", "pto"]; // ПТО ma'lumotlarini (hisobot, katalog, buyurtma, narx) o'zgartiradi
+export const STORE_ROLES = ["admin", "rahbar", "pto", "omborchi"]; // ombor kirim/chiqimi, sex/texnika, yangi material
+export const DAY_ROLES = ["admin", "rahbar", "pto", "usta"]; // kunlik hisobotni saqlaydi (usta — reja, fakt, sarf va izoh; kirim va jo'natishsiz)
+// kuzatuvchi va kurator — faqat ko'radi va yuklab oladi (Excel)
 const TOKEN_DAYS = 30;
 
 /* ---------- parol xeshi (scrypt) ---------- */

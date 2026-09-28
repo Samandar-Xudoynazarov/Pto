@@ -7,7 +7,7 @@ import { stockReport } from "./stock.js";
 import { planOrders, checkNewOrder, planConfig, addDays } from "./plan.js";
 import { vehicleStats } from "./fleet.js";
 import { DEFAULT_SCHEMES, assignSchemes } from "./schemes.js";
-import { ROLES, WRITE_ROLES, STORE_ROLES, DAY_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
+import { ROLES, ADMIN_ROLES, WRITE_ROLES, STORE_ROLES, DAY_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
 import { audit, diff } from "./audit.js";
 import { meterFactor } from "./metal.js";
 import { USER_LIMIT, USER_LOCK_MIN, IP_LIMIT, IP_LOCK_MIN, clientIp, userKey, ipKey, takeAttempt, lock, loginSucceeded, clearUserLocks } from "./limits.js";
@@ -110,9 +110,10 @@ app.use("/api", async (req, res, next) => {
 });
 
 // Yozish huquqlari:
-//   admin, pto  — hammasi (foydalanuvchilar — faqat admin)
-//   omborchi    — ombor harakatlari, sex/texnika, material qo'shish/tahrirlash (narx va retseptsiz)
-//   rahbar, kurator — faqat ko'radi. O'z parolini almashtirish hammaga ruxsat.
+//   admin, rahbar — hammasi, shu jumladan foydalanuvchilar, zaxira va o'zgarishlar tarixi
+//   pto          — hammasi (foydalanuvchilarsiz)
+//   omborchi     — ombor harakatlari, sex/texnika, material qo'shish/tahrirlash (narx va retseptsiz)
+//   kuzatuvchi, kurator — faqat ko'radi va yuklab oladi. O'z parolini almashtirish hammaga ruxsat.
 const STORE_PATH = /^\/(movements|targets|inventories|suppliers|vehicle-logs)(\/|$)/;
 app.use("/api", (req, res, next) => {
   // /plan/check — faqat hisoblaydi, hech narsa yozmaydi: hamma ko'ra oladi
@@ -128,7 +129,7 @@ app.use("/api", (req, res, next) => {
 });
 
 const adminOnly = (req, res, next) =>
-  req.user.role === "admin" ? next() : res.status(403).json({ error: "Bu bo'lim faqat administrator uchun" });
+  ADMIN_ROLES.includes(req.user.role) ? next() : res.status(403).json({ error: "Bu bo'lim faqat administrator uchun" });
 
 /* ---------- yordamchilar ---------- */
 const isId = (v) => mongoose.isValidObjectId(v);
@@ -176,7 +177,7 @@ app.post("/api/users", adminOnly, async (req, res) => {
 });
 
 async function adminsLeft(exceptId) {
-  return User.countDocuments({ role: "admin", active: true, _id: { $ne: exceptId } });
+  return User.countDocuments({ role: { $in: ADMIN_ROLES }, active: true, _id: { $ne: exceptId } });
 }
 
 app.put("/api/users/:id", adminOnly, async (req, res) => {
@@ -187,7 +188,7 @@ app.put("/api/users/:id", adminOnly, async (req, res) => {
   const b = req.body || {};
   if (b.role !== undefined && !ROLES.includes(b.role)) return res.status(400).json({ error: "Rol noto'g'ri" });
 
-  const losesAdmin = user.role === "admin" && ((b.role && b.role !== "admin") || b.active === false);
+  const losesAdmin = ADMIN_ROLES.includes(user.role) && ((b.role && !ADMIN_ROLES.includes(b.role)) || b.active === false);
   if (losesAdmin && !(await adminsLeft(user._id))) return res.status(400).json({ error: "Kamida bitta faol administrator qolishi kerak" });
 
   if (b.name !== undefined) user.name = String(b.name);
@@ -219,7 +220,7 @@ app.delete("/api/users/:id", adminOnly, async (req, res) => {
   if (String(req.user._id) === req.params.id) return res.status(400).json({ error: "O'zingizni o'chira olmaysiz" });
   const user = await User.findById(req.params.id);
   if (!user) return notFound(res);
-  if (user.role === "admin" && user.active && !(await adminsLeft(user._id))) return res.status(400).json({ error: "Kamida bitta faol administrator qolishi kerak" });
+  if (ADMIN_ROLES.includes(user.role) && user.active && !(await adminsLeft(user._id))) return res.status(400).json({ error: "Kamida bitta faol administrator qolishi kerak" });
   await user.deleteOne();
   await audit(req, { action: "delete", entity: "user", entityId: user._id, label: user.username, before: publicUser(user) });
   res.json({ ok: true });
@@ -616,24 +617,17 @@ app.delete("/api/movements/:id", async (req, res) => {
 /* ---------- Grafiklar paneli: oyma-oy ko'rsatkichlar ---------- */
 // ?months=12 — joriy oy bilan birga oxirgi N oy. Qiymatlar (so'm) brauzerda narx bo'yicha hisoblanadi —
 // shuning uchun bu yerda miqdorlar qaytariladi: { month, plan, fact, brak, shipped, prod: {id: fakt}, sarf: {id: qty}, chiqim: {id: qty}, kirimSum }
-app.get("/api/dashboard", async (req, res) => {
-  const n = Math.min(24, Math.max(1, Math.floor(+req.query.months || 12)));
-  const today = todayTashkent();
-  const months = [];
-  for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(Date.UTC(+today.slice(0, 4), +today.slice(5, 7) - 1 - i, 1));
-    months.push(d.toISOString().slice(0, 7));
-  }
-  const from = `${months[0]}-01`;
+/** Kunlik hisobot, ombor harakati va brakka chiqarishni `keyOf(sana)` bo'yicha guruhlab jamlaydi */
+async function dashAggregate(keys, keyOf, from, to) {
   const [days, moves, pmoves] = await Promise.all([
-    Day.find({ date: { $gte: from, $lte: today } }).select("date production materials shipments").lean(),
-    Movement.find({ date: { $gte: from, $lte: today }, reason: { $ne: "inventar" } }).select("type date materialId qty price").lean(),
-    ProductMove.find({ date: { $gte: from, $lte: today } }).select("date qty").lean(),
+    Day.find({ date: { $gte: from, $lte: to } }).select("date production materials shipments").lean(),
+    Movement.find({ date: { $gte: from, $lte: to }, reason: { $ne: "inventar" } }).select("type date materialId qty price").lean(),
+    ProductMove.find({ date: { $gte: from, $lte: to } }).select("date qty").lean(),
   ]);
-  const M = new Map(months.map((m) => [m, { month: m, plan: 0, fact: 0, brak: 0, writeoff: 0, shipped: 0, activeDays: 0, prod: {}, sarf: {}, chiqim: {}, kirimSum: 0 }]));
+  const M = new Map(keys.map((k) => [k, { key: k, plan: 0, fact: 0, brak: 0, writeoff: 0, shipped: 0, activeDays: 0, prod: {}, sarf: {}, chiqim: {}, kirimSum: 0 }]));
   const add = (o, k, v) => (o[k] = Math.round(((o[k] || 0) + v) * 1e6) / 1e6);
   for (const d of days) {
-    const r = M.get(d.date.slice(0, 7));
+    const r = M.get(keyOf(d.date));
     if (!r) continue;
     let dayFact = 0;
     for (const l of d.production || []) {
@@ -648,16 +642,45 @@ app.get("/api/dashboard", async (req, res) => {
     for (const l of d.materials || []) if (+l.sarf) add(r.sarf, String(l.materialId), +l.sarf);
   }
   for (const m of moves) {
-    const r = M.get(m.date.slice(0, 7));
+    const r = M.get(keyOf(m.date));
     if (!r) continue;
     if (m.type === "out") add(r.chiqim, String(m.materialId), +m.qty || 0);
     else r.kirimSum += (+m.qty || 0) * (+m.price || 0);
   }
   for (const p of pmoves) {
-    const r = M.get(p.date.slice(0, 7));
+    const r = M.get(keyOf(p.date));
     if (r) r.writeoff += +p.qty || 0;
   }
-  res.json({ months: [...M.values()].map((r) => ({ ...r, kirimSum: Math.round(r.kirimSum) })) });
+  return [...M.values()].map((r) => ({ ...r, kirimSum: Math.round(r.kirimSum) }));
+}
+const monthShift = (ym, n) => new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7) - 1 + n, 1)).toISOString().slice(0, 7);
+
+// ?months=12 — joriy oy bilan birga oxirgi N oy (oyma-oy).
+// ?month=YYYY-MM — tanlangan oy kunma-kun (+ shu oy va o'tgan oy jami, solishtirish uchun).
+// Qiymatlar (so'm) brauzerda narx bo'yicha hisoblanadi — shuning uchun bu yerda miqdorlar qaytariladi.
+app.get("/api/dashboard", async (req, res) => {
+  const today = todayTashkent();
+  if (req.query.month !== undefined) {
+    const ym = String(req.query.month);
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(ym) || ym > today.slice(0, 7) || ym < "2000-01") return res.status(400).json({ error: "Oy noto'g'ri" });
+    const last = new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7), 0)).getUTCDate();
+    const dates = [];
+    for (let d = 1; d <= last; d++) {
+      const s = `${ym}-${String(d).padStart(2, "0")}`;
+      if (s <= today) dates.push(s);
+    }
+    const prev = monthShift(ym, -1);
+    const [days, totals] = await Promise.all([
+      dashAggregate(dates, (d) => d, dates[0], dates[dates.length - 1]),
+      dashAggregate([prev, ym], (d) => d.slice(0, 7), `${prev}-01`, dates[dates.length - 1]),
+    ]);
+    return res.json({ month: ym, days, total: totals[1], prevTotal: totals[0] });
+  }
+  const n = Math.min(24, Math.max(1, Math.floor(+req.query.months || 12)));
+  const months = [];
+  for (let i = n - 1; i >= 0; i--) months.push(monthShift(today.slice(0, 7), -i));
+  const rows = await dashAggregate(months, (d) => d.slice(0, 7), `${months[0]}-01`, today);
+  res.json({ months: rows.map(({ key, ...r }) => ({ month: key, ...r })) });
 });
 
 /* ---------- Texnika hisobi ---------- */

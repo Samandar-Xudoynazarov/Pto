@@ -619,6 +619,11 @@ export const DICT = {
     "Nomi kiritilmagan": "Не указано название",
     "Soni kamida 1": "Количество — не менее 1",
     "Soni kamida 1 bo'lishi kerak": "Количество должно быть не менее 1",
+    // --- rollar ---
+    "Rahbar (to'liq huquq)": "Руководитель (полные права)",
+    "Kuzatuvchi (ko'rish va yuklab olish)": "Наблюдатель (просмотр и выгрузка)",
+    "Kuzatuvchi": "Наблюдатель",
+    "hamma bo'limni ko'radi va Excel qilib yuklab oladi, lekin hech narsani o'zgartira olmaydi. Bloklangan foydalanuvchi darhol tizimdan chiqariladi.": "видят все разделы и выгружают их в Excel, но ничего не могут изменить. Заблокированный пользователь сразу выходит из системы.",
     // --- xarajat andozalari ---
     "Yangi andoza": "Новый шаблон",
     "Bu andozada {n} ta mahsulot bor — avval ularni boshqa andozaga o'tkazing": "В этом шаблоне {n} изд. — сначала переведите их в другой шаблон",
@@ -649,6 +654,11 @@ export const DICT = {
     "Andozalar ro'yxati noto'g'ri": "Неверный список шаблонов",
     "Andoza kodi noto'g'ri": "Неверный код шаблона",
     // --- grafiklar ---
+    "Oldingi oy": "Предыдущий месяц",
+    "Keyingi oy": "Следующий месяц",
+    "{m} — kunma-kun. Boshqa oyni yuqoridagi oy tanlagichdan tanlang.": "{m} — по дням. Другой месяц выберите вверху.",
+    "{m}: kunma-kun ko'rsatkichlar": "{m}: показатели по дням",
+    "Oy noto'g'ri": "Неверный месяц",
     "Yan": "Янв",
     "Fev": "Фев",
     "Mar": "Мар",

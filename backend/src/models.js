@@ -233,7 +233,7 @@ const supplierSchema = new Schema(
 );
 
 /* ---------- Foydalanuvchilar ---------- */
-export const ROLE_LIST = ["admin", "pto", "usta", "omborchi", "rahbar", "kurator"];
+export const ROLE_LIST = ["admin", "rahbar", "pto", "usta", "omborchi", "kuzatuvchi", "kurator"];
 const userSchema = new Schema(
   {
     username: {
@@ -247,7 +247,7 @@ const userSchema = new Schema(
       match: [/^[a-z0-9._-]+$/, "Login faqat lotin harflari, raqam, nuqta, _ va - dan iborat bo'lsin"],
     },
     name: { type: String, default: "", trim: true, maxlength: 120 },
-    role: { type: String, enum: ROLE_LIST, default: "rahbar" },
+    role: { type: String, enum: ROLE_LIST, default: "kuzatuvchi" },
     passwordHash: { type: String, required: true },
     active: { type: Boolean, default: true },
     mustChangePassword: { type: Boolean, default: false },

@@ -610,3 +610,6 @@ tr.row-warn td{background:var(--signal-soft)}
 .scheme-ro h4{margin:12px 0 6px}
 @media (max-width:640px){.scheme-edit .form-grid{grid-template-columns:1fr 1fr}.scheme-edit .form-grid .field:first-child{grid-column:1/-1}}
 #pe-scheme{width:100%;min-width:0;max-width:420px}
+.month-pick{display:inline-flex;gap:6px;align-items:center;margin-left:4px}
+.month-pick input{width:auto;min-width:0;padding:5px 8px}
+.month-pick .btn{padding:4px 10px}

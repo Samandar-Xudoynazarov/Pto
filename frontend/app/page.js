@@ -30,7 +30,7 @@ import FleetTab from "@/components/FleetTab";
 import DashTab from "@/components/DashTab";
 
 // [kalit, nomi, izoh, kimlarga (bo'sh — hammaga)]
-const NO_STORE = ["admin", "pto", "rahbar", "kurator"];
+const NO_STORE = ["admin", "rahbar", "pto", "kuzatuvchi", "kurator"];
 const WITH_USTA = [...NO_STORE, "usta"]; // sex boshlig'i: kunlik va oylik hisobot, ombor qoldig'i
 const TABS = [
   ["day", "Kunlik hisobot", "Reja / fakt, xomashyo sarfi, jo'natish", WITH_USTA],
@@ -49,7 +49,7 @@ const TABS = [
   ["mat", "Materiallar", "Narxlar, beton retseptlari va sozlamalar", NO_STORE],
   ["veh", "Texnika hisobi", "Yoqilg'i sarfi normaga nisbatan, ta'mir va texnik xizmat", [...NO_STORE, "omborchi"]],
   ["targets", "Sex va texnika", "Chiqim manzillari: bo'limlar va mashinalar", [...NO_STORE, "omborchi"]],
-  ["admin", "Boshqaruv", "Foydalanuvchilar, zaxira nusxa va o'zgarishlar tarixi", ["admin"]],
+  ["admin", "Boshqaruv", "Foydalanuvchilar, zaxira nusxa va o'zgarishlar tarixi", ["admin", "rahbar"]],
 ];
 const tabsFor = (user) => TABS.filter((t) => !t[3] || t[3].includes(user?.role));
 // Telefondagi pastki menyu: rol bo'yicha 4 ta asosiy bo'lim (+ o'rtada «+» tugmasi)
@@ -58,10 +58,11 @@ const BOTTOM = {
   usta: ["day", "plan", "wh"],
   admin: ["day", "wh", "moves"],
   pto: ["day", "wh", "moves"],
-  rahbar: ["dash", "day", "plan", "wh"],
+  rahbar: ["dash", "day", "wh"], // to'liq huquq — o'rtada «+» (kirim/chiqim) ham bor
+  kuzatuvchi: ["dash", "day", "plan", "wh"],
   kurator: ["dash", "day", "plan", "wh"],
 };
-const DEFAULT_TAB = { omborchi: "wh", rahbar: "dash", kurator: "dash" };
+const DEFAULT_TAB = { omborchi: "wh", rahbar: "dash", kuzatuvchi: "dash", kurator: "dash" };
 // pastki menyuda sig'adigan qisqa nomlar
 const SHORT = { day: "Kunlik", month: "Oylik", moves: "Tarix", targets: "Sex/texnika", stock: "Qoldiq", ord: "Buyurtma", plan: "Reja", inv: "Sanash", sup: "Ta'minot", fg: "Tayyor", veh: "Texnika", dash: "Grafik" };
 
@@ -252,7 +253,7 @@ function App() {
   const current = tabs.find(([k]) => k === tab) || tabs.find(([k]) => k === DEFAULT_TAB[user?.role]) || tabs[0];
   const active = current[0];
   const canMove = canStoreRole(user?.role);
-  const bottom = (BOTTOM[user?.role] || BOTTOM.rahbar).map((k) => tabs.find((x) => x[0] === k)).filter(Boolean);
+  const bottom = (BOTTOM[user?.role] || BOTTOM.kuzatuvchi).map((k) => tabs.find((x) => x[0] === k)).filter(Boolean);
 
   const doLogout = () => {
     if (!confirmLeave()) return;
