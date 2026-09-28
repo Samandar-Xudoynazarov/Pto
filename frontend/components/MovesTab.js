@@ -72,7 +72,7 @@ export default function MovesTab({ data, notify, version, onChanged }) {
   const sumOut = (items || []).filter((m) => m.type === "out").reduce((s, m) => s + m.qty * (m.price || 0), 0);
 
   const canCancel = (m) =>
-    canEdit || (m.createdBy?.id === user?.id && Date.now() - new Date(m.createdAt).getTime() < 24 * 36e5);
+    m.reason !== "inventar" && (canEdit || (m.createdBy?.id === user?.id && Date.now() - new Date(m.createdAt).getTime() < 24 * 36e5));
 
   async function cancel(m) {
     if (!window.confirm(t("Bu yozuv bekor qilinsinmi? Qoldiq qayta hisoblanadi."))) return;
@@ -89,7 +89,10 @@ export default function MovesTab({ data, notify, version, onChanged }) {
   // Excel: 1-varaq — barcha yozuvlar, 2-varaq — material bo'yicha jami
   function buildExport() {
     const list = items || [];
-    const where = (m) => (m.type === "in" ? m.supplier : [tname(m.departmentId)?.name, tname(m.vehicleId)?.name].filter(Boolean).join(", "));
+    const where = (m) =>
+      m.reason === "inventar"
+        ? `${t(m.type === "in" ? "Ortiqcha" : "Kamomad")} · ${m.person}`
+        : m.type === "in" ? m.supplier : [tname(m.departmentId)?.name, tname(m.vehicleId)?.name].filter(Boolean).join(", ");
     const sum = new Map();
     for (const m of list) {
       const r = sum.get(m.materialId) || { inQ: 0, outQ: 0, inS: 0, outS: 0 };
@@ -247,7 +250,10 @@ export default function MovesTab({ data, notify, version, onChanged }) {
               <ul className="moves">
                 {list.map((m) => {
                   const mat = mats.get(m.materialId);
-                  const where = m.type === "in" ? m.supplier : [tname(m.departmentId)?.name, tname(m.vehicleId)?.name, m.person].filter(Boolean).join(" · ");
+                  const where =
+                    m.reason === "inventar"
+                      ? `${t(m.type === "in" ? "Ortiqcha" : "Kamomad")} · ${m.person}`
+                      : m.type === "in" ? m.supplier : [tname(m.departmentId)?.name, tname(m.vehicleId)?.name, m.person].filter(Boolean).join(" · ");
                   return (
                     <li key={m.id}>
                       <button className={`mv mv-${m.type}`} onClick={() => setOpen(open === m.id ? null : m.id)} aria-expanded={open === m.id}>

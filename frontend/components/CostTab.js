@@ -4,7 +4,8 @@ import ExportButtons from "./ExportButtons";
 import { fileDate } from "@/lib/xlsx-export";
 import { useUser } from "@/lib/role";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ROW_TYPES, costCard, fmt, fmtN, lsGet, lsSet } from "@/lib/calc";
+import { ROW_TYPES, costCard, fmt, fmtN, lsGet, lsSet, schemeName } from "@/lib/calc";
+import SchemesEditor from "./SchemesEditor";
 
 const typeHint = (r, card) => {
   if (r.type === "m3") return `${fmt(r.value)} × ${fmtN(card.V, 3)} m³`;
@@ -99,8 +100,9 @@ export function CostCard({ product, mats }) {
   );
 }
 
-export default function CostTab({ data, onEdit, notify }) {
+export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
   const { canEdit } = useUser();
+  const [schemesOpen, setSchemesOpen] = useState(false);
   const { products, mats } = data;
   const [sel, setSel] = useState(() => lsGet("pto.costSel", products[0]?.id));
   const [q, setQ] = useState("");
@@ -134,7 +136,10 @@ export default function CostTab({ data, onEdit, notify }) {
                 <h3 style={{ margin: 0 }}>
                   {cur.p.name} {cur.p.code}
                 </h3>
-                <p className="hint">{cur.p.group}</p>
+                <p className="hint">
+                  {cur.p.group}
+                  {schemeName(cur.p, data.schemes) ? ` · ${tr("andoza")}: ${schemeName(cur.p, data.schemes)}` : ` · ${tr("xarajatlar alohida")}`}
+                </p>
               </div>
               {canEdit && (
                 <button className="btn no-print" onClick={() => { setSheet(false); onEdit(cur.p); }}>{tr("Tahrirlash")}</button>
@@ -159,12 +164,18 @@ export default function CostTab({ data, onEdit, notify }) {
 
   return (
     <section className="sheet">
+      <SchemesEditor open={schemesOpen} onClose={() => setSchemesOpen(false)} data={data} notify={notify} onSaved={onSchemesSaved} />
       <div className="bar">
         <div className="l">
           <h2>{tr("Kalkulyatsiya")}</h2>
           <input id="cost-q" type="search" placeholder={tr("Qidirish: Ф5, лоток…")} value={q} onChange={(e) => setQ(e.target.value)} aria-label={tr("Qidirish")} />
         </div>
         <div className="r">
+          {canEdit && (
+            <button className="btn" onClick={() => setSchemesOpen(true)}>
+              {tr("Xarajat andozalari")}
+            </button>
+          )}
           <ExportButtons
             label="Narxlar ro'yxati (Excel)"
             company={data.settings?.company}

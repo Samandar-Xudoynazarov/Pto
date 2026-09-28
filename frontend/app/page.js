@@ -4,7 +4,7 @@ import { api, login, logout } from "@/lib/api";
 import { UserContext, roleLabel, canStoreRole } from "@/lib/role";
 import { I18nProvider, LANGS, tr, useI18n, useT } from "@/lib/i18n";
 import { useCardTables } from "@/lib/cards";
-import { byId, fmtDate, lsGet, lsSet, today } from "@/lib/calc";
+import { applyScheme, byId, fmtDate, lsGet, lsSet, today } from "@/lib/calc";
 import FormDialog from "@/components/FormDialog";
 import DayTab from "@/components/DayTab";
 import MonthTab from "@/components/MonthTab";
@@ -22,6 +22,12 @@ import WarehouseTab from "@/components/WarehouseTab";
 import MovesTab from "@/components/MovesTab";
 import TargetsTab from "@/components/TargetsTab";
 import MoveSheet from "@/components/MoveSheet";
+import PlanTab from "@/components/PlanTab";
+import InventoryTab from "@/components/InventoryTab";
+import SuppliersTab from "@/components/SuppliersTab";
+import FinishedTab from "@/components/FinishedTab";
+import FleetTab from "@/components/FleetTab";
+import DashTab from "@/components/DashTab";
 
 // [kalit, nomi, izoh, kimlarga (bo'sh — hammaga)]
 const NO_STORE = ["admin", "pto", "rahbar", "kurator"];
@@ -29,13 +35,19 @@ const WITH_USTA = [...NO_STORE, "usta"]; // sex boshlig'i: kunlik va oylik hisob
 const TABS = [
   ["day", "Kunlik hisobot", "Reja / fakt, xomashyo sarfi, jo'natish", WITH_USTA],
   ["month", "Oylik hisobot", "Reja bajarilishi, haqiqiy sarf va norma farqi", WITH_USTA],
+  ["dash", "Grafiklar", "Oyma-oy asosiy ko'rsatkichlar", NO_STORE],
   ["wh", "Ombor", "Materiallar qoldig'i, kirim va chiqim"],
   ["moves", "Kirim-chiqim tarixi", "Ombordagi barcha harakatlar", [...NO_STORE, "omborchi"]],
+  ["inv", "Inventarizatsiya", "Omborni sanash: kamomad va ortiqcha", [...NO_STORE, "omborchi"]],
+  ["sup", "Ta'minotchilar", "Kimdan qancha olindi, narxlar qanday o'zgardi", [...NO_STORE, "omborchi"]],
   ["stock", "Qoldiq va ehtiyoj", "Material va tayyor mahsulot qiymati, buyurtmalar uchun ehtiyoj", NO_STORE],
+  ["fg", "Tayyor mahsulot", "Qoldiq, buyurtmalarga band va brak hisobi", WITH_USTA],
   ["ord", "Buyurtmalar", "Buyurtmachilar, muddatlar va jo'natish holati", NO_STORE],
+  ["plan", "Buyurtmalar rejasi", "Qancha kunda tugatamiz, yangi buyurtmani olsak ulguramizmi", WITH_USTA],
   ["cost", "Kalkulyatsiya", "Tannarx va sotuv narxi — Excel tartibida", NO_STORE],
   ["cat", "Katalog", "Mahsulotlar, sarf normalari va kalkulyatsiya kartalari", NO_STORE],
   ["mat", "Materiallar", "Narxlar, beton retseptlari va sozlamalar", NO_STORE],
+  ["veh", "Texnika hisobi", "Yoqilg'i sarfi normaga nisbatan, ta'mir va texnik xizmat", [...NO_STORE, "omborchi"]],
   ["targets", "Sex va texnika", "Chiqim manzillari: bo'limlar va mashinalar", [...NO_STORE, "omborchi"]],
   ["admin", "Boshqaruv", "Foydalanuvchilar, zaxira nusxa va o'zgarishlar tarixi", ["admin"]],
 ];
@@ -43,15 +55,15 @@ const tabsFor = (user) => TABS.filter((t) => !t[3] || t[3].includes(user?.role))
 // Telefondagi pastki menyu: rol bo'yicha 4 ta asosiy bo'lim (+ o'rtada «+» tugmasi)
 const BOTTOM = {
   omborchi: ["wh", "moves", "targets"],
-  usta: ["day", "month", "wh"],
+  usta: ["day", "plan", "wh"],
   admin: ["day", "wh", "moves"],
   pto: ["day", "wh", "moves"],
-  rahbar: ["day", "month", "wh", "moves"],
-  kurator: ["day", "month", "wh", "moves"],
+  rahbar: ["dash", "day", "plan", "wh"],
+  kurator: ["dash", "day", "plan", "wh"],
 };
-const DEFAULT_TAB = { omborchi: "wh" };
+const DEFAULT_TAB = { omborchi: "wh", rahbar: "dash", kurator: "dash" };
 // pastki menyuda sig'adigan qisqa nomlar
-const SHORT = { day: "Kunlik", month: "Oylik", moves: "Tarix", targets: "Sex/texnika", stock: "Qoldiq", ord: "Buyurtma" };
+const SHORT = { day: "Kunlik", month: "Oylik", moves: "Tarix", targets: "Sex/texnika", stock: "Qoldiq", ord: "Buyurtma", plan: "Reja", inv: "Sanash", sup: "Ta'minot", fg: "Tayyor", veh: "Texnika", dash: "Grafik" };
 
 function LangSwitch({ dark }) {
   const { lang, setLang } = useI18n();
@@ -134,7 +146,7 @@ function App() {
   useCardTables();
   const [phase, setPhase] = useState("loading"); // loading | login | ready | error
   const [loadError, setLoadError] = useState("");
-  const [tab, setTab] = useState("day");
+  const [tab, setTab] = useState(""); // bo'sh — rolning standart bo'limi (DEFAULT_TAB) yoki birinchisi
   const [materials, setMaterials] = useState([]);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -227,10 +239,12 @@ function App() {
   };
   const openForm = useCallback((f) => setForm({ ...f, key: Date.now() }), []);
 
-  const data = useMemo(
-    () => ({ materials, products, orders, targets, settings: settings || {}, mats: byId(materials), prods: byId(products) }),
-    [materials, products, orders, targets, settings]
-  );
+  // mahsulotlar kalkulyatsiyasi umumiy xarajat andozasi bilan (rawProds — tahrirlash uchun asl ko'rinish)
+  const data = useMemo(() => {
+    const schemes = settings?.costSchemes || [];
+    const resolved = products.map((p) => applyScheme(p, schemes));
+    return { materials, products: resolved, orders, targets, settings: settings || {}, schemes, mats: byId(materials), prods: byId(resolved), rawProds: byId(products) };
+  }, [materials, products, orders, targets, settings]);
 
   if (phase === "login") return <Login onDone={loadAll} />;
 
@@ -340,7 +354,22 @@ function App() {
               {active === "moves" && <MovesTab data={data} notify={notify} version={version} onChanged={bump} />}
               {active === "stock" && <StockTab data={data} notify={notify} reloadSettings={reloadSettings} version={version} />}
               {active === "ord" && <OrdersTab data={data} openForm={openForm} notify={notify} reload={reloadOrders} />}
-              {active === "cost" && <CostTab data={data} notify={notify} onEdit={(p) => setEditProduct(p)} />}
+              {active === "dash" && <DashTab data={data} notify={notify} />}
+              {active === "veh" && <FleetTab data={data} notify={notify} version={version} />}
+              {active === "fg" && <FinishedTab data={data} notify={notify} version={version} />}
+              {active === "inv" && <InventoryTab data={data} notify={notify} onChanged={bump} onDirtyChange={onDirtyChange} />}
+              {active === "sup" && <SuppliersTab data={data} openForm={openForm} notify={notify} />}
+              {active === "plan" && <PlanTab data={data} notify={notify} reloadOrders={reloadOrders} reloadSettings={reloadSettings} />}
+              {active === "cost" && (
+                <CostTab
+                  data={data}
+                  notify={notify}
+                  onEdit={(p) => setEditProduct(p)}
+                  onSchemesSaved={async () => {
+                    await Promise.all([reloadSettings(), reloadProducts()]);
+                  }}
+                />
+              )}
               {active === "cat" && <CatalogTab data={data} notify={notify} reload={reloadProducts} onEdit={(p) => setEditProduct(p)} />}
               {active === "mat" && <MaterialsTab data={data} notify={notify} reload={reloadMaterials} reloadSettings={reloadSettings} />}
               {active === "targets" && <TargetsTab data={data} notify={notify} reload={reloadTargets} />}

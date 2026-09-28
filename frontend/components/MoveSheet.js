@@ -2,7 +2,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { useT } from "@/lib/i18n";
-import { fmtN, today, GROUPS } from "@/lib/calc";
+import { fmtDate, fmtN, today, GROUPS } from "@/lib/calc";
+
+const GROUP_FUEL = (m) => m?.group === "yoqilgi";
 import Icon from "./Icon";
 import { meterFactor } from "@/lib/metal";
 
@@ -23,6 +25,29 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const qtyRef = useRef(null);
+  const [sups, setSups] = useState([]);
+  const [lastM, setLastM] = useState(null); // tanlangan texnikaning oxirgi ko'rsatkichi
+  useEffect(() => {
+    setLastM(null);
+    if (!f.vehicleId) return;
+    let off = false;
+    api(`/vehicles/${f.vehicleId}/last`)
+      .then((x) => !off && setLastM(x))
+      .catch(() => {});
+    return () => {
+      off = true;
+    };
+  }, [f.vehicleId]);
+  useEffect(() => {
+    if (init?.type !== "in" && type !== "in") return;
+    let off = false;
+    api("/suppliers?lite=1")
+      .then((x) => !off && setSups(x))
+      .catch(() => {});
+    return () => {
+      off = true;
+    };
+  }, [init, type]);
 
   useEffect(() => {
     const d = ref.current;
@@ -31,7 +56,7 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
       setMaterialId(init.materialId || "");
       setPicking(!init.materialId);
       setQ("");
-      setF({ date: today(), qty: "", price: "", supplier: "", docNumber: "", departmentId: "", vehicleId: "", person: "", note: "" });
+      setF({ date: today(), qty: "", price: "", supplier: "", docNumber: "", departmentId: "", vehicleId: "", person: "", note: "", meter: "" });
       setErr("");
       if (d && !d.open) d.showModal();
     } else if (d?.open) d.close();
@@ -61,6 +86,7 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
   const depts = targets.filter((x) => x.kind === "department" && !x.archived);
   const cars = targets.filter((x) => x.kind === "vehicle" && !x.archived);
+  const veh = cars.find((x) => x.id === f.vehicleId);
   // metall: metrda yozish mumkin — material birligiga (kg) avtomatik aylantiriladi
   const factor = meterFactor(mat);
   const [inM, setInM] = useState(true);
@@ -84,7 +110,7 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
       // metr rejimida narx 1 metr uchun kiritiladi → material birligi (kg) narxiga o'tkaziladi
       const price = byMeter ? (+f.price || 0) / factor.perM : +f.price || 0;
       if (type === "in") Object.assign(body, { price: Math.round(price * 100) / 100, supplier: f.supplier, docNumber: f.docNumber });
-      else Object.assign(body, { departmentId: f.departmentId || null, vehicleId: f.vehicleId || null });
+      else Object.assign(body, { departmentId: f.departmentId || null, vehicleId: f.vehicleId || null, ...(f.vehicleId && f.meter !== "" && { meter: +f.meter }) });
       await api("/movements", { method: "POST", body });
       notify(t(type === "in" ? "Kirim saqlandi" : "Chiqim saqlandi"));
       onSaved?.();
@@ -209,7 +235,12 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
               </div>
               <div className="field">
                 <label htmlFor="mv-sup">{t("Yetkazib beruvchi")}</label>
-                <input id="mv-sup" value={f.supplier} onChange={set("supplier")} />
+                <input id="mv-sup" list="mv-sups" autoComplete="off" value={f.supplier} onChange={set("supplier")} />
+                <datalist id="mv-sups">
+                  {sups.map((n) => (
+                    <option key={n} value={n} />
+                  ))}
+                </datalist>
               </div>
               <div className="field">
                 <label htmlFor="mv-person">{t("Kim qabul qildi")}</label>
@@ -241,6 +272,21 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
                   ))}
                 </select>
               </div>
+              {f.vehicleId && (
+                <div className="field" style={{ gridColumn: "1/-1" }}>
+                  <label htmlFor="mv-meter">
+                    {t(veh?.meterUnit === "soat" ? "Motosoat" : "Spidometr, km")}
+                    {GROUP_FUEL(mat) && <span className="u"> ({t("yoqilg'i sarfini hisoblash uchun")})</span>}
+                  </label>
+                  <input id="mv-meter" type="number" inputMode="decimal" min={lastM?.meter || 0} step="any" value={f.meter} onChange={set("meter")} placeholder={lastM ? String(lastM.meter) : ""} />
+                  {lastM && (
+                    <span className="hint">
+                      {t("Oxirgi: {m} ({d})", { m: fmtN(lastM.meter, 1), d: fmtDate(lastM.date) })}
+                      {f.meter !== "" && +f.meter >= lastM.meter && ` · ${t("yurgan: {n}", { n: fmtN(+f.meter - lastM.meter, 1) })}`}
+                    </span>
+                  )}
+                </div>
+              )}
               <div className="field" style={{ gridColumn: "1/-1" }}>
                 <label htmlFor="mv-person">{t("Kim oldi (mas'ul shaxs)")}</label>
                 <input id="mv-person" value={f.person} onChange={set("person")} />

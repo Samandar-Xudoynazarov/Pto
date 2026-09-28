@@ -20,6 +20,8 @@ export const MOVE_TYPES = ["in", "out"]; // ombor: kirim / chiqim
 export const TARGET_KINDS = ["department", "vehicle"]; // chiqim manzili: bo'lim/sex yoki texnika
 export const ROW_TYPES = ["m3", "kg", "pctPrev", "pctSS", "fixed"];
 export const STATUSES = ["yangi", "jarayonda", "tayyor", "topshirildi"];
+// brak sabablari: yoriq, o'lcham, armatura ochiq, beton sifati, qolipdan chiqarishda, tashish/yuklashda, saqlashda, boshqa
+export const BRAK_REASONS = ["yoriq", "olcham", "armatura", "beton", "qolip", "tashish", "saqlash", "boshqa"];
 
 const ref = (name) => ({ type: Schema.Types.ObjectId, ref: name, required: true });
 const qty = { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] };
@@ -64,6 +66,9 @@ const calcSchema = new Schema(
     otherRows: { type: [costRow], default: [] },
     margin: { type: Number, default: 20 },
     vat: { type: Number, default: 12 },
+    // xarajat andozasi (Settings.costSchemes[].id): berilsa — ФОТ, ЕСП, boshqa xarajatlar, marja va QQS andozadan olinadi,
+    // yuqoridagi prodRows/otherRows/margin/vat esa ishlatilmaydi (eski qiymat sifatida saqlanib turadi)
+    scheme: { type: String, default: "", trim: true, maxlength: 40 },
   },
   sub
 );
@@ -76,14 +81,24 @@ const productSchema = new Schema(
     calc: { type: calcSchema, default: () => ({}) },
     notes: { type: [String], default: [] },
     excelPrice: { type: Number, default: null }, // import paytidagi Excel narxi (solishtirish uchun)
+    forms: { type: Number, default: 0, min: [0, "Qoliplar soni manfiy bo'lmaydi"] }, // qoliplar (opalubka) soni — rejalashtirish uchun
+    cycleDays: { type: Number, default: 1, min: [0.1, "Aylanish muddati kamida 0,1 kun"] }, // 1 qolip necha kunda bo'shaydi
     sort: { type: Number, default: 0 },
   },
   opts
 );
 
 /* ---------- Kunlik hisobot ---------- */
+// fact — sifatli (omborga kirgan) dona; brak — shu kuni chiqqan yaroqsiz dona (omborga kirmaydi, lekin material sarflangan)
 const prodLine = new Schema(
-  { productId: ref("Product"), plan: qty, fact: qty, note: { type: String, default: "", maxlength: 300 } },
+  {
+    productId: ref("Product"),
+    plan: qty,
+    fact: qty,
+    brak: qty,
+    brakReason: { type: String, enum: ["", ...BRAK_REASONS], default: "" },
+    note: { type: String, default: "", maxlength: 300 },
+  },
   sub
 );
 const matLine = new Schema({ materialId: ref("Material"), sarf: qty, kirim: qty }, sub);
@@ -134,9 +149,85 @@ const settingsSchema = new Schema(
       materials: { type: Schema.Types.Mixed, default: () => ({}) }, // { materialId: miqdor }
       products: { type: Schema.Types.Mixed, default: () => ({}) }, // { productId: dona }
     },
-    calcTemplate: { type: Schema.Types.Mixed, default: null }, // yangi mahsulot kalkulyatsiyasi uchun andoza
+    calcTemplate: { type: Schema.Types.Mixed, default: null }, // yangi mahsulot kalkulyatsiyasi uchun andoza (eski)
+    // umumiy xarajat andozalari: [{ id, name, prodRows, otherRows, margin, vat }]; null — hali yaratilmagan
+    costSchemes: { type: Schema.Types.Mixed, default: null },
+    plan: {
+      concretePerDay: { type: Number, default: 0, min: 0 }, // kuniga qorish mumkin bo'lgan beton, m³ (0 — cheklanmagan)
+      workDays: { type: [Number], default: () => [1, 2, 3, 4, 5, 6] }, // 0 = yakshanba
+      holidays: { type: [String], default: [] }, // dam olish / bayram kunlari
+    },
     company: { type: String, default: "" },
     signers: { type: [String], default: [] },
+  },
+  opts
+);
+
+/* ---------- Tayyor mahsulot: brakka chiqarish (ombordagi tayyor mahsulot yaroqsiz bo'lib qolsa) ---------- */
+const productMoveSchema = new Schema(
+  {
+    type: { type: String, enum: ["brak"], default: "brak" },
+    date: { type: String, required: true, match: [DATE_RE, "Sana formati YYYY-MM-DD"] },
+    productId: ref("Product"),
+    qty: { type: Number, required: true, min: [1, "Soni kamida 1"] },
+    reason: { type: String, enum: BRAK_REASONS, default: "boshqa" },
+    note: { type: String, default: "", trim: true, maxlength: 300 },
+    createdBy: { id: String, username: String, name: String },
+  },
+  opts
+);
+productMoveSchema.index({ date: 1 });
+
+/* ---------- Texnika jurnali: ta'mir, texnik xizmat, ko'rsatkich ---------- */
+export const VEHICLE_LOG_KINDS = ["tamir", "to", "meter", "boshqa"];
+const vehicleLogSchema = new Schema(
+  {
+    vehicleId: ref("Target"),
+    date: { type: String, required: true, match: [DATE_RE, "Sana formati YYYY-MM-DD"] },
+    kind: { type: String, enum: VEHICLE_LOG_KINDS, default: "tamir" },
+    cost: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] }, // tashqi xizmat / usta haqi, so'm (ombordan olingan qismlar alohida)
+    meter: { type: Number, default: null, min: [0, "Manfiy son kiritib bo'lmaydi"] },
+    note: { type: String, default: "", trim: true, maxlength: 300 },
+    createdBy: { id: String, username: String, name: String },
+  },
+  opts
+);
+vehicleLogSchema.index({ vehicleId: 1, date: 1 });
+
+/* ---------- Inventarizatsiya (omborni sanab chiqish) ---------- */
+const invLine = new Schema(
+  {
+    materialId: ref("Material"),
+    system: { type: Number, default: 0 }, // hisob bo'yicha qoldiq (sana oxiriga)
+    actual: { type: Number, default: null, min: [0, "Manfiy son kiritib bo'lmaydi"] }, // sanalgan; null — hali sanalmagan
+    price: { type: Number, default: 0 },
+  },
+  sub
+);
+const inventorySchema = new Schema(
+  {
+    no: { type: Number, index: true },
+    date: { type: String, required: true, match: [DATE_RE, "Sana formati YYYY-MM-DD"] },
+    status: { type: String, enum: ["draft", "done"], default: "draft" },
+    group: { type: String, default: "" }, // bo'sh — hamma material
+    blind: { type: Boolean, default: false }, // omborchiga hisobdagi qoldiq ko'rsatilmaydi (yashirin sanash)
+    note: { type: String, default: "", trim: true, maxlength: 500 },
+    lines: { type: [invLine], default: [] },
+    createdBy: { id: String, username: String, name: String },
+    approvedBy: { id: String, username: String, name: String, at: Date },
+  },
+  opts
+);
+
+/* ---------- Ta'minotchilar ---------- */
+const supplierSchema = new Schema(
+  {
+    name: { type: String, required: [true, "Nomi kiritilmagan"], trim: true, maxlength: 160, unique: true },
+    phone: { type: String, default: "", trim: true, maxlength: 60 },
+    inn: { type: String, default: "", trim: true, maxlength: 20 }, // STIR
+    contact: { type: String, default: "", trim: true, maxlength: 120 }, // mas'ul shaxs
+    note: { type: String, default: "", trim: true, maxlength: 300 },
+    archived: { type: Boolean, default: false },
   },
   opts
 );
@@ -175,6 +266,10 @@ const targetSchema = new Schema(
     name: { type: String, required: [true, "Nomi kiritilmagan"], trim: true, maxlength: 120 },
     code: { type: String, default: "", trim: true, maxlength: 40 }, // davlat raqami yoki sex kodi
     archived: { type: Boolean, default: false },
+    // faqat texnika uchun
+    meterUnit: { type: String, enum: ["km", "soat"], default: "km" }, // spidometr (km) yoki motosoat
+    fuelNorm: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] }, // l/100 km yoki l/soat
+    serviceEvery: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] }, // har necha km/soatda texnik xizmat (0 — kuzatilmaydi)
   },
   opts
 );
@@ -199,7 +294,10 @@ const movementSchema = new Schema(
     departmentId: { type: Schema.Types.ObjectId, ref: "Target", default: null },
     vehicleId: { type: Schema.Types.ObjectId, ref: "Target", default: null },
     person: { type: String, default: "", trim: true, maxlength: 120 }, // kim oldi / kim qabul qildi
+    meter: { type: Number, default: null, min: [0, "Manfiy son kiritib bo'lmaydi"] }, // texnikaga berilganda: spidometr yoki motosoat
     note: { type: String, default: "", trim: true, maxlength: 300 },
+    reason: { type: String, enum: ["", "inventar"], default: "" }, // "inventar" — inventarizatsiya natijasidagi to'g'rilash
+    inventoryId: { type: Schema.Types.ObjectId, ref: "Inventory", default: null },
     createdBy: { id: String, username: String, name: String },
   },
   opts
@@ -251,3 +349,7 @@ export const Counter = models.Counter || model("Counter", counterSchema);
 export const LoginAttempt = models.LoginAttempt || model("LoginAttempt", loginAttemptSchema);
 export const Target = models.Target || model("Target", targetSchema);
 export const Movement = models.Movement || model("Movement", movementSchema);
+export const Inventory = models.Inventory || model("Inventory", inventorySchema);
+export const Supplier = models.Supplier || model("Supplier", supplierSchema);
+export const ProductMove = models.ProductMove || model("ProductMove", productMoveSchema);
+export const VehicleLog = models.VehicleLog || model("VehicleLog", vehicleLogSchema);

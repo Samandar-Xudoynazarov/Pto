@@ -5,10 +5,10 @@ import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
 import Icon from "./Icon";
 import { addDaySheet, deliver, newWorkbook, pickRows } from "@/lib/excel";
-import { consumption, fmtDate, fmtN, lsGet, lsSet, productOptions, round, shiftDate, today } from "@/lib/calc";
+import { BRAK_REASONS, consumption, fmtDate, fmtN, lsGet, lsSet, productOptions, round, shiftDate, today } from "@/lib/calc";
 
 const num = (v) => (v === "" || v === null || v === undefined ? 0 : +v || 0);
-const emptyProd = () => ({ productId: "", plan: "", fact: "", note: "" });
+const emptyProd = () => ({ productId: "", plan: "", fact: "", brak: "", brakReason: "", note: "" });
 const emptyShip = () => ({ productId: "", qty: "", customer: "", vehicle: "", orderId: "" });
 
 export default function DayTab({ data, notify, onSaved, onDirtyChange, version }) {
@@ -37,7 +37,7 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
     try {
       const [d, s] = await Promise.all([api(`/days/${date}`), api(`/stock?from=${date}&to=${date}`)]);
       if (stale()) return;
-      setProd(d.production.length ? d.production.map((l) => ({ ...l, plan: l.plan || "", fact: l.fact || "" })) : [emptyProd()]);
+      setProd(d.production.length ? d.production.map((l) => ({ ...l, plan: l.plan || "", fact: l.fact || "", brak: l.brak || "", brakReason: l.brakReason || "" })) : [emptyProd()]);
       setMatIn(Object.fromEntries(d.materials.map((l) => [l.materialId, { sarf: l.sarf || "", kirim: l.kirim || "" }])));
       setShips(d.shipments.map((l) => ({ ...l, orderId: l.orderId || "" })));
       setNote(d.note || "");
@@ -88,9 +88,30 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
   const setShipRow = touch((i, patch) => setShips((rows) => rows.map((r, j) => (j === i ? { ...r, ...patch } : r))));
   const setMat = touch((id, k, v) => setMatIn((m) => ({ ...m, [id]: { ...m[id], [k]: v } })));
 
+  // «Buyurtmalar rejasi»dagi taklifdan shu kunning rejasini to'ldirish (faktga tegmaydi)
+  async function fillFromPlan() {
+    try {
+      const p = await api("/plan");
+      const day = p.days.find((x) => x.date === date);
+      if (!day?.items.length) return notify("Bu kun uchun taklif yo'q — buyurtmalar rejasida bu kunga ish chiqmagan");
+      const need = new Map();
+      for (const it of day.items) need.set(it.productId, (need.get(it.productId) || 0) + it.qty);
+      setProd((rows) => {
+        const out = rows.filter((r) => r.productId || r.fact || r.plan).map((r) => (need.has(r.productId) ? { ...r, plan: String(need.get(r.productId)) } : r));
+        for (const [id, q] of need) if (!out.some((r) => r.productId === id)) out.push({ ...emptyProd(), productId: id, plan: String(q) });
+        return out.length ? out : [emptyProd()];
+      });
+      setDirty(true);
+      notify(tr("Reja taklifdan to'ldirildi ({n} ta mahsulot) — tekshirib, saqlang", { n: need.size }));
+    } catch (e) {
+      notify(e.message);
+    }
+  }
+
   // norma bo'yicha sarf: fakt va reja
   const normFact = useMemo(
-    () => consumption(prod.map((r) => ({ productId: r.productId, qty: num(r.fact) })), prods, mats, settings),
+    // brak ham material sarflagan — norma bo'yicha sarf sifatli + brak donadan
+    () => consumption(prod.map((r) => ({ productId: r.productId, qty: num(r.fact) + num(r.brak) })), prods, mats, settings),
     [prod, prods, mats, settings]
   );
   const normPlan = useMemo(
@@ -114,7 +135,9 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
     try {
       const body = {
         note,
-        production: prod.filter((r) => r.productId).map((r) => ({ productId: r.productId, plan: num(r.plan), fact: num(r.fact), note: r.note || "" })),
+        production: prod
+          .filter((r) => r.productId)
+          .map((r) => ({ productId: r.productId, plan: num(r.plan), fact: num(r.fact), brak: num(r.brak), brakReason: num(r.brak) > 0 ? r.brakReason || "boshqa" : "", note: r.note || "" })),
         materials: Object.entries(matIn).map(([materialId, v]) => ({ materialId, sarf: num(v?.sarf), kirim: num(v?.kirim) })),
         shipments: ships
           .filter((r) => r.productId && num(r.qty) > 0)
@@ -205,12 +228,14 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
       const start = stock?.products?.[p.id]?.start || 0;
       const fact = factBy.get(p.id) || 0;
       const shipped = shipBy.get(p.id) || 0;
-      return { p, start, fact, shipped, end: start + fact - shipped };
+      const writeoff = stock?.products?.[p.id]?.writeoff || 0; // shu kuni ombordan brakka chiqarilgan
+      return { p, start, fact, shipped, writeoff, end: start + fact - shipped - writeoff };
     })
-    .filter((r) => r.start || r.fact || r.shipped);
+    .filter((r) => r.start || r.fact || r.shipped || r.writeoff);
 
   const planSum = prod.reduce((s, r) => s + num(r.plan), 0);
   const factSum = prod.reduce((s, r) => s + num(r.fact), 0);
+  const brakSum = prod.reduce((s, r) => s + num(r.brak), 0);
   const popts = productOptions(products);
   const activeOrders = orders.filter((o) => o.status !== "topshirildi");
 
@@ -272,6 +297,7 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
                     <th>{tr("Mahsulot")}</th>
                     <th className="n">{tr("Reja, dona")}</th>
                     <th className="n">{tr("Fakt, dona")}</th>
+                    <th className="n">{tr("Brak, dona")}</th>
                     <th className="n">{tr("Bajarilishi")}</th>
                     <th>{tr("Izoh")}</th>
                     <th className="no-print"></th>
@@ -298,6 +324,18 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
                         <td className="n">
                           <input id={`dp-fact-${i}`} type="number" min="0" step="1" value={r.fact} onChange={(e) => setProdRow(i, { fact: e.target.value })} aria-label={tr("Fakt")} />
                         </td>
+                        <td className="n brak-cell">
+                          <input id={`dp-brak-${i}`} type="number" min="0" step="1" value={r.brak} placeholder="0" onChange={(e) => setProdRow(i, { brak: e.target.value })} aria-label={tr("Brak")} />
+                          {num(r.brak) > 0 && (
+                            <select id={`dp-brr-${i}`} value={r.brakReason || "boshqa"} onChange={(e) => setProdRow(i, { brakReason: e.target.value })} aria-label={tr("Brak sababi")}>
+                              {BRAK_REASONS.map(([k, l]) => (
+                                <option key={k} value={k}>
+                                  {tr(l)}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                        </td>
                         <td className={`n ${pct === null ? "" : pct >= 100 ? "ok" : "warn"}`}>{pct === null ? "—" : `${fmtN(pct, 0)} %`}</td>
                         <td>
                           <input id={`dp-note-${i}`} value={r.note || ""} onChange={(e) => setProdRow(i, { note: e.target.value })} aria-label={tr("Izoh")} />
@@ -316,6 +354,7 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
                     <td>{tr("Jami")}</td>
                     <td className="n">{fmtN(planSum)}</td>
                     <td className="n">{fmtN(factSum)}</td>
+                    <td className={`n${brakSum ? " late" : ""}`}>{brakSum ? fmtN(brakSum) : "—"}</td>
                     <td className="n">{planSum ? `${fmtN((factSum / planSum) * 100, 0)} %` : "—"}</td>
                     <td colSpan={2}></td>
                   </tr>
@@ -323,7 +362,12 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
               </table></fieldset>
             </div>
             {canDay && (
-              <button className="btn sm no-print" style={{ marginTop: 8 }} onClick={touch(() => setProd((rows) => [...rows, emptyProd()]))}>{tr("+ Mahsulot qo'shish")}</button>
+              <div className="no-print" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                <button className="btn sm" onClick={touch(() => setProd((rows) => [...rows, emptyProd()]))}>{tr("+ Mahsulot qo'shish")}</button>
+                {date >= today() && (
+                  <button className="btn sm" onClick={fillFromPlan} title={tr("Buyurtmalar rejasidagi taklif bo'yicha")}>{tr("Rejani buyurtmalardan to'ldirish")}</button>
+                )}
+              </div>
             )}
           </div>
 
@@ -413,7 +457,10 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
                           </td>
                           <td className="n">{fmtN(r.start)}</td>
                           <td className="n">{r.fact || ""}</td>
-                          <td className="n">{r.shipped || ""}</td>
+                          <td className="n">
+                            {r.shipped || ""}
+                            {r.writeoff > 0 && <span className="sub late">{tr("brak −{n}", { n: r.writeoff })}</span>}
+                          </td>
                           <td className={`n strong ${r.end < 0 ? "late" : ""}`}>{fmtN(r.end)}</td>
                         </tr>
                       ))}

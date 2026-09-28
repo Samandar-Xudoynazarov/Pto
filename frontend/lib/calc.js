@@ -5,6 +5,19 @@ export const STATUSES = [
   ["tayyor", "Tayyor"],
   ["topshirildi", "Topshirildi"],
 ];
+// brak sabablari (backend/src/models.js → BRAK_REASONS bilan bir xil kalitlar)
+export const BRAK_REASONS = [
+  ["yoriq", "Yoriq (darz ketgan)"],
+  ["olcham", "O'lchami noto'g'ri"],
+  ["armatura", "Armatura ochiq qolgan"],
+  ["beton", "Beton sifati past"],
+  ["qolip", "Qolipdan chiqarishda shikastlangan"],
+  ["tashish", "Tashish / yuklashda singan"],
+  ["saqlash", "Saqlashda shikastlangan"],
+  ["boshqa", "Boshqa sabab"],
+];
+export const brakLabel = (k) => BRAK_REASONS.find(([x]) => x === k)?.[1] || "Boshqa sabab";
+
 export const GROUPS = [
   ["beton", "Beton"],
   ["xomashyo", "Xomashyo"],
@@ -127,6 +140,17 @@ export function concreteVolume(product, mats) {
 }
 
 /* ================= kalkulyatsiya ================= */
+/**
+ * Umumiy xarajat andozasi: mahsulotda calc.scheme bo'lsa — ФОТ, ЕСП, boshqa xarajatlar, marja va QQS andozadan olinadi.
+ * Materiallar (items) va metall og'irligi mahsulotning o'zidan qoladi.
+ */
+export function applyScheme(product, schemes) {
+  const id = product?.calc?.scheme;
+  const s = id && (schemes || []).find((x) => x.id === id);
+  if (!s) return product;
+  return { ...product, calc: { ...product.calc, prodRows: s.prodRows || [], otherRows: s.otherRows || [], margin: s.margin, vat: s.vat } };
+}
+export const schemeName = (product, schemes) => (schemes || []).find((x) => x.id === product?.calc?.scheme)?.name || "";
 /**
  * Excel kalkulyatsiya varag'idagi tartib:
  * materiallar → ФОТ, ЕСП → Производственная СС → Другие затраты → Итого → Маржа → Цена без НДС → НДС → Цена с НДС

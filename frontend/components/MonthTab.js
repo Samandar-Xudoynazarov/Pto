@@ -94,7 +94,7 @@ export default function MonthTab({ data, notify }) {
     const byProd = new Map();
     const actual = new Map();
     const factLines = [];
-    let plan = 0, fact = 0, shipped = 0, m3 = 0, activeDays = 0;
+    let plan = 0, fact = 0, brak = 0, shipped = 0, m3 = 0, activeDays = 0;
     for (const d of days || []) {
       const i = +d.date.slice(8, 10) - 1;
       let dayFact = 0;
@@ -107,16 +107,18 @@ export default function MonthTab({ data, notify }) {
         plan += l.plan;
         fact += l.fact;
         dayFact += l.fact;
-        const g = byProd.get(l.productId) || { plan: 0, fact: 0, shipped: 0 };
+        brak += l.brak || 0;
+        const g = byProd.get(l.productId) || { plan: 0, fact: 0, brak: 0, shipped: 0 };
         g.plan += l.plan;
         g.fact += l.fact;
+        g.brak += l.brak || 0;
         byProd.set(l.productId, g);
-        factLines.push({ productId: l.productId, qty: l.fact });
+        factLines.push({ productId: l.productId, qty: l.fact + (l.brak || 0) }); // brak ham material sarflagan
       }
       if (dayFact) activeDays++;
       for (const l of d.shipments) {
         shipped += l.qty;
-        const g = byProd.get(l.productId) || { plan: 0, fact: 0, shipped: 0 };
+        const g = byProd.get(l.productId) || { plan: 0, fact: 0, brak: 0, shipped: 0 };
         g.shipped += l.qty;
         byProd.set(l.productId, g);
       }
@@ -128,7 +130,7 @@ export default function MonthTab({ data, notify }) {
       }
     }
     const norm = consumption(factLines, prods, mats, settings);
-    return { planM3, factM3, byProd, actual, norm, plan, fact, shipped, m3, activeDays };
+    return { planM3, factM3, byProd, actual, norm, plan, fact, brak, shipped, m3, activeDays };
   }, [days, month, prods, mats, settings]);
 
   const prodRows = [...S.byProd.entries()]
@@ -223,6 +225,8 @@ export default function MonthTab({ data, notify }) {
                       { header: tr("Reja"), key: "plan", type: "int", total: "sum", width: 10 },
                       { header: tr("Fakt"), key: "fact", type: "int", total: "sum", width: 10 },
                       { header: tr("Bajarilishi"), key: "pct", type: "pct", width: 14 },
+                      { header: tr("Brak"), key: "brak", type: "int", total: "sum", width: 9 },
+                      { header: tr("Brak, %"), key: "brakPct", type: "num", width: 9 },
                       { header: tr("Beton, m³"), key: "m3", type: "num", total: "sum", width: 12 },
                       { header: tr("Jo'natildi"), key: "shipped", type: "int", total: "sum", width: 12 },
                     ],
@@ -230,6 +234,7 @@ export default function MonthTab({ data, notify }) {
                       const pct = r.plan ? Math.round((r.fact / r.plan) * 100) : null;
                       return {
                         code: r.p?.code || "?", name: r.p?.name, plan: r.plan, fact: r.fact, pct,
+                        brak: r.brak || null, brakPct: r.brak ? Math.round((r.brak / (r.fact + r.brak)) * 1000) / 10 : null,
                         m3: Math.round(concreteVolume(r.p, mats) * r.fact * 1000) / 1000, shipped: r.shipped,
                         _cell: pct === null ? undefined : { pct: pct >= 100 ? "ok" : "warn" },
                       };
@@ -316,6 +321,7 @@ export default function MonthTab({ data, notify }) {
                       <th className="n">{tr("Reja")}</th>
                       <th className="n">{tr("Fakt")}</th>
                       <th className="n">{tr("Bajarilishi")}</th>
+                      <th className="n">{tr("Brak")}</th>
                       <th className="n">{tr("Beton, m³")}</th>
                       <th className="n">{tr("Jo'natildi")}</th>
                     </tr>
@@ -332,6 +338,10 @@ export default function MonthTab({ data, notify }) {
                           <td className="n">{fmtN(r.plan)}</td>
                           <td className="n">{fmtN(r.fact)}</td>
                           <td className={`n ${pct === null ? "" : pct >= 100 ? "ok" : "warn"}`}>{pct === null ? "—" : `${fmtN(pct, 0)} %`}</td>
+                          <td className={`n${r.brak ? " late" : ""}`}>
+                            {r.brak ? fmtN(r.brak) : "—"}
+                            {r.brak > 0 && <span className="sub">{fmtN((r.brak / (r.fact + r.brak)) * 100, 1)} %</span>}
+                          </td>
                           <td className="n">{fmtN(concreteVolume(r.p, mats) * r.fact, 2)}</td>
                           <td className="n">{fmtN(r.shipped)}</td>
                         </tr>
@@ -344,6 +354,7 @@ export default function MonthTab({ data, notify }) {
                       <td className="n">{fmtN(S.plan)}</td>
                       <td className="n">{fmtN(S.fact)}</td>
                       <td className="n">{S.plan ? `${fmtN((S.fact / S.plan) * 100, 0)} %` : "—"}</td>
+                      <td className="n">{S.brak ? fmtN(S.brak) : "—"}</td>
                       <td className="n">{fmtN(S.m3, 2)}</td>
                       <td className="n">{fmtN(S.shipped)}</td>
                     </tr>

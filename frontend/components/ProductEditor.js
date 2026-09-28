@@ -2,7 +2,7 @@
 import { tr } from "@/lib/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
-import { ROW_TYPES, calcMetalKg, costCard, expandNorms, fmt, fmtN, priceOf } from "@/lib/calc";
+import { ROW_TYPES, applyScheme, calcMetalKg, costCard, expandNorms, fmt, fmtN, priceOf } from "@/lib/calc";
 
 const clone = (x) => JSON.parse(JSON.stringify(x ?? null));
 const blankCalc = (tpl) => ({ items: [], metalKg: 0, prodRows: [], otherRows: [], margin: 20, vat: 12, ...(clone(tpl) || {}), ...(tpl ? { items: [] } : {}) });
@@ -20,7 +20,7 @@ function MatSelect({ id, value, onChange, materials, filter }) {
   );
 }
 
-function RowsEditor({ title, rows, setRows, computed, idp }) {
+export function RowsEditor({ title, rows, setRows, computed, idp }) {
   const set = (i, patch) => setRows(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   return (
     <div>
@@ -73,6 +73,7 @@ function RowsEditor({ title, rows, setRows, computed, idp }) {
 export default function ProductEditor({ product, open, onClose, data, notify, onSaved }) {
   const ref = useRef(null);
   const { materials, mats, settings, products } = data;
+  const schemes = data.schemes || [];
   const [d, setD] = useState(null);
   const [tab, setTab] = useState("norm");
   const [busy, setBusy] = useState(false);
@@ -80,13 +81,16 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
   useEffect(() => {
     const el = ref.current;
     if (open) {
-      const p = product ? clone(product) : { code: "", name: "", group: "", norms: [], calc: blankCalc(settings.calcTemplate) };
-      if (!p.calc) p.calc = blankCalc(settings.calcTemplate);
+      // tahrirlash — asl (andoza qo'llanmagan) ko'rinishda
+      const raw = product ? data.rawProds?.get(product.id) || product : null;
+      const p = raw ? clone(raw) : { code: "", name: "", group: "", norms: [], calc: { ...blankCalc(settings.calcTemplate), scheme: schemes[0]?.id || "" }, forms: "", cycleDays: 1 };
+      if (!p.forms) p.forms = "";
+      if (!p.calc) p.calc = { ...blankCalc(settings.calcTemplate), scheme: schemes[0]?.id || "" };
       setD(p);
       setTab("norm");
       if (el && !el.open) el.showModal();
     } else if (el?.open) el.close();
-  }, [open, product, settings.calcTemplate]);
+  }, [open, product, settings.calcTemplate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const norms = d?.norms || [];
   const calc = d?.calc || blankCalc();
@@ -112,7 +116,8 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
     };
   }, [d, norms, calc]);
   const expanded = useMemo(() => (numeric ? expandNorms(numeric, mats, settings) : new Map()), [numeric, mats, settings]);
-  const card = useMemo(() => (numeric ? costCard(numeric, mats) : null), [numeric, mats]);
+  const scheme = schemes.find((x) => x.id === calc.scheme);
+  const card = useMemo(() => (numeric ? costCard(applyScheme(numeric, schemes), mats) : null), [numeric, mats, schemes]);
   const groups = [...new Set(products.map((p) => p.group).filter(Boolean))];
 
   async function save(e) {
@@ -120,7 +125,7 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
     if (!numeric.code.trim()) return notify("Marka kiritilmagan");
     setBusy(true);
     try {
-      const body = { code: numeric.code.trim(), name: numeric.name, group: numeric.group, norms: numeric.norms, calc: numeric.calc };
+      const body = { code: numeric.code.trim(), name: numeric.name, group: numeric.group, norms: numeric.norms, calc: numeric.calc, forms: +d.forms || 0, cycleDays: +d.cycleDays || 1 };
       if (product?.id) await api(`/products/${product.id}`, { method: "PUT", body });
       else await api("/products", { method: "POST", body });
       notify("Saqlandi");
@@ -158,6 +163,23 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
                 ))}
               </datalist>
             </div>
+            <div className="field">
+              <label htmlFor="pe-forms">
+                {tr("Qoliplar soni")} <span className="u">({tr("dona")})</span>
+              </label>
+              <input id="pe-forms" type="number" min="0" step="1" value={d.forms} placeholder="0" onChange={(e) => setD({ ...d, forms: e.target.value })} />
+            </div>
+            <div className="field">
+              <label htmlFor="pe-cycle">
+                {tr("Qolip aylanishi")} <span className="u">({tr("kun")})</span>
+              </label>
+              <input id="pe-cycle" type="number" min="0.1" step="any" value={d.cycleDays} onChange={(e) => setD({ ...d, cycleDays: e.target.value })} />
+            </div>
+            {+d.forms > 0 && (
+              <p className="hint" style={{ gridColumn: "1/-1", margin: 0 }}>
+                {tr("Kunlik quvvat: {n} dona/kun — buyurtmalar rejasida ishlatiladi.", { n: fmtN(+d.forms / Math.max(0.1, +d.cycleDays || 1), 2) })}
+              </p>
+            )}
           </div>
 
           <div className="chips">
@@ -294,22 +316,71 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
                     <button type="button" className="btn sm" onClick={() => setCalc({ metalKg: Math.round(calcMetalKg(numeric, mats) * 1000) / 1000 })}>{tr("Hisoblash")}</button>
                   </div>
                 </div>
+                <div className="field" style={{ gridColumn: "1/-1" }}>
+                  <label htmlFor="pe-scheme">{tr("Xarajat andozasi")}</label>
+                  <select
+                    id="pe-scheme"
+                    value={calc.scheme || ""}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      // andozadan «alohida»ga o'tganda — andozadagi qatorlar boshlang'ich qiymat sifatida ko'chiriladi
+                      if (!v && scheme) setCalc({ scheme: "", prodRows: clone(scheme.prodRows), otherRows: clone(scheme.otherRows), margin: scheme.margin, vat: scheme.vat });
+                      else setCalc({ scheme: v });
+                    }}
+                  >
+                    {schemes.map((x) => (
+                      <option key={x.id} value={x.id}>
+                        {x.name}
+                      </option>
+                    ))}
+                    <option value="">{tr("Alohida (faqat shu mahsulot uchun)")}</option>
+                  </select>
+                </div>
                 <div className="field">
                   <label htmlFor="pe-margin">
                     Маржа <span className="u">(%)</span>
                   </label>
-                  <input id="pe-margin" type="number" step="any" value={calc.margin} onChange={(e) => setCalc({ margin: e.target.value })} />
+                  <input id="pe-margin" type="number" step="any" value={scheme ? scheme.margin : calc.margin} disabled={!!scheme} onChange={(e) => setCalc({ margin: e.target.value })} />
                 </div>
                 <div className="field">
                   <label htmlFor="pe-vat">
                     НДС <span className="u">(%)</span>
                   </label>
-                  <input id="pe-vat" type="number" step="any" value={calc.vat} onChange={(e) => setCalc({ vat: e.target.value })} />
+                  <input id="pe-vat" type="number" step="any" value={scheme ? scheme.vat : calc.vat} disabled={!!scheme} onChange={(e) => setCalc({ vat: e.target.value })} />
                 </div>
               </div>
 
-              <RowsEditor title="Производственная СС (ФОТ, ЕСП …)" idp="pr" rows={calc.prodRows} setRows={(r) => setCalc({ prodRows: r })} computed={card.prodRows} />
-              <RowsEditor title="Другие затраты" idp="or" rows={calc.otherRows} setRows={(r) => setCalc({ otherRows: r })} computed={card.otherRows} />
+              {scheme ? (
+                <div className="scheme-ro">
+                  <p className="hint">
+                    {tr("Quyidagi xarajatlar «{n}» andozasidan olinadi. Ularni o'zgartirish — «Kalkulyatsiya» → «Xarajat andozalari» (shu andozadagi barcha mahsulotlarga ta'sir qiladi).", { n: scheme.name })}
+                  </p>
+                  {[["Производственная СС (ФОТ, ЕСП …)", card.prodRows], ["Другие затраты", card.otherRows]].map(([title, rows]) => (
+                    <div key={title}>
+                      <h4>{title}</h4>
+                      <div className="tbl-wrap">
+                        <table>
+                          <tbody>
+                            {rows.map((r, i) => (
+                              <tr key={i}>
+                                <td>{r.name}</td>
+                                <td className="muted">{tr(ROW_TYPES.find(([k]) => k === r.type)?.[1] || "")}</td>
+                                <td className="n">{fmtN(r.value, 2)}</td>
+                                <td className="n">{fmt(r.amount)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <RowsEditor title="Производственная СС (ФОТ, ЕСП …)" idp="pr" rows={calc.prodRows} setRows={(r) => setCalc({ prodRows: r })} computed={card.prodRows} />
+                  <RowsEditor title="Другие затраты" idp="or" rows={calc.otherRows} setRows={(r) => setCalc({ otherRows: r })} computed={card.otherRows} />
+                </>
+              )}
 
               <div className="totals">
                 <span>{tr("Tannarx:")} {fmt(card.itogo)}</span>

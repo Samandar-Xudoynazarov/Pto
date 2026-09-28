@@ -57,6 +57,7 @@ export default function CatalogTab({ data, notify, reload, onEdit }) {
               <th className="n">{tr("Beton, m³")}</th>
               <th className="n">{tr("Metall, kg")}</th>
               <th className="n">{tr("Og'irligi, t")}</th>
+              <th className="n">{tr("Quvvat, dona/kun")}</th>
               <th></th>
             </tr>
           </thead>
@@ -79,6 +80,7 @@ export default function CatalogTab({ data, notify, reload, onEdit }) {
                   <td className="n">{v ? fmtN(v, 3) : "—"}</td>
                   <td className="n">{metal ? fmtN(metal, 1) : "—"}</td>
                   <td className="n">{v ? fmtN(v * 2.5 + metal / 1000, 2) : "—"}</td>
+                  <td className="n">{p.forms > 0 ? fmtN(p.forms / (p.cycleDays || 1), 2) : "—"}</td>
                   <td>
                     {canEdit && (
                       <div className="acts">

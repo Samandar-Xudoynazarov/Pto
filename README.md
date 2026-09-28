@@ -79,9 +79,9 @@ cd frontend && cp .env.example .env.local && npm install && npm run dev   # http
 |---|---|
 | Administrator | hamma narsa + foydalanuvchilar, zaxira nusxa, o'zgarishlar tarixi («Boshqaruv» bo'limi) |
 | ПТО muhandisi | hisobot, ombor, buyurtma, katalog, materiallarni tahrirlaydi |
-| Sex boshlig'i (usta) | «Kunlik hisobot»da rejani tuzadi, fakt, xomashyo sarfi va izohni yozadi; jo'natish va kirimni o'zgartira olmaydi, kunni o'chira olmaydi. «Oylik hisobot» va «Ombor»ni ko'radi |
-| Omborchi | «Ombor», «Kirim-chiqim tarixi», «Sex va texnika» bo'limlari: kirim/chiqim yozadi, yangi material qo'shadi (narxsiz), o'zi kiritgan yozuvni 24 soat ichida bekor qiladi |
-| Rahbar | hamma bo'limni ko'radi, hech narsani o'zgartira olmaydi |
+| Sex boshlig'i (usta) | «Kunlik hisobot»da rejani tuzadi, fakt, xomashyo sarfi va izohni yozadi; jo'natish va kirimni o'zgartira olmaydi, kunni o'chira olmaydi. «Buyurtmalar rejasi»dagi taklifdan kunlik rejani to'ldira oladi, brakni yozadi va tayyor mahsulotni brakka chiqaradi. «Oylik hisobot», «Buyurtmalar rejasi» va «Ombor»ni ko'radi |
+| Omborchi | «Ombor», «Kirim-chiqim tarixi», «Inventarizatsiya», «Ta'minotchilar», «Sex va texnika» bo'limlari: kirim/chiqim yozadi, yangi material qo'shadi (narxsiz), o'zi kiritgan yozuvni 24 soat ichida bekor qiladi, inventarizatsiyada sanaganini kiritadi (tasdiqlay olmaydi) |
+| Rahbar | hamma bo'limni ko'radi, hech narsani o'zgartira olmaydi; tizimga kirganda «Grafiklar» ochiladi |
 | Kurator | kuzatuvchi: hamma bo'limni ko'radi, hech narsani o'zgartira olmaydi |
 
 **Birinchi kirish:** bazada foydalanuvchi bo'lmasa, login `admin` va parol sifatida `APP_PASSWORD` qiymati kiritiladi. Administrator avtomatik yaratiladi va darhol o'z parolini o'rnatishi so'raladi. Keyingi foydalanuvchilar «Boshqaruv» bo'limida qo'shiladi.
@@ -116,9 +116,19 @@ Barcha so'rovlarda `Authorization: Bearer <token>` sarlavhasi bo'lishi kerak (`/
 | GET/PUT/DELETE | `/api/days/:date` | bitta kun: reja/fakt, sarf/kirim, jo'natish |
 | GET | `/api/stock?from=&to=` | ombor: davr boshi, harakat, oxiri |
 | GET/POST, PUT/DELETE `:id` | `/api/orders` | buyurtmalar; GET javobida `shipped` bor |
-| GET/PUT | `/api/settings` | boshlang'ich qoldiq, elektrod %, imzolar |
+| GET/PUT | `/api/settings` | boshlang'ich qoldiq, elektrod %, imzolar, `plan` (kunlik beton, ish kunlari, bayramlar), `costSchemes` (xarajat andozalari) |
+| POST | `/api/products/scheme` | mahsulotlarni andozaga bog'lash: `{ scheme, productIds }` |
+| GET | `/api/plan` | buyurtmalar prognozi: har buyurtma qachon tugaydi, kunlik ishlab chiqarish taklifi |
+| POST | `/api/plan/check` | «olsak ulguramizmi?»: `{ productId, qty, deadline }` — hech narsa yozmaydi, hamma rol ishlata oladi |
 | GET/POST, DELETE `:id` | `/api/movements` | ombor kirim/chiqimi; `?from=&to=&type=&materialId=&targetId=` |
-| GET/POST, PUT/DELETE `:id` | `/api/targets` | chiqim manzillari: bo'lim/sex va texnika |
+| GET/POST, PUT/DELETE `:id` | `/api/targets` | chiqim manzillari: bo'lim/sex va texnika (texnikada `meterUnit`, `fuelNorm`, `serviceEvery`) |
+| GET | `/api/vehicles/report?from=&to=`, `/api/vehicles/:id?from=&to=`, `/api/vehicles/:id/last` | texnika hisobi: yoqilg'i sarfi, xarajat, TO; oxirgi ko'rsatkich |
+| POST, DELETE `:id` | `/api/vehicle-logs` | texnika jurnali: ta'mir, TO, ko'rsatkich (ombor rollari) |
+| GET/POST, GET/PUT/DELETE `:id`, POST `:id/approve` | `/api/inventories` | inventarizatsiya: sanash (qoralama), tasdiqlash (ПТО/admin) — farqlar kirim/chiqim bo'lib yoziladi |
+| GET | `/api/dashboard?months=12` | grafiklar uchun oyma-oy miqdorlar (reja, fakt, brak, jo'natish, sarf, chiqim, kirim) |
+| GET | `/api/finished?from=&to=&productId=` | tayyor mahsulot harakati, brak ro'yxati (ishlab chiqarishda va ombordan), mahsulot tarixi |
+| POST, DELETE `:id` | `/api/product-moves` | tayyor mahsulotni brakka chiqarish (ПТО, admin, usta) |
+| GET/POST, PUT/DELETE `:id` | `/api/suppliers` | ta'minotchilar; `?from=&to=` — xaridlar va narx statistikasi, `?lite=1` — faqat nomlar |
 | GET, PUT `password` | `/api/me` | joriy foydalanuvchi, o'z parolini almashtirish |
 | GET/POST, PUT/DELETE `:id` | `/api/users` | foydalanuvchilar (admin) |
 | GET | `/api/audit` | o'zgarishlar tarixi (admin) |
@@ -129,8 +139,15 @@ Barcha so'rovlarda `Authorization: Bearer <token>` sarlavhasi bo'lishi kerak (`/
 - **Sarf normasi (Норма)**: mahsulotning to'g'ridan-to'g'ri normalari, bunga qo'shimcha beton markasi koeffitsiyentlari bo'yicha qum, sement va sheben (masalan, М400: 0,609 / 0,59 / 1,036 t/m³) va elektrod (metall og'irligining 1,5 %, 3 xonagacha yaxlitlanadi).
 - **Elektrod**: «Materiallar» bo'limida bitta materialga «Bu material — elektrod» belgisi qo'yiladi. Belgi yo'q bo'lsa, nomi «Электрод» bo'lgan material olinadi.
 - **Ombor (materiallar)**: boshlang'ich qoldiq + kirim − ishlab chiqarish sarfi − chiqim. Kirim va chiqimni omborchi yozadi (chiqim — sex, texnika yoki mas'ul shaxsga); ishlab chiqarish sarfini ПТО kunlik hisobotda yozadi. Qoldiqdan ortiq chiqim qilib bo'lmaydi. Kunlik hisobotdagi «Kirim» va «Chiqim» ustunlari hamda Excel shaklidagi «Приход»/«Расход» shu harakatlardan avtomatik to'ladi.
-- **Tayyor mahsulot**: boshlang'ich qoldiq + fakt − jo'natish.
+- **Texnika**: har mashinaga hisoblagich (spidometr km yoki motosoat), yoqilg'i normasi (l/100 km yoki l/soat) va texnik xizmat oralig'i kiritiladi. Omborchi yoqilg'i berganda ko'rsatkichni yozadi (oldingisidan kam bo'lmaydi). Sarf «quyishdan quyishgacha»: shu quyishdagi yoqilg'i ÷ keyingi ko'rsatkichli quyishgacha yurilgan masofa; normadan 10% ortig'i qizil. Xarajat = ombordan berilgan yoqilg'i, ehtiyot qism va boshqa materiallar + jurnaldagi tashqi ta'mir haqi. Navbatdagi TO = oxirgi TO ko'rsatkichi (TO bo'lmasa — birinchi ko'rsatkich) + oraliq; 10% qolganda «yaqin».
+- **Inventarizatsiya**: omborchi yoki ПТО sanashni boshlaydi (hamma material yoki bitta guruh), haqiqiy miqdorni kiritadi. Hisobdagi qoldiq — sanash kuni oxiriga. ПТО «yashirin sanash»ni tanlasa, omborchi hisobdagi qoldiqni ko'rmaydi. ПТО yoki admin tasdiqlaganda har bir sanalgan materialning farqi kirim (ortiqcha) yoki chiqim (kamomad) harakati sifatida yoziladi; bu yozuvlarni alohida o'chirib bo'lmaydi — faqat inventarizatsiyani bekor qilish bilan. Bir vaqtda bitta qoralama bo'ladi.
+- **Ta'minotchilar**: kirimda yozilgan ta'minotchi nomi ro'yxatga avtomatik qo'shiladi (katta-kichik harf va bo'shliqlar farqi hisobga olinmaydi). Nomi o'zgartirilsa, eski kirimlardagi nom ham yangilanadi. Narx o'zgarishi — shu ta'minotchidan oxirgi kirim narxi uning oldingi (boshqa) narxiga nisbatan.
+- **Tayyor mahsulot**: boshlang'ich qoldiq + fakt (sifatli) − jo'natish − brakka chiqarilgan. «Band» — faol buyurtmalarning jo'natilmagan qismi; qiymat kalkulyatsiyadagi tannarx (marja va QQSsiz) bo'yicha.
+- **Brak**: ishlab chiqarishdagi brak kunlik hisobotda «Brak» ustuniga sababi bilan yoziladi — omborga kirmaydi, lekin norma bo'yicha material sarfiga (sifatli + brak) qo'shiladi. Ombordagi tayyor mahsulot keyin yaroqsiz bo'lsa, «Tayyor mahsulot» bo'limida mahsulot kartasidan «Brakka chiqarish» qilinadi (qoldiqdan ko'p bo'lmaydi; usta o'zinikini 24 soat ichida bekor qiladi). Brak ulushi = brak ÷ (sifatli + brak); zarar = brak × tannarx.
 - **Metr → kg**: kg yoki t da yuritiladigan metall uchun omborchi miqdorni metrda yozishi mumkin — avtomatik kg ga aylantiriladi. 1 metr og'irligi nomdan olinadi: armatura, prutok, krug — «мм» oldidagi diametr bo'yicha GOST 5781 (Ø12 → 0,888 kg/m); burchak «Уголок 140х9» — GOST 8509 (19,41 kg/m). Boshqa profillar yoki aniqroq qiymat uchun «Materiallar» bo'limida «1 metr og'irligi» maydoniga qo'lda kiritiladi. Hisob serverda qilinadi; tarixda kiritilgan metr ham saqlanadi.
+- **Buyurtmalar rejasi**: har mahsulotning kunlik quvvati = qoliplar soni ÷ aylanish muddati (kun), «Katalog»da kiritiladi; kiritilmagan bo'lsa — oxirgi 60 kunda shu mahsulot chiqarilgan kunlardagi o'rtacha fakt. Umumiy cheklov — kuniga qorish mumkin bo'lgan beton, m³ (mahsulot hajmi sarf normasidagi beton qatoridan). Yakshanba va bayramlar ish kuni emas (sozlanadi). Qoldiq = soni − jo'natilgan; avval ombordagi tayyor mahsulot taqsimlanadi. Har kuni avval har buyurtmaga muddatga ulgurishi uchun shu kuni kamida kerak bo'lgan miqdor beriladi (muddati yaqini birinchi), ortgan quvvat — yana muddat tartibida. Holat: «Ulguradi», «Xavfli» (zaxira 1 ish kunidan kam), «Kechikadi», «Omborda bor», «Quvvat noma'lum». «Tayyor» va «Topshirildi» holatidagi buyurtmalar rejaga kirmaydi.
+- **Grafiklar**: oxirgi 6/12/24 oy — reja va fakt, reja bajarilishi %, material xarajati (xomashyo, metall, yoqilg'i, boshqa; ishlab chiqarish sarfi + ombor chiqimi, joriy narxlarda), 1 m³ betonga material xarajati, quyilgan beton, brak ulushi, jo'natish, omborga kirim. Har grafikda «Jadval» ko'rinishi bor; ranglar rang ajrata olmaydiganlar uchun tekshirilgan.
+- **Xarajat andozalari**: «Производственная СС» (ФОТ, ЕСП), «Другие затраты», marja va QQS mahsulotda emas, umumiy andozada turadi («Kalkulyatsiya» → «Xarajat andozalari», ПТО/admin). Andozani o'zgartirsangiz, unga bog'langan barcha mahsulotlar narxi qayta hisoblanadi; mahsulotda faqat materiallar va metall og'irligi qoladi. Boshlanishda ikkita andoza: «Фундамент (1-sxema)» va «Лотки и плиты (2-sxema)»; tizim birinchi ishga tushganda mahsulotlarni hozirgi qiymatlariga qarab o'zi taqsimlaydi (mos kelmasa — o'z guruhidagi ko'pchilikka). Mahsulotni «Alohida» qilib, faqat o'ziga xos qatorlar berish ham mumkin.
 - **Kalkulyatsiya** (Excel'dagi tartib bilan): materiallar → ФОТ, ЕСП → Производственная СС → Другие затраты → Итого → Маржа → НДС. Beton narxi retseptdan hisoblanadi.
 
 ## Kunlik hisobotni Excel'da olish

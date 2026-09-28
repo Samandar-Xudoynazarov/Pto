@@ -9,7 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import mongoose from "mongoose";
 import { connectDB } from "../src/db.js";
-import { Material, Product, Day, Order, Settings, Counter, Target, Movement } from "../src/models.js";
+import { Material, Product, Day, Order, Settings, Counter, Target, Movement, Inventory, Supplier, ProductMove, VehicleLog } from "../src/models.js";
 
 const args = process.argv.slice(2);
 const file = args.find((a) => a.endsWith(".json"));
@@ -33,6 +33,10 @@ const plan = [
   ["sozlamalar", Settings, d.settings],
   ["sex va texnika", Target, d.targets],
   ["ombor harakatlari", Movement, d.movements],
+  ["inventarizatsiyalar", Inventory, d.inventories],
+  ["ta'minotchilar", Supplier, d.suppliers],
+  ["brakka chiqarish", ProductMove, d.productMoves],
+  ["texnika jurnali", VehicleLog, d.vehicleLogs],
 ];
 
 console.log(`Zaxira: ${backup.createdAt} (${backup.createdBy || "?"})`);
@@ -68,7 +72,7 @@ const current = {};
 for (const [name, Model] of plan) current[name] = await Model.find().lean();
 const stamp = new Date(Date.now() + 5 * 36e5).toISOString().slice(0, 19).replace(/[T:]/g, "-");
 const safetyFile = path.resolve(process.cwd(), `pto-avto-zaxira-${stamp}.json`);
-const [materials, products, days, orders, settings, targets, movements] = plan.map(([name]) => current[name]);
+const [materials, products, days, orders, settings, targets, movements, inventories, suppliers, productMoves, vehicleLogs] = plan.map(([name]) => current[name]);
 fs.writeFileSync(
   safetyFile,
   JSON.stringify({
@@ -76,8 +80,8 @@ fs.writeFileSync(
     format: 1,
     createdAt: new Date().toISOString(),
     createdBy: "restore.js (tiklashdan oldingi holat)",
-    counts: { materials: materials.length, products: products.length, days: days.length, orders: orders.length, targets: targets.length, movements: movements.length },
-    data: { materials, products, days, orders, settings, users: [], targets, movements },
+    counts: { materials: materials.length, products: products.length, days: days.length, orders: orders.length, targets: targets.length, movements: movements.length, inventories: inventories.length, suppliers: suppliers.length, productMoves: productMoves.length, vehicleLogs: vehicleLogs.length },
+    data: { materials, products, days, orders, settings, users: [], targets, movements, inventories, suppliers, productMoves, vehicleLogs },
   })
 );
 console.log(`Joriy baza saqlandi: ${path.basename(safetyFile)}`);
@@ -100,7 +104,7 @@ try {
       if (current[name].length) await Model.insertMany(current[name], { ordered: true });
       console.log(`  ↺ ${name}: ${current[name].length}`);
     }
-    await Counter.deleteOne({ _id: "order" });
+    await Counter.deleteMany({ _id: { $in: ["order", "inventory"] } });
     console.log("Baza avvalgi holatiga qaytarildi.");
   } catch (err2) {
     console.log(`Avvalgi holatni qaytarib bo'lmadi: ${err2?.message}`);
@@ -110,7 +114,7 @@ try {
   process.exit(1);
 }
 // buyurtma raqami hisoblagichi keyingi buyurtmada tiklangan buyurtmalardagi eng katta raqamdan qayta boshlanadi
-await Counter.deleteOne({ _id: "order" });
+await Counter.deleteMany({ _id: { $in: ["order", "inventory"] } });
 console.log("Tiklandi.");
 console.log(`(Kerak bo'lsa, avvalgi holat: npm run restore -- ${path.basename(safetyFile)} --yes)`);
 await mongoose.disconnect();

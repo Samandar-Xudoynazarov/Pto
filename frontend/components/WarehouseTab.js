@@ -245,6 +245,7 @@ function MaterialCard({ material, qty, data, onClose, openMove, canStore, versio
               </button>
             </div>
           )}
+          <PriceSummary moves={moves} material={material} />
           <h3>{t("Oxirgi harakatlar")}</h3>
           {!moves ? (
             <div className="loading">{t("Yuklanmoqda…")}</div>
@@ -370,5 +371,39 @@ function NewMaterial({ open, onClose, notify, onSaved, canEdit }) {
         </form>
       )}
     </dialog>
+  );
+}
+
+/** Oxirgi xarid narxlari: har ta'minotchidan oxirgi narx, eng arzoni belgilanadi */
+function PriceSummary({ moves, material }) {
+  const t = useT();
+  const rows = useMemo(() => {
+    const by = new Map();
+    for (const m of moves || []) {
+      if (m.type !== "in" || m.reason === "inventar" || !(m.price > 0)) continue;
+      const k = (m.supplier || "").trim().toLowerCase() || "—";
+      if (!by.has(k)) by.set(k, { name: m.supplier || t("Ta'minotchi ko'rsatilmagan"), price: m.price, date: m.date });
+    }
+    return [...by.values()].slice(0, 4);
+  }, [moves, t]);
+  if (rows.length < 1) return null;
+  const min = Math.min(...rows.map((r) => r.price));
+  return (
+    <>
+      <h3>{t("Oxirgi xarid narxlari")}</h3>
+      <ul className="prices">
+        {rows.map((r) => (
+          <li key={r.name}>
+            <span>
+              {r.name}
+              <small className="muted"> · {fmtDate(r.date)}</small>
+            </span>
+            <strong className={rows.length > 1 && r.price === min ? "ok-text" : ""}>
+              {fmt(r.price)} <small className="muted">{t("so'm")}/{material.unit}</small>
+            </strong>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
