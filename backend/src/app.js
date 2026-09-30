@@ -2,12 +2,12 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import { connectDB } from "./db.js";
-import { Material, Product, Day, Order, Settings, User, AuditLog, Counter, Target, Movement, Inventory, Supplier, ProductMove, VehicleLog, VEHICLE_LOG_KINDS, DATE_RE, MOVE_TYPES, TARGET_KINDS, MATERIAL_GROUPS, BRAK_REASONS } from "./models.js";
+import { Material, Product, Day, Order, Settings, User, AuditLog, Counter, Target, Movement, Inventory, Supplier, ProductMove, VehicleLog, AcctReport, VEHICLE_LOG_KINDS, DATE_RE, MOVE_TYPES, TARGET_KINDS, MATERIAL_GROUPS, BRAK_REASONS } from "./models.js";
 import { stockReport } from "./stock.js";
 import { planOrders, checkNewOrder, planConfig, addDays } from "./plan.js";
 import { vehicleStats } from "./fleet.js";
 import { DEFAULT_SCHEMES, assignSchemes } from "./schemes.js";
-import { ROLES, ADMIN_ROLES, WRITE_ROLES, STORE_ROLES, DAY_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
+import { ROLES, ADMIN_ROLES, WRITE_ROLES, ACCT_ROLES, STORE_ROLES, DAY_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
 import { audit, diff } from "./audit.js";
 import { meterFactor } from "./metal.js";
 import { USER_LIMIT, USER_LOCK_MIN, IP_LIMIT, IP_LOCK_MIN, clientIp, userKey, ipKey, takeAttempt, lock, loginSucceeded, clearUserLocks } from "./limits.js";
@@ -113,6 +113,7 @@ app.use("/api", async (req, res, next) => {
 //   admin, rahbar — hammasi, shu jumladan foydalanuvchilar, zaxira va o'zgarishlar tarixi
 //   pto          — hammasi (foydalanuvchilarsiz)
 //   omborchi     — ombor harakatlari, sex/texnika, material qo'shish/tahrirlash (narx va retseptsiz)
+//   buxgalter    — hamma narsani ko'radi, faqat oylik material hisobotini (/acct-reports) saqlaydi
 //   kuzatuvchi, kurator — faqat ko'radi va yuklab oladi. O'z parolini almashtirish hammaga ruxsat.
 const STORE_PATH = /^\/(movements|targets|inventories|suppliers|vehicle-logs)(\/|$)/;
 app.use("/api", (req, res, next) => {
@@ -120,6 +121,7 @@ app.use("/api", (req, res, next) => {
   if (req.method === "GET" || req.path === "/me/password" || (req.method === "POST" && req.path === "/plan/check")) return next();
   const role = req.user.role;
   if (WRITE_ROLES.includes(role)) return next();
+  if (ACCT_ROLES.includes(role) && /^\/acct-reports(\/|$)/.test(req.path)) return next();
   if (STORE_ROLES.includes(role) && (STORE_PATH.test(req.path) || (/^\/materials(\/|$)/.test(req.path) && req.method !== "DELETE"))) return next();
   // sex boshlig'i (usta): faqat kunlik hisobotni saqlaydi, o'chira olmaydi
   if (DAY_ROLES.includes(role) && req.method === "PUT" && /^\/days\/[^/]+$/.test(req.path)) return next();
@@ -245,7 +247,7 @@ app.get("/api/audit", adminOnly, async (req, res) => {
 
 /* ---------- Zaxira nusxa (faqat admin) ---------- */
 app.get("/api/backup", adminOnly, async (req, res) => {
-  const [materials, products, days, orders, settings, users, targets, movements, inventories, suppliers, productMoves, vehicleLogs] = await Promise.all([
+  const [materials, products, days, orders, settings, users, targets, movements, inventories, suppliers, productMoves, vehicleLogs, acctReports] = await Promise.all([
     Material.find().lean(),
     Product.find().lean(),
     Day.find().sort({ date: 1 }).lean(),
@@ -258,6 +260,7 @@ app.get("/api/backup", adminOnly, async (req, res) => {
     Supplier.find().sort({ name: 1 }).lean(),
     ProductMove.find().sort({ date: 1 }).lean(),
     VehicleLog.find().sort({ date: 1 }).lean(),
+    AcctReport.find().sort({ month: 1 }).lean(),
   ]);
   const now = new Date();
   const stamp = new Date(now.getTime() + 5 * 36e5).toISOString().slice(0, 16).replace(/[T:]/g, "-");
@@ -272,8 +275,8 @@ app.get("/api/backup", adminOnly, async (req, res) => {
     format: 1,
     createdAt: now.toISOString(),
     createdBy: req.user.username,
-    counts: { materials: materials.length, products: products.length, days: days.length, orders: orders.length, users: users.length, targets: targets.length, movements: movements.length, inventories: inventories.length, suppliers: suppliers.length, productMoves: productMoves.length, vehicleLogs: vehicleLogs.length },
-    data: { materials, products, days, orders, settings, users, targets, movements, inventories, suppliers, productMoves, vehicleLogs },
+    counts: { materials: materials.length, products: products.length, days: days.length, orders: orders.length, users: users.length, targets: targets.length, movements: movements.length, inventories: inventories.length, suppliers: suppliers.length, productMoves: productMoves.length, vehicleLogs: vehicleLogs.length, acctReports: acctReports.length },
+    data: { materials, products, days, orders, settings, users, targets, movements, inventories, suppliers, productMoves, vehicleLogs, acctReports },
   });
 });
 
@@ -1216,6 +1219,55 @@ app.post("/api/plan/check", async (req, res) => {
   if (!(qty >= 1 && qty <= 1e6)) return res.status(400).json({ error: "Soni kamida 1 bo'lishi kerak" });
   if (b.deadline && !validDate(b.deadline)) return res.status(400).json({ error: "Muddat sanasi noto'g'ri" });
   res.json(checkNewOrder(await planInput(), { productId: b.productId, qty, deadline: b.deadline || "", customer: String(b.customer || "").slice(0, 200) }));
+});
+
+/* ---------- Buxgalteriya: oylik material hisoboti ---------- */
+const MONTH_RE = /^\d{4}-\d{2}$/;
+// Saqlangan hisobot (bo'lmasa null) va oldingi hisobotdagi imzo qo'yuvchilar — yangi oy uchun
+app.get("/api/acct-reports/:month", async (req, res) => {
+  const month = req.params.month;
+  if (!MONTH_RE.test(month)) return res.status(400).json({ error: "Oy formati YYYY-MM" });
+  const [report, last] = await Promise.all([
+    AcctReport.findOne({ month }),
+    AcctReport.findOne({ month: { $ne: month } }).sort({ month: -1 }).select("director chief accountant").lean(),
+  ]);
+  res.json({ report, lastSigners: last ? { director: last.director, chief: last.chief, accountant: last.accountant } : null });
+});
+app.put("/api/acct-reports/:month", async (req, res) => {
+  const month = req.params.month;
+  if (!MONTH_RE.test(month)) return res.status(400).json({ error: "Oy formati YYYY-MM" });
+  const b = req.body || {};
+  if (b.date && !validDate(b.date)) return res.status(400).json({ error: "Sana formati YYYY-MM-DD" });
+  if (!Array.isArray(b.rows) || b.rows.length > 300) return res.status(400).json({ error: "Qatorlar ro'yxati noto'g'ri" });
+  const rows = b.rows.map((r) => ({
+    productId: isId(r?.productId) ? r.productId : null,
+    name: String(r?.name ?? "").slice(0, 200),
+    unit: String(r?.unit ?? "м3").slice(0, 20),
+    qty: +r?.qty || 0,
+    m3: +r?.m3 || 0,
+    unitCost: +r?.unitCost || 0,
+  }));
+  const u = req.user;
+  const doc = (await AcctReport.findOne({ month })) || new AcctReport({ month });
+  const before = doc.isNew ? null : doc.toObject();
+  doc.set({
+    date: b.date || "",
+    rows,
+    otherCosts: +b.otherCosts || 0,
+    director: String(b.director ?? "").slice(0, 120),
+    chief: String(b.chief ?? "").slice(0, 120),
+    accountant: String(b.accountant ?? "").slice(0, 120),
+    updatedBy: { id: String(u._id), username: u.username, name: u.name || u.username },
+  });
+  await doc.save();
+  await audit(req, { action: before ? "update" : "create", entity: "acct", entityId: month, label: `Material hisoboti ${month}`, before, after: doc });
+  res.json(doc);
+});
+app.delete("/api/acct-reports/:month", async (req, res) => {
+  const doc = await AcctReport.findOneAndDelete({ month: req.params.month });
+  if (!doc) return notFound(res);
+  await audit(req, { action: "delete", entity: "acct", entityId: doc.month, label: `Material hisoboti ${doc.month}`, before: doc });
+  res.json({ ok: true });
 });
 
 /* ---------- Sozlamalar ---------- */

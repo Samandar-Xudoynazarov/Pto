@@ -31,6 +31,7 @@ function normalize(entity, obj) {
     o.recipe = keyed(o.recipe, "materialId");
     o.writeoff = keyed(o.writeoff, "materialId");
   }
+  if (entity === "acct") o.rows = keyed(o.rows, "name");
   if (entity === "product") {
     o.norms = keyed(o.norms, "materialId");
     if (o.calc) o.calc = { ...o.calc, items: keyed(o.calc.items, "materialId") };

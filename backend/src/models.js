@@ -233,7 +233,7 @@ const supplierSchema = new Schema(
 );
 
 /* ---------- Foydalanuvchilar ---------- */
-export const ROLE_LIST = ["admin", "rahbar", "pto", "usta", "omborchi", "kuzatuvchi", "kurator"];
+export const ROLE_LIST = ["admin", "rahbar", "pto", "usta", "omborchi", "buxgalter", "kuzatuvchi", "kurator"];
 const userSchema = new Schema(
   {
     username: {
@@ -255,6 +255,33 @@ const userSchema = new Schema(
     failedLogins: { type: Number, default: 0 },
     lockUntil: { type: Date, default: null },
     lastLoginAt: { type: Date, default: null },
+  },
+  opts
+);
+
+/* ---------- Buxgalteriya: oylik material hisoboti («…ойида куйилган махсулотлар руйхати») ---------- */
+// Buxgalter oldindan to'ldirilgan jadvalni tuzatib saqlaydi; DOCX shu yozuvdan tuziladi
+const acctRow = new Schema(
+  {
+    productId: { type: Schema.Types.ObjectId, ref: "Product", default: null }, // null — qo'lda qo'shilgan qator
+    name: { type: String, default: "", trim: true, maxlength: 200 },
+    unit: { type: String, default: "м3", trim: true, maxlength: 20 },
+    qty: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] },
+    m3: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] },
+    unitCost: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] }, // 1 dona uchun material xarajati, so'm
+  },
+  sub
+);
+const acctReportSchema = new Schema(
+  {
+    month: { type: String, required: true, unique: true, match: [/^\d{4}-\d{2}$/, "Oy formati YYYY-MM"] },
+    date: { type: String, default: "" }, // hujjat sanasi
+    rows: { type: [acctRow], default: [] },
+    otherCosts: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] }, // Иш хаки, фойда ва бошка харажатлар жами
+    director: { type: String, default: "", trim: true, maxlength: 120 },
+    chief: { type: String, default: "", trim: true, maxlength: 120 }, // Цех бошлиги
+    accountant: { type: String, default: "", trim: true, maxlength: 120 }, // Моддий хисобчи
+    updatedBy: { id: String, username: String, name: String },
   },
   opts
 );
@@ -353,3 +380,4 @@ export const Inventory = models.Inventory || model("Inventory", inventorySchema)
 export const Supplier = models.Supplier || model("Supplier", supplierSchema);
 export const ProductMove = models.ProductMove || model("ProductMove", productMoveSchema);
 export const VehicleLog = models.VehicleLog || model("VehicleLog", vehicleLogSchema);
+export const AcctReport = models.AcctReport || model("AcctReport", acctReportSchema);

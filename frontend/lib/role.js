@@ -8,6 +8,7 @@ export const ROLES = [
   ["pto", "ПТО muhandisi"],
   ["usta", "Sex boshlig'i (usta)"],
   ["omborchi", "Omborchi"],
+  ["buxgalter", "Buxgalter (material hisoboti)"],
   ["kuzatuvchi", "Kuzatuvchi (ko'rish va yuklab olish)"],
   ["kurator", "Kurator (faqat ko'rish)"],
 ];
@@ -25,6 +26,7 @@ export function useUser() {
     canEdit: [...ADMIN, "pto"].includes(user?.role), // ПТО ma'lumotlari
     canStore: canStoreRole(user?.role), // ombor kirim/chiqimi
     canDay: [...ADMIN, "pto", "usta"].includes(user?.role), // kunlik hisobot: reja, fakt, sarf, izoh
+    canAcct: [...ADMIN, "pto", "buxgalter"].includes(user?.role), // oylik material hisobotini (DOCX) saqlaydi
     isAdmin: ADMIN.includes(user?.role),
   };
 }

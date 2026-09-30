@@ -9,7 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import mongoose from "mongoose";
 import { connectDB } from "../src/db.js";
-import { Material, Product, Day, Order, Settings, Counter, Target, Movement, Inventory, Supplier, ProductMove, VehicleLog } from "../src/models.js";
+import { Material, Product, Day, Order, Settings, Counter, Target, Movement, Inventory, Supplier, ProductMove, VehicleLog, AcctReport } from "../src/models.js";
 
 const args = process.argv.slice(2);
 const file = args.find((a) => a.endsWith(".json"));
@@ -38,6 +38,8 @@ const plan = [
   ["brakka chiqarish", ProductMove, d.productMoves],
   ["texnika jurnali", VehicleLog, d.vehicleLogs],
 ];
+// eski zaxiralarda buxgalteriya hisobotlari yo'q — ular bo'lmasa, bazadagilari o'zgarishsiz qoladi
+if (Array.isArray(d.acctReports)) plan.push(["material hisobotlari", AcctReport, d.acctReports]);
 
 console.log(`Zaxira: ${backup.createdAt} (${backup.createdBy || "?"})`);
 await connectDB();
@@ -73,6 +75,7 @@ for (const [name, Model] of plan) current[name] = await Model.find().lean();
 const stamp = new Date(Date.now() + 5 * 36e5).toISOString().slice(0, 19).replace(/[T:]/g, "-");
 const safetyFile = path.resolve(process.cwd(), `pto-avto-zaxira-${stamp}.json`);
 const [materials, products, days, orders, settings, targets, movements, inventories, suppliers, productMoves, vehicleLogs] = plan.map(([name]) => current[name]);
+const acctReports = current["material hisobotlari"] || (await AcctReport.find().lean());
 fs.writeFileSync(
   safetyFile,
   JSON.stringify({
@@ -80,8 +83,8 @@ fs.writeFileSync(
     format: 1,
     createdAt: new Date().toISOString(),
     createdBy: "restore.js (tiklashdan oldingi holat)",
-    counts: { materials: materials.length, products: products.length, days: days.length, orders: orders.length, targets: targets.length, movements: movements.length, inventories: inventories.length, suppliers: suppliers.length, productMoves: productMoves.length, vehicleLogs: vehicleLogs.length },
-    data: { materials, products, days, orders, settings, users: [], targets, movements, inventories, suppliers, productMoves, vehicleLogs },
+    counts: { materials: materials.length, products: products.length, days: days.length, orders: orders.length, targets: targets.length, movements: movements.length, inventories: inventories.length, suppliers: suppliers.length, productMoves: productMoves.length, vehicleLogs: vehicleLogs.length, acctReports: acctReports.length },
+    data: { materials, products, days, orders, settings, users: [], targets, movements, inventories, suppliers, productMoves, vehicleLogs, acctReports },
   })
 );
 console.log(`Joriy baza saqlandi: ${path.basename(safetyFile)}`);

@@ -613,3 +613,16 @@ tr.row-warn td{background:var(--signal-soft)}
 .month-pick{display:inline-flex;gap:6px;align-items:center;margin-left:4px}
 .month-pick input{width:auto;min-width:0;padding:5px 8px}
 .month-pick .btn{padding:4px 10px}
+
+/* ---------- Buxgalteriya: material hisoboti ---------- */
+.acct fieldset.plain{display:grid;gap:12px}
+.acct table.edit td.wide{min-width:200px}
+.acct table.edit td.wide input{min-width:200px}
+.acct table.edit td.n input{width:96px}
+.acct table.edit td.n.q input{width:64px}
+.acct table.edit td.n.c input{width:108px}
+.acct td.acts{gap:2px}
+.acct td.acts .icon-btn{width:26px;height:26px;font-size:13px}
+.acct .acct-add{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.acct .acct-add select{max-width:360px;flex:1 1 220px}
+@media (max-width:760px){.acct table.edit td.wide input,.acct table.edit td.n input{min-width:0;width:auto}}

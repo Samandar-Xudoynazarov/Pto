@@ -28,13 +28,15 @@ import SuppliersTab from "@/components/SuppliersTab";
 import FinishedTab from "@/components/FinishedTab";
 import FleetTab from "@/components/FleetTab";
 import DashTab from "@/components/DashTab";
+import AcctTab from "@/components/AcctTab";
 
 // [kalit, nomi, izoh, kimlarga (bo'sh — hammaga)]
-const NO_STORE = ["admin", "rahbar", "pto", "kuzatuvchi", "kurator"];
+const NO_STORE = ["admin", "rahbar", "pto", "buxgalter", "kuzatuvchi", "kurator"]; // buxgalter hammasini ko'radi, faqat material hisobotini yozadi
 const WITH_USTA = [...NO_STORE, "usta"]; // sex boshlig'i: kunlik va oylik hisobot, ombor qoldig'i
 const TABS = [
   ["day", "Kunlik hisobot", "Reja / fakt, xomashyo sarfi, jo'natish", WITH_USTA],
   ["month", "Oylik hisobot", "Reja bajarilishi, haqiqiy sarf va norma farqi", WITH_USTA],
+  ["acct", "Material hisoboti", "Oyda quyilgan mahsulotlar ro'yxati — Word (DOCX) shaklida", NO_STORE],
   ["dash", "Grafiklar", "Oyma-oy asosiy ko'rsatkichlar", NO_STORE],
   ["wh", "Ombor", "Materiallar qoldig'i, kirim va chiqim"],
   ["moves", "Kirim-chiqim tarixi", "Ombordagi barcha harakatlar", [...NO_STORE, "omborchi"]],
@@ -55,6 +57,7 @@ const tabsFor = (user) => TABS.filter((t) => !t[3] || t[3].includes(user?.role))
 // Telefondagi pastki menyu: rol bo'yicha 4 ta asosiy bo'lim (+ o'rtada «+» tugmasi)
 const BOTTOM = {
   omborchi: ["wh", "moves", "targets"],
+  buxgalter: ["acct", "month", "cost", "dash"],
   usta: ["day", "plan", "wh"],
   admin: ["day", "wh", "moves"],
   pto: ["day", "wh", "moves"],
@@ -62,9 +65,9 @@ const BOTTOM = {
   kuzatuvchi: ["dash", "day", "plan", "wh"],
   kurator: ["dash", "day", "plan", "wh"],
 };
-const DEFAULT_TAB = { omborchi: "wh", rahbar: "dash", kuzatuvchi: "dash", kurator: "dash" };
+const DEFAULT_TAB = { buxgalter: "acct", omborchi: "wh", rahbar: "dash", kuzatuvchi: "dash", kurator: "dash" };
 // pastki menyuda sig'adigan qisqa nomlar
-const SHORT = { day: "Kunlik", month: "Oylik", moves: "Tarix", targets: "Sex/texnika", stock: "Qoldiq", ord: "Buyurtma", plan: "Reja", inv: "Sanash", sup: "Ta'minot", fg: "Tayyor", veh: "Texnika", dash: "Grafik" };
+const SHORT = { day: "Kunlik", month: "Oylik", moves: "Tarix", targets: "Sex/texnika", stock: "Qoldiq", ord: "Buyurtma", plan: "Reja", inv: "Sanash", sup: "Ta'minot", fg: "Tayyor", veh: "Texnika", dash: "Grafik", acct: "Hisobot", cost: "Tannarx" };
 
 function LangSwitch({ dark }) {
   const { lang, setLang } = useI18n();
@@ -351,6 +354,7 @@ function App() {
             <>
               {active === "day" && <DayTab data={data} notify={notify} onSaved={reloadOrders} onDirtyChange={onDirtyChange} version={version} />}
               {active === "month" && <MonthTab data={data} notify={notify} />}
+              {active === "acct" && <AcctTab data={data} notify={notify} />}
               {active === "wh" && <WarehouseTab data={data} notify={notify} version={version} openMove={setMove} reloadMaterials={reloadMaterials} />}
               {active === "moves" && <MovesTab data={data} notify={notify} version={version} onChanged={bump} />}
               {active === "stock" && <StockTab data={data} notify={notify} reloadSettings={reloadSettings} version={version} />}

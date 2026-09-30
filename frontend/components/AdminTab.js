@@ -29,7 +29,7 @@ const FIELD = {
 };
 const ENTITY = {
   day: "Kunlik hisobot", material: "Material", product: "Mahsulot", order: "Buyurtma", settings: "Sozlamalar", user: "Foydalanuvchi", backup: "Zaxira nusxa",
-  movement: "Ombor harakati", target: "Sex / texnika",
+  movement: "Ombor harakati", target: "Sex / texnika", acct: "Material hisoboti",
 };
 const ACTION = {
   create: ["Qo'shildi", "st-tayyor"],
