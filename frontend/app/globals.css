@@ -616,13 +616,19 @@ tr.row-warn td{background:var(--signal-soft)}
 
 /* ---------- Buxgalteriya: material hisoboti ---------- */
 .acct fieldset.plain{display:grid;gap:12px}
-.acct table.edit td.wide{min-width:200px}
-.acct table.edit td.wide input{min-width:200px}
-.acct table.edit td.n input{width:96px}
-.acct table.edit td.n.q input{width:64px}
-.acct table.edit td.n.c input{width:108px}
+.acct table.edit td.wide{min-width:170px}
+.acct table.edit td.wide input{min-width:170px}
+.acct table.edit td.n input{width:78px}
+.acct table.edit td.n.q input{width:56px}
+.acct table.edit td.n.c input{width:98px}
 .acct td.acts{gap:2px}
 .acct td.acts .icon-btn{width:26px;height:26px;font-size:13px}
 .acct .acct-add{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .acct .acct-add select{max-width:360px;flex:1 1 220px}
 @media (max-width:760px){.acct table.edit td.wide input,.acct table.edit td.n input{min-width:0;width:auto}}
+.acct .acct-other{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 16px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel)}
+.acct .acct-other .k{font-weight:600}
+.acct .acct-other .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.acct .acct-other .v small{font-size:12px;font-weight:500;color:var(--ink-3)}
+.acct table.edit th{white-space:normal;line-height:1.25;vertical-align:bottom}
+.acct table.edit td,.acct table.edit th{padding-inline:6px}

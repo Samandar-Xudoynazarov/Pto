@@ -53,13 +53,21 @@ function around(xml, marker, tag) {
  * rows: [{ name, unit, m3, qty, unitCost }]
  */
 export function totals(rows) {
-  let m3 = 0, sum = 0, qty = 0;
+  let m3 = 0, sum = 0, qty = 0, other = 0;
   for (const r of rows) {
     m3 += +r.m3 || 0;
     qty += +r.qty || 0;
     sum += Math.round(+r.unitCost || 0) * (+r.qty || 0);
+    other += rowOther(r);
   }
-  return { m3, sum, qty };
+  return { m3, sum, qty, other };
+}
+
+/** Ish haqi, foyda va boshqa xarajatlar (1 qator): (1 dona QQSsiz narx − 1 dona material xarajati) × soni. Narx kiritilmagan qator — 0 */
+export function rowOther(r) {
+  const price = Math.round(+r.unitPrice || 0);
+  if (!price) return 0;
+  return (price - Math.round(+r.unitCost || 0)) * (+r.qty || 0);
 }
 
 /**
@@ -112,7 +120,7 @@ export async function buildAcctDocx(r) {
     JAMI_NOMI: "Жами",
     JAMI_M3: dec(t.m3, 3, 2),
     JAMI_SUMMA: money(t.sum),
-    JAMI_BOSHQA: +r.otherCosts ? money(r.otherCosts) : "",
+    JAMI_BOSHQA: t.other ? money(t.other) : "",
     SEX_BOSHLIGI: r.chief || "",
     HISOBCHI: r.accountant || "",
   });

@@ -1246,6 +1246,7 @@ app.put("/api/acct-reports/:month", async (req, res) => {
     qty: +r?.qty || 0,
     m3: +r?.m3 || 0,
     unitCost: +r?.unitCost || 0,
+    unitPrice: +r?.unitPrice || 0,
   }));
   const u = req.user;
   const doc = (await AcctReport.findOne({ month })) || new AcctReport({ month });

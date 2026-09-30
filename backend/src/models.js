@@ -269,6 +269,7 @@ const acctRow = new Schema(
     qty: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] },
     m3: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] },
     unitCost: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] }, // 1 dona uchun material xarajati, so'm
+    unitPrice: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] }, // 1 dona narxi QQSsiz (kalkulyatsiya) — ish haqi va boshqa xarajatlar = narx − material
   },
   sub
 );
@@ -277,7 +278,7 @@ const acctReportSchema = new Schema(
     month: { type: String, required: true, unique: true, match: [/^\d{4}-\d{2}$/, "Oy formati YYYY-MM"] },
     date: { type: String, default: "" }, // hujjat sanasi
     rows: { type: [acctRow], default: [] },
-    otherCosts: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] }, // Иш хаки, фойда ва бошка харажатлар жами
+    otherCosts: { type: Number, default: 0 }, // Иш хаки, фойда ва бошка харажатлар жами = Σ (QQSsiz narx − material xarajati) × soni
     director: { type: String, default: "", trim: true, maxlength: 120 },
     chief: { type: String, default: "", trim: true, maxlength: 120 }, // Цех бошлиги
     accountant: { type: String, default: "", trim: true, maxlength: 120 }, // Моддий хисобчи

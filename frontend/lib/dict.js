@@ -24,6 +24,14 @@ export const DICT = {
 
   ru: {
     // buxgalteriya: material hisoboti
+    "Material, 1 dona": "Материалы, 1 шт",
+    "Material, jami": "Материалы, всего",
+    "Narx QQSsiz, 1 dona": "Цена без НДС, 1 шт",
+    "Ish haqi va boshq.": "Зарплата и проч.",
+    "1 dona narxi (QQSsiz)": "Цена за 1 шт (без НДС)",
+    "Ish haqi va boshqa xarajatlar, so'm": "Зарплата и прочие расходы, сум",
+    "Har bir mahsulot: (1 dona QQSsiz narx − 1 dona material xarajati) × soni. Hammasining yig'indisi.": "По каждому изделию: (цена за 1 шт без НДС − материальные затраты на 1 шт) × кол-во. Итог — сумма по всем.",
+    "Jadval kunlik hisobotdagi faktdan (dona), beton hajmi mahsulot normasidan, 1 dona material xarajati va QQSsiz narxi esa kalkulyatsiyadan olinadi. Istalgan katakni tuzatib, «Word (DOCX) yuklab olish»ni bosing — fayl asl shakldagidek chiqadi.": "Количество — из факта ежедневного отчёта, объём бетона — из нормы изделия, материальные затраты и цена без НДС на 1 шт — из калькуляции. Исправьте любую ячейку и нажмите «Скачать Word (DOCX)» — файл выйдет в исходном виде.",
     "Material hisoboti": "Отчёт по материалам",
     "Oyda quyilgan mahsulotlar ro'yxati — Word (DOCX) shaklida": "Список изделий, залитых за месяц, — в формате Word (DOCX)",
     "Buxgalter (material hisoboti)": "Бухгалтер (отчёт по материалам)",

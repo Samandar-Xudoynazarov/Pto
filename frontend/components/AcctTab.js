@@ -4,7 +4,7 @@ import { tr } from "@/lib/i18n";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/role";
 import { concreteVolume, costCard, fmt, fmtN, lsGet, lsSet, productLabel, today } from "@/lib/calc";
-import { OY, acctFileName, buildAcctDocx, deliverDocx, totals } from "@/lib/acct-docx";
+import { OY, acctFileName, buildAcctDocx, deliverDocx, rowOther, totals } from "@/lib/acct-docx";
 import Icon from "./Icon";
 
 // imzo qo'yuvchilar — birinchi hisobot uchun (keyingi oylarda oldingi hisobotdagisi olinadi)
@@ -19,16 +19,18 @@ function defaultMonth() {
   return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
 }
 
-/** Mahsulot → hujjatdagi qator: nomi, beton hajmi, 1 dona material xarajati (kalkulyatsiyadan) */
+/** Mahsulot → hujjatdagi qator: nomi, beton hajmi, 1 dona material xarajati va QQSsiz narxi (kalkulyatsiyadan) */
 function rowFor(p, qty, mats) {
   const V = concreteVolume(p, mats);
+  const card = costCard(p, mats);
   return {
     productId: p.id,
     name: `${p.name || ""} ${p.code || ""}`.trim(),
     unit: "м3",
     qty,
     m3: r3(V * qty),
-    unitCost: Math.round(costCard(p, mats).materials),
+    unitCost: Math.round(card.materials),
+    unitPrice: Math.round(card.noVat),
   };
 }
 
@@ -71,7 +73,14 @@ export default function AcctTab({ data, notify }) {
       setSaved(a.report);
       setForm(
         a.report
-          ? { ...a.report, rows: a.report.rows.map((r) => ({ ...r })) }
+          ? {
+              ...a.report,
+              // eski hisobotlarda QQSsiz narx yo'q — kalkulyatsiyadan olinadi
+              rows: a.report.rows.map((r) => {
+                const p = !r.unitPrice && r.productId && prods.get(r.productId);
+                return p ? { ...r, unitPrice: Math.round(costCard(p, mats).noVat) } : { ...r };
+              }),
+            }
           : { date: today(), otherCosts: 0, ...DEFAULT_SIGNERS, ...(a.lastSigners || {}), rows: null } // rows — kunlik hisobotdan (pastda)
       );
     } catch (e) {
@@ -80,7 +89,7 @@ export default function AcctTab({ data, notify }) {
       setSaved(null);
       setForm({ date: today(), otherCosts: 0, ...DEFAULT_SIGNERS, rows: [] });
     }
-  }, [month, notify]);
+  }, [month, notify]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     load();
   }, [load]);
@@ -131,7 +140,7 @@ export default function AcctTab({ data, notify }) {
   };
   const addRow = () => {
     const p = prods.get(addId);
-    set({ rows: [...rows, p ? rowFor(p, 1, mats) : { productId: null, name: "", unit: "м3", qty: 0, m3: 0, unitCost: 0 }] });
+    set({ rows: [...rows, p ? rowFor(p, 1, mats) : { productId: null, name: "", unit: "м3", qty: 0, m3: 0, unitCost: 0, unitPrice: 0 }] });
     setAddId("");
   };
   const refill = () => {
@@ -145,11 +154,11 @@ export default function AcctTab({ data, notify }) {
   async function save(quiet) {
     const body = {
       date: form.date,
-      otherCosts: +form.otherCosts || 0,
+      otherCosts: totals(rows).other,
       director: form.director,
       chief: form.chief,
       accountant: form.accountant,
-      rows: rows.map((r) => ({ productId: r.productId || null, name: r.name, unit: r.unit || "м3", qty: +r.qty || 0, m3: +r.m3 || 0, unitCost: +r.unitCost || 0 })),
+      rows: rows.map((r) => ({ productId: r.productId || null, name: r.name, unit: r.unit || "м3", qty: +r.qty || 0, m3: +r.m3 || 0, unitCost: +r.unitCost || 0, unitPrice: +r.unitPrice || 0 })),
     };
     const doc = await api(`/acct-reports/${month}`, { method: "PUT", body });
     setSaved(doc);
@@ -229,7 +238,7 @@ export default function AcctTab({ data, notify }) {
         <fieldset className="plain" disabled={!canAcct}>
           <p className="hint">
             {tr(
-              "Jadval kunlik hisobotdagi faktdan (dona), beton hajmi mahsulot normasidan, 1 dona material xarajati esa kalkulyatsiyadan olinadi. Istalgan katakni tuzatib, «Word (DOCX) yuklab olish»ni bosing — fayl asl shakldagidek chiqadi."
+              "Jadval kunlik hisobotdagi faktdan (dona), beton hajmi mahsulot normasidan, 1 dona material xarajati va QQSsiz narxi esa kalkulyatsiyadan olinadi. Istalgan katakni tuzatib, «Word (DOCX) yuklab olish»ni bosing — fayl asl shakldagidek chiqadi."
             )}
           </p>
 
@@ -297,9 +306,11 @@ export default function AcctTab({ data, notify }) {
                     <th>№</th>
                     <th>{tr("Mahsulot nomi")}</th>
                     <th className="n">{tr("Soni")}</th>
-                    <th className="n">{tr("Beton, m³")}</th>
-                    <th className="n">{tr("1 dona material xarajati")}</th>
-                    <th className="n">{tr("Jami material xarajat, so'm")}</th>
+                    <th className="n">m³</th>
+                    <th className="n">{tr("Material, 1 dona")}</th>
+                    <th className="n">{tr("Material, jami")}</th>
+                    <th className="n">{tr("Narx QQSsiz, 1 dona")}</th>
+                    <th className="n">{tr("Ish haqi va boshq.")}</th>
                     {canAcct && <th />}
                   </tr>
                 </thead>
@@ -320,6 +331,10 @@ export default function AcctTab({ data, notify }) {
                         <input type="number" min="0" step="1" inputMode="numeric" value={r.unitCost} onChange={(e) => setRow(i, { unitCost: e.target.value === "" ? "" : +e.target.value })} aria-label={tr("1 dona material xarajati")} />
                       </td>
                       <td className="n strong">{fmt(Math.round(+r.unitCost || 0) * (+r.qty || 0))}</td>
+                      <td className="n c">
+                        <input type="number" min="0" step="1" inputMode="numeric" value={r.unitPrice ?? 0} onChange={(e) => setRow(i, { unitPrice: e.target.value === "" ? "" : +e.target.value })} aria-label={tr("1 dona narxi (QQSsiz)")} />
+                      </td>
+                      <td className={`n${rowOther(r) < 0 ? " late" : ""}`}>{+r.unitPrice ? fmt(rowOther(r)) : "—"}</td>
                       {canAcct && (
                         <td className="acts">
                           <button type="button" className="icon-btn" onClick={() => moveRow(i, -1)} disabled={i === 0} aria-label={tr("Yuqoriga")} title={tr("Yuqoriga")}>
@@ -344,6 +359,8 @@ export default function AcctTab({ data, notify }) {
                     <td className="n">{fmtN(T.m3, 3)}</td>
                     <td />
                     <td className="n">{fmt(T.sum)}</td>
+                    <td />
+                    <td className="n">{fmt(T.other)}</td>
                     {canAcct && <td />}
                   </tr>
                 </tfoot>
@@ -367,21 +384,13 @@ export default function AcctTab({ data, notify }) {
             </div>
           )}
 
-          <div className="form-grid" style={{ marginTop: 14 }}>
-            <div className="field">
-              <label htmlFor="ac-other">
-                Иш хаки, фойда ва бошка харажатлар жами <span className="u">{tr("so'm")}</span>
-              </label>
-              <input
-                id="ac-other"
-                type="number"
-                min="0"
-                step="1"
-                inputMode="numeric"
-                value={form.otherCosts || ""}
-                onChange={(e) => set({ otherCosts: e.target.value === "" ? 0 : +e.target.value })}
-              />
-              {+form.otherCosts > 0 && <span className="hint">{fmt(form.otherCosts)} {tr("so'm")}</span>}
+          <div className="acct-other">
+            <div>
+              <div className="k">Иш хаки, фойда ва бошка харажатлар жами</div>
+              <div className="hint">{tr("Har bir mahsulot: (1 dona QQSsiz narx − 1 dona material xarajati) × soni. Hammasining yig'indisi.")}</div>
+            </div>
+            <div className="v">
+              {fmt(T.other)} <small>{tr("so'm")}</small>
             </div>
           </div>
         </fieldset>
