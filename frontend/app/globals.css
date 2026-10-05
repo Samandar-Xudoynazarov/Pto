@@ -260,6 +260,12 @@ table.changes td.arrow{color:var(--ink-3);padding-inline:2px}
 .install-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
 .install-acts:empty{display:none}
 .login-install{justify-self:center}
+.offer-dlg .form-grid .field{min-width:0}
+.offer-dlg .form-grid .field>input,.offer-dlg .form-grid .field>textarea{width:100%}
+.offer-list{max-height:min(52vh,520px);overflow:auto}
+.offer-list td:first-child{width:34px}
+.offer-list .offer-name{cursor:pointer;display:block}
+.offer-list td.n input{width:130px}
 .install-steps{margin:4px 0 2px;padding-left:20px;display:grid;gap:5px;line-height:1.45}
 .install-steps .ico{display:inline-block;vertical-align:-3px}
 .login .install{margin:0}

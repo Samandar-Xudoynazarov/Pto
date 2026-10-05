@@ -6,6 +6,7 @@ import { useUser } from "@/lib/role";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ROW_TYPES, costCard, fmt, fmtN, lsGet, lsSet, schemeName } from "@/lib/calc";
 import SchemesEditor from "./SchemesEditor";
+import OfferDialog from "./OfferDialog";
 
 const typeHint = (r, card) => {
   if (r.type === "m3") return `${fmt(r.value)} × ${fmtN(card.V, 3)} m³`;
@@ -103,6 +104,7 @@ export function CostCard({ product, mats }) {
 export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
   const { canEdit } = useUser();
   const [schemesOpen, setSchemesOpen] = useState(false);
+  const [offerOpen, setOfferOpen] = useState(false);
   const { products, mats } = data;
   const [sel, setSel] = useState(() => lsGet("pto.costSel", products[0]?.id));
   const [q, setQ] = useState("");
@@ -165,6 +167,7 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
   return (
     <section className="sheet">
       <SchemesEditor open={schemesOpen} onClose={() => setSchemesOpen(false)} data={data} notify={notify} onSaved={onSchemesSaved} />
+      <OfferDialog open={offerOpen} onClose={() => setOfferOpen(false)} data={data} notify={notify} />
       <div className="bar">
         <div className="l">
           <h2>{tr("Kalkulyatsiya")}</h2>
@@ -208,6 +211,7 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
               ],
             })}
           />
+          <button className="btn primary" onClick={() => setOfferOpen(true)}>{tr("Tijorat taklifi (Word)")}</button>
           <button className="btn" onClick={() => window.print()}>{tr("Chop etish")}</button>
         </div>
       </div>
