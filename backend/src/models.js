@@ -139,6 +139,7 @@ const orderSchema = new Schema(
   {
     no: { type: Number, index: true },
     customer: { type: String, required: [true, "Buyurtmachi kiritilmagan"], trim: true, maxlength: 200 },
+    contractNo: { type: String, default: "", trim: true, maxlength: 60 }, // shartnoma (договор) raqami, masalan «ЕКМ 13»
     items: { type: [orderItem], default: [] },
     // eski (bitta mahsulotli) buyurtmalar maydonlari — migrateOrders() ularni items ga ko'chiradi
     productId: { type: Schema.Types.ObjectId, ref: "Product", default: undefined },

@@ -124,7 +124,10 @@ export default function PlanTab({ data, notify, reloadOrders, reloadSettings }) 
               {plan.orders.map((o) => (
                 <tr key={o.id}>
                   <td className="num">№{o.no}</td>
-                  <td>{o.customer}</td>
+                  <td>
+                    {o.customer}
+                    {o.contractNo && <span className="sub">{t("Shartnoma № {n}", { n: o.contractNo })}</span>}
+                  </td>
                   <td>
                     <span className="code">{code(o.productId)}</span>
                   </td>
@@ -453,7 +456,7 @@ function PlanSettings({ plan, notify, onSaved }) {
 
 function planExcel(plan, code) {
   const rows = plan.orders.map((o) => ({
-    no: o.no, customer: o.customer, product: code(o.productId), qty: o.qty, shipped: o.shipped, remaining: o.remaining, fromStock: o.fromStock,
+    no: o.no, customer: o.customer, contract: o.contractNo || "", product: code(o.productId), qty: o.qty, shipped: o.shipped, remaining: o.remaining, fromStock: o.fromStock,
     toProduce: o.toProduce, perDay: o.perDay || null, basis: basisText(o.basis), need: o.needPerDay, start: o.start ? fmtDate(o.start) : "",
     finish: o.finish ? fmtDate(o.finish) : "", deadline: o.deadline ? fmtDate(o.deadline) : "", status: statusText(o),
     _cell: o.status === "late" || o.status === "nocap" || o.status === "far" ? { status: "bad", finish: "bad" } : o.status === "risk" ? { status: "warn" } : { status: "ok" },
@@ -471,6 +474,7 @@ function planExcel(plan, code) {
         columns: [
           { header: "№", key: "no", type: "int", width: 6 },
           { header: tr("Buyurtmachi"), key: "customer", width: 26 },
+          { header: tr("Shartnoma №"), key: "contract", width: 12 },
           { header: tr("Mahsulot"), key: "product", width: 16 },
           { header: tr("Soni"), key: "qty", type: "int", total: "sum", width: 9 },
           { header: tr("Jo'natildi"), key: "shipped", type: "int", total: "sum", width: 11 },

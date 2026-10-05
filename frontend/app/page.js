@@ -17,7 +17,7 @@ import ProductEditor from "@/components/ProductEditor";
 import Icon from "@/components/Icon";
 import AdminTab from "@/components/AdminTab";
 import PasswordDialog from "@/components/PasswordDialog";
-import InstallHint from "@/components/InstallHint";
+import InstallHint, { InstallButton } from "@/components/InstallHint";
 import WarehouseTab from "@/components/WarehouseTab";
 import MovesTab from "@/components/MovesTab";
 import TargetsTab from "@/components/TargetsTab";
@@ -110,6 +110,7 @@ function Login({ onDone }) {
         </div>
         <h1>{t("Zavod ish stoli")}</h1>
         <p className="hint">{t("Davom etish uchun login va parolni kiriting")}</p>
+        <InstallHint />
         <div className="field">
           <label htmlFor="login-user">{t("Login")}</label>
           <input
@@ -132,6 +133,7 @@ function Login({ onDone }) {
         <button className="btn primary big" disabled={busy}>
           {busy ? t("Tekshirilmoqda…") : t("Kirish")}
         </button>
+        <InstallButton className="btn sm login-install" mobileOnly />
       </form>
     </div>
   );
@@ -294,6 +296,7 @@ function App() {
             <div className="side-date" suppressHydrationWarning>
               {fmtDate(today())}
             </div>
+            <InstallButton />
             <div className={`side-state ${phase === "password" ? "ready" : phase}`}>
               {phase === "ready" || phase === "password" ? t("Server bilan ulangan") : phase === "error" ? t("Ulanishda xato") : t("Yuklanmoqda…")}
             </div>

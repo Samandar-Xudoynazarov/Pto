@@ -37,7 +37,7 @@ export default function OrdersTab({ data, notify, reload }) {
   const s = q.trim().toLowerCase();
   const list = orders
     .filter((o) => (filter === "hammasi" ? true : filter === "faol" ? o.status !== "topshirildi" : o.status === filter))
-    .filter((o) => !s || String(o.no) === s || o.customer.toLowerCase().includes(s) || o.items.some((it) => (byId.get(it.productId)?.code || "").toLowerCase().includes(s)))
+    .filter((o) => !s || String(o.no) === s || o.customer.toLowerCase().includes(s) || (o.contractNo || "").toLowerCase().includes(s) || o.items.some((it) => (byId.get(it.productId)?.code || "").toLowerCase().includes(s)))
     .sort((a, b) => (a.deadline || "9999").localeCompare(b.deadline || "9999") || a.no - b.no);
 
   function chooseFilter(k) {
@@ -93,7 +93,7 @@ export default function OrdersTab({ data, notify, reload }) {
         ))}
       </div>
       <div className="field" style={{ maxWidth: 320 }}>
-        <input id="ord-q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("Qidirish: buyurtmachi, №, mahsulot")} aria-label={tr("Qidirish")} />
+        <input id="ord-q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("Qidirish: buyurtmachi, shartnoma, mahsulot")} aria-label={tr("Qidirish")} />
       </div>
 
       <div className="tbl-wrap">
@@ -123,6 +123,7 @@ export default function OrdersTab({ data, notify, reload }) {
                     <td className="num">{o.no}</td>
                     <td>
                       {o.customer}
+                      {o.contractNo && <span className="sub contract">{tr("Shartnoma № {n}", { n: o.contractNo })}</span>}
                       {o.date && <span className="sub">{tr("qabul {d}", { d: fmtDate(o.date) })}</span>}
                       {o.note && <span className="sub">{o.note}</span>}
                     </td>
@@ -219,6 +220,7 @@ function OrderDialog({ order, data, onClose, onSaved }) {
       const o = order.id ? order : null;
       setF({
         customer: o?.customer || "",
+        contractNo: o?.contractNo || "",
         date: o?.date || today(),
         deadline: o?.deadline || "",
         status: o?.status || "yangi",
@@ -251,7 +253,7 @@ function OrderDialog({ order, data, onClose, onSaved }) {
     setBusy(true);
     setError("");
     try {
-      const body = { customer: f.customer.trim(), date: f.date, deadline: f.deadline, status: f.status, note: f.note, items };
+      const body = { customer: f.customer.trim(), contractNo: f.contractNo.trim(), date: f.date, deadline: f.deadline, status: f.status, note: f.note, items };
       if (order?.id) await api(`/orders/${order.id}`, { method: "PUT", body });
       else await api("/orders", { method: "POST", body });
       await onSaved();
@@ -279,11 +281,18 @@ function OrderDialog({ order, data, onClose, onSaved }) {
     <dialog ref={ref} onClose={onClose} className="wide-dlg">
       {f && (
         <form onSubmit={save}>
-          <h2>{order?.id ? tr("Buyurtma №{n}", { n: order.no }) : tr("Yangi buyurtma")}</h2>
+          <h2>
+            {order?.id ? tr("Buyurtma №{n}", { n: order.no }) : tr("Yangi buyurtma")}
+            {order?.contractNo && <span className="muted"> · {tr("Shartnoma № {n}", { n: order.contractNo })}</span>}
+          </h2>
           <div className="form-grid">
-            <div className="field" style={{ gridColumn: "1/-1" }}>
+            <div className="field span2">
               <label htmlFor="od-c">{tr("Buyurtmachi")}</label>
               <input id="od-c" value={f.customer} onChange={(e) => set({ customer: e.target.value })} required maxLength={200} />
+            </div>
+            <div className="field">
+              <label htmlFor="od-cn">{tr("Shartnoma (договор) №")}</label>
+              <input id="od-cn" value={f.contractNo} onChange={(e) => set({ contractNo: e.target.value })} maxLength={60} placeholder="ЕКМ 13" />
             </div>
             <div className="field">
               <label htmlFor="od-d">{tr("Qabul sanasi")}</label>
@@ -414,7 +423,7 @@ function ordersExcel(list, filter, byId, mats, td) {
     for (const it of o.items) {
       const price = itemPrice(it, byId, mats);
       rows.push({
-        no: o.no, customer: o.customer, product: byId.get(it.productId)?.code || tr("— o'chirilgan —"), qty: it.qty,
+        no: o.no, customer: o.customer, contract: o.contractNo || "", product: byId.get(it.productId)?.code || tr("— o'chirilgan —"), qty: it.qty,
         before: it.shippedBefore || null, system: it.shippedSystem || null, shipped: it.shipped, left: it.left,
         date: o.date ? fmtDate(o.date) : "", deadline: o.deadline ? fmtDate(o.deadline) : "",
         status: tr(STATUSES.find(([k]) => k === o.status)?.[1] || o.status) + (late ? tr(" · kechikdi") : ""),
@@ -433,6 +442,7 @@ function ordersExcel(list, filter, byId, mats, td) {
         columns: [
           { header: "№", key: "no", type: "int", width: 6 },
           { header: tr("Buyurtmachi"), key: "customer", width: 28 },
+          { header: tr("Shartnoma №"), key: "contract", width: 12 },
           { header: tr("Mahsulot"), key: "product", width: 18 },
           { header: tr("Soni"), key: "qty", type: "int", total: "sum", width: 9 },
           { header: tr("Oldin jo'natilgan"), key: "before", type: "int", total: "sum", width: 11 },

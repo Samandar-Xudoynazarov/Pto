@@ -1,0 +1,313 @@
+{
+ "source": "Договора 01.07.2026.xlsx (Продажа)",
+ "newProducts": [
+  {
+   "code": "Л 6д-8",
+   "name": "Кабельный лоток (крышка)",
+   "group": "Лотоклар"
+  },
+  {
+   "code": "Л 13д-11",
+   "name": "Кабельный лоток (крышка)",
+   "group": "Лотоклар"
+  },
+  {
+   "code": "Л 8д-11",
+   "name": "Кабельный лоток (крышка)",
+   "group": "Лотоклар"
+  },
+  {
+   "code": "Л 11д-8",
+   "name": "Кабельный лоток (крышка)",
+   "group": "Лотоклар"
+  },
+  {
+   "code": "Л 5д-15",
+   "name": "Кабельный лоток (крышка)",
+   "group": "Лотоклар"
+  },
+  {
+   "code": "Пк1-А",
+   "name": "",
+   "group": ""
+  }
+ ],
+ "orders": [
+  {
+   "contractNo": "ЕКМ 13",
+   "customer": "Узкек",
+   "status": "jarayonda",
+   "note": "Договора 01.07.2026.xlsx dan import",
+   "items": [
+    {
+     "code": "Л 6-8",
+     "source": "Кабельный лоток Л 6-8",
+     "qty": 4,
+     "price": 2246706.09,
+     "shippedBefore": 0
+    },
+    {
+     "code": "Л 6д-8",
+     "source": "Кабельный лоток Л 6д-8",
+     "qty": 1,
+     "price": 378063.52,
+     "shippedBefore": 0
+    },
+    {
+     "code": "Л 13-11",
+     "source": "Кабельный лоток Л 13-11",
+     "qty": 76,
+     "price": 6353546.8,
+     "shippedBefore": 0
+    },
+    {
+     "code": "Л 13д-11",
+     "source": "Кабельный лоток Л 13д-11",
+     "qty": 52,
+     "price": 944787.41,
+     "shippedBefore": 0
+    },
+    {
+     "code": "Л 8-11",
+     "source": "Кабельный лоток Л 8-11",
+     "qty": 19,
+     "price": 3483325.29,
+     "shippedBefore": 0
+    },
+    {
+     "code": "Л 8д-11",
+     "source": "Кабельный лоток Л 8д-11",
+     "qty": 50,
+     "price": 560477.98,
+     "shippedBefore": 0
+    },
+    {
+     "code": "Л 20.5",
+     "source": "Кабельный лоток Л 20.5",
+     "qty": 71,
+     "price": 279479.35,
+     "shippedBefore": 40
+    },
+    {
+     "code": "Л 11-8",
+     "source": "Кабельный лоток Л 11-8",
+     "qty": 1,
+     "price": 4235303.98,
+     "shippedBefore": 0
+    },
+    {
+     "code": "Л 11д-8",
+     "source": "Кабельный лоток Л 11д-8",
+     "qty": 2,
+     "price": 597649.61,
+     "shippedBefore": 0
+    },
+    {
+     "code": "Л 5-15",
+     "source": "Кабельный лоток Л 5-15",
+     "qty": 29,
+     "price": 1878973.65,
+     "shippedBefore": 0
+    },
+    {
+     "code": "Л 5д-15",
+     "source": "Кабельный лоток Л 5д-15",
+     "qty": 78,
+     "price": 330662.09,
+     "shippedBefore": 0
+    },
+    {
+     "code": "ПЛ 5д-5",
+     "source": "Плита прекритая ПЛ 5д-5",
+     "qty": 416,
+     "price": 305340.81,
+     "shippedBefore": 0
+    },
+    {
+     "code": "ПЛ 7д-3",
+     "source": "Плита прекритая ПЛ 7д-3",
+     "qty": 807,
+     "price": 240855.97,
+     "shippedBefore": 0
+    },
+    {
+     "code": "ПЛ 10д-3",
+     "source": "Плита прекритая ПЛ 10д-3",
+     "qty": 868,
+     "price": 281640.1,
+     "shippedBefore": 0
+    },
+    {
+     "code": "ПЛ 10.5",
+     "source": "Плита прекритая ПЛ 10.5",
+     "qty": 127,
+     "price": 125323.43,
+     "shippedBefore": 56
+    }
+   ]
+  },
+  {
+   "contractNo": "ЕКМ 14",
+   "customer": "МЭТК",
+   "status": "jarayonda",
+   "note": "Договора 01.07.2026.xlsx dan import",
+   "items": [
+    {
+     "code": "Ф5-Усу(250)",
+     "source": "Ф5 Усу(250)",
+     "qty": 252,
+     "price": 18149936,
+     "shippedBefore": 80
+    },
+    {
+     "code": "Ф5-АМ",
+     "source": "Ф5 Ам",
+     "qty": 66,
+     "price": 13542938,
+     "shippedBefore": 29
+    },
+    {
+     "code": "Фк4-05",
+     "source": "Фк4-0.5",
+     "qty": 56,
+     "price": 5964000,
+     "shippedBefore": 11
+    },
+    {
+     "code": "Ф4-05",
+     "source": "Ф4-0.5",
+     "qty": 134,
+     "price": 6256000,
+     "shippedBefore": 0
+    },
+    {
+     "code": "Пк1-А",
+     "source": "Пк1-А",
+     "qty": 24,
+     "price": 10533600,
+     "shippedBefore": 21
+    },
+    {
+     "code": "Па3-1",
+     "source": "Па3-1",
+     "qty": 168,
+     "price": 4850000,
+     "shippedBefore": 95
+    },
+    {
+     "code": "Па3-2",
+     "source": "Па3-2",
+     "qty": 22,
+     "price": 6480000,
+     "shippedBefore": 3
+    },
+    {
+     "code": "Р1-А",
+     "source": "Р1-А",
+     "qty": 528,
+     "price": 1089000,
+     "shippedBefore": 451
+    }
+   ]
+  },
+  {
+   "contractNo": "ЕКМ 22",
+   "customer": "ТЭИ",
+   "status": "jarayonda",
+   "note": "Договора 01.07.2026.xlsx dan import",
+   "items": [
+    {
+     "code": "ЛЖ-1.6",
+     "source": "Лижен ЛЖ-1.6",
+     "qty": 28,
+     "price": 1800000,
+     "shippedBefore": 28
+    },
+    {
+     "code": "ЛЖ-2.8",
+     "source": "Лижен ЛЖ-2.8",
+     "qty": 12,
+     "price": 1920000,
+     "shippedBefore": 12
+    },
+    {
+     "code": "Л 12-8",
+     "source": "Кабельный лоток Л 12-8/2",
+     "qty": 37,
+     "price": 2700000,
+     "shippedBefore": 12
+    },
+    {
+     "code": "Л 2-8",
+     "source": "Кабельный лоток Л 2-8",
+     "qty": 8,
+     "price": 1600000,
+     "shippedBefore": 0
+    },
+    {
+     "code": "Л 5-8",
+     "source": "Кабельный лоток Л 5-8",
+     "qty": 4,
+     "price": 2300000,
+     "shippedBefore": 0
+    },
+    {
+     "code": "Л 8-8",
+     "source": "Кабельный лоток Л 8-8",
+     "qty": 9,
+     "price": 3500000,
+     "shippedBefore": 0
+    },
+    {
+     "code": "Л 20.5",
+     "source": "Кабельный лоток Л 20.5",
+     "qty": 13,
+     "price": 680000,
+     "shippedBefore": 13
+    },
+    {
+     "code": "ПЛ 10.5",
+     "source": "Плита прекритая ПЛ 10.5",
+     "qty": 8,
+     "price": 320000,
+     "shippedBefore": 0
+    },
+    {
+     "code": "УБ-1",
+     "source": "Подножник Уб-1",
+     "qty": 98,
+     "price": 600000,
+     "shippedBefore": 98
+    },
+    {
+     "code": "Р1-А",
+     "source": "Ригел Р1-А",
+     "qty": 12,
+     "price": 780000,
+     "shippedBefore": 12
+    },
+    {
+     "code": "УСО-3А",
+     "source": "Усо-3А",
+     "qty": 4,
+     "price": 1700000,
+     "shippedBefore": 4
+    },
+    {
+     "code": "УСО-4А",
+     "source": "Усо-4А",
+     "qty": 76,
+     "price": 1950000,
+     "shippedBefore": 76
+    },
+    {
+     "code": "УСО-5А",
+     "source": "Усо-5А",
+     "qty": 18,
+     "price": 1800000,
+     "shippedBefore": 18
+    }
+   ]
+  }
+ ]
+}

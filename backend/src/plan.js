@@ -183,6 +183,7 @@ export function planOrders({ today, orders = [], products = [], stock = {}, hist
       no: o.extra ? null : o.no,
       extra: o.extra,
       customer: o.customer,
+      contractNo: o.contractNo || "",
       productId: o.productId,
       qty: +o.qty || 0,
       shipped: +o.shipped || 0,

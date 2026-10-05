@@ -88,6 +88,8 @@ cd frontend && cp .env.example .env.local && npm install && npm run dev   # http
 
 **Birinchi kirish:** bazada foydalanuvchi bo'lmasa, login `admin` va parol sifatida `APP_PASSWORD` qiymati kiritiladi. Administrator avtomatik yaratiladi va darhol o'z parolini o'rnatishi so'raladi. Keyingi foydalanuvchilar «Boshqaruv» bo'limida qo'shiladi.
 
+**Shartnomalarni (buyurtmalarni) fayldan qo'shish** (kompyuterda, `backend` papkasida): `npm run orders` avval nima qo'shilishini ko'rsatadi, `npm run orders -- --yes` esa bazaga yozadi. Ma'lumot `scripts/data/buyurtmalar-2026-07-01.json` faylidan olinadi («Договора 01.07.2026.xlsx» dagi ЕКМ 13, 14, 22). Bazada shu shartnoma raqami bilan buyurtma bo'lsa, u qayta qo'shilmaydi (`--update` bilan yangilanadi). Katalogda yo'q mahsulotlar marka va nomi bilan yaratiladi, normalari keyin «Katalog»da to'ldiriladi.
+
 **Parol unutilsa** (kompyuterda, `backend` papkasida): `npm run user -- admin YangiParol123`
 
 Kunlik hisobotda saqlanmagan o'zgarishlar bo'lsa, boshqa bo'limga o'tish, chiqish yoki sahifani yopishdan oldin so'raladi.
@@ -117,7 +119,7 @@ Barcha so'rovlarda `Authorization: Bearer <token>` sarlavhasi bo'lishi kerak (`/
 | GET | `/api/days?month=YYYY-MM` | kunlik hisobotlar |
 | GET/PUT/DELETE | `/api/days/:date` | bitta kun: reja/fakt, sarf/kirim, jo'natish |
 | GET | `/api/stock?from=&to=` | ombor: davr boshi, harakat, oxiri |
-| GET/POST, PUT/DELETE `:id` | `/api/orders` | buyurtmalar: `items: [{ productId, qty, price, shippedBefore }]` — bitta buyurtmada bir nechta mahsulot; GET javobida har qatorda `shipped`, `left` va buyurtma bo'yicha jami |
+| GET/POST, PUT/DELETE `:id` | `/api/orders` | buyurtmalar: `contractNo` (shartnoma raqami), `items: [{ productId, qty, price, shippedBefore }]` — bitta buyurtmada bir nechta mahsulot; GET javobida har qatorda `shipped`, `left` va buyurtma bo'yicha jami |
 | GET/PUT | `/api/settings` | boshlang'ich qoldiq, elektrod %, imzolar, `plan` (kunlik beton, ish kunlari, bayramlar), `costSchemes` (xarajat andozalari) |
 | POST | `/api/products/scheme` | mahsulotlarni andozaga bog'lash: `{ scheme, productIds }` |
 | GET | `/api/plan` | buyurtmalar prognozi: har buyurtma qachon tugaydi, kunlik ishlab chiqarish taklifi |

@@ -1116,8 +1116,8 @@ app.delete("/api/suppliers/:id", async (req, res) => {
 /* ---------- Buyurtmalar ---------- */
 // Bitta buyurtmada bir nechta mahsulot: items: [{ productId, qty, price, shippedBefore }]
 // shippedBefore — tizim ishga tushishidan oldin jo'natilgani; qolgan jo'natish kunlik hisobotdan (orderId + productId) olinadi
-const ORDER_FIELDS = ["customer", "date", "deadline", "status", "note"];
-const orderLabel = (o) => `№${o.no} ${o.customer}`;
+const ORDER_FIELDS = ["customer", "contractNo", "date", "deadline", "status", "note"];
+const orderLabel = (o) => `№${o.no} ${o.customer}${o.contractNo ? ` (shartnoma ${o.contractNo})` : ""}`;
 
 /** Keyingi buyurtma raqami. Birinchi chaqiruvda hisoblagich mavjud eng katta raqamdan boshlanadi. */
 async function nextOrderNo() {

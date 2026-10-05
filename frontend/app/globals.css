@@ -119,6 +119,7 @@ textarea{width:100%;resize:vertical}
 .daynav{display:flex;gap:4px;align-items:center}
 
 .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px 16px}
+.form-grid .span2{grid-column:span 2}
 .field{display:grid;gap:5px}
 .field label{font-size:12.5px;color:var(--ink-2);font-weight:500}
 .field .u{font-size:11px;color:var(--ink-3);font-weight:400}
@@ -255,6 +256,13 @@ table.changes td.arrow{color:var(--ink-3);padding-inline:2px}
 .install-txt strong{color:var(--ink)}
 .install-txt .ico{display:inline-block;vertical-align:-3px}
 .install-x{width:30px;height:30px;flex:none}
+.install{align-items:flex-start}
+.install-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.install-acts:empty{display:none}
+.login-install{justify-self:center}
+.install-steps{margin:4px 0 2px;padding-left:20px;display:grid;gap:5px;line-height:1.45}
+.install-steps .ico{display:inline-block;vertical-align:-3px}
+.login .install{margin:0}
 
 /* ================= ombor: kartochkalar, harakatlar, pastki oynalar ================= */
 :root{--in:#15803D;--in-soft:#DCFCE7;--out:#C2410C;--out-soft:#FFEDD5;--bnav-h:64px}
@@ -432,6 +440,7 @@ table.edit input:disabled{background:transparent;border-color:transparent;color:
   .kpis-3 .kpi .v small{display:block;margin:0;font-size:11px}
   .kpis-3 .kpi .k{font-size:11px;line-height:1.25}
   .form-grid{grid-template-columns:minmax(0,1fr)}
+  .form-grid .span2{grid-column:auto}
   .form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
   input,select,textarea{font-size:16px} /* iPhone kattalashtirmasligi uchun */
   .btn{padding:10px 14px}

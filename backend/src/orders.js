@@ -84,7 +84,7 @@ export function planLines(orders, shipped) {
     const v = orderView(o, shipped);
     for (const it of v.items)
       if (it.left > 0) // to'liq jo'natilgan mahsulot rejaga kirmaydi
-        out.push({ id: shipKey(v.id, it.productId), orderId: v.id, no: v.no, customer: v.customer, productId: it.productId, qty: it.qty, shipped: it.shipped, deadline: v.deadline, status: v.status });
+        out.push({ id: shipKey(v.id, it.productId), orderId: v.id, no: v.no, customer: v.customer, contractNo: v.contractNo || "", productId: it.productId, qty: it.qty, shipped: it.shipped, deadline: v.deadline, status: v.status });
   }
   return out;
 }

@@ -526,6 +526,7 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
                                 return (
                                   <option key={o.id} value={o.id}>
                                     №{o.no} {o.customer}
+                                    {o.contractNo ? ` (${o.contractNo})` : ""}
                                     {it ? ` — ${tr("qoldi {n}", { n: fmtN(it.left) })}` : ""}
                                   </option>
                                 );
