@@ -23,6 +23,25 @@ export const DICT = {
   },
 
   ru: {
+    // buyurtmalar: ko'p mahsulotli buyurtma, tizimdan oldin jo'natilgan
+    "Qidirish: buyurtmachi, №, mahsulot": "Поиск: заказчик, №, изделие",
+    "qabul {d}": "принят {d}",
+    "Tizimdan oldin jo'natilgan": "Отгружено до запуска системы",
+    "oldin {n}": "ранее {n}",
+    "qoldi {n}": "осталось {n}",
+    "Tizim ishga tushishidan oldin olingan buyurtma — bir qismi allaqachon jo'natilgan": "Заказ принят до запуска системы — часть уже отгружена",
+    "Oldin jo'natilgan": "Отгружено ранее",
+    "Kunlik hisobotdan": "По ежедневному отчёту",
+    "Kamida bitta mahsulot qo'shing": "Добавьте хотя бы одно изделие",
+    "Oldin jo'natilgan soni buyurtma sonidan ko'p bo'lmaydi": "Отгружено ранее не может быть больше количества в заказе",
+    "Mahsulotlar ro'yxati noto'g'ri": "Неверный список изделий",
+    "Narx manfiy bo'lmaydi": "Цена не может быть отрицательной",
+    "Oldin jo'natilgan soni manfiy bo'lmaydi": "Отгружено ранее не может быть отрицательным",
+    "Bir mahsulot buyurtmada ikki marta bo'lmasin — sonini bitta qatorga yozing": "Одно изделие не может быть в заказе дважды — укажите количество одной строкой",
+    "Olib tashlanayotgan mahsulot kunlik hisobotda shu buyurtma bo'yicha jo'natilgan — avval o'sha jo'natishni boshqa buyurtmaga bog'lang": "Удаляемое изделие уже отгружалось по этому заказу в ежедневном отчёте — сначала привяжите эту отгрузку к другому заказу",
+    "Bitta buyurtmada bir nechta mahsulot bo'lishi mumkin. «Jo'natildi» = tizimdan oldin jo'natilgan (buyurtmada qo'lda kiritiladi) + kunlik hisobotda shu buyurtmaga bog'langan jo'natishlar. Narx 0 bo'lsa, kalkulyatsiyadagi QQS bilan narx olinadi.": "В одном заказе может быть несколько изделий. «Отгружено» = отгружено до запуска системы (вводится в заказе вручную) + отгрузки в ежедневном отчёте, привязанные к заказу. Если цена 0, берётся цена с НДС из калькуляции.",
+    "«Oldin jo'natilgan» — tizimdan oldin jo'natib bo'lingan soni. U ombor qoldig'iga ta'sir qilmaydi (boshlang'ich qoldiqda allaqachon hisobga olingan), faqat buyurtmaning qolgan qismini kamaytiradi.": "«Отгружено ранее» — количество, отгруженное до запуска системы. На складской остаток не влияет (уже учтено в начальном остатке), только уменьшает остаток по заказу.",
+    "Narx bo'sh bo'lsa, kalkulyatsiyadagi QQS bilan narx olinadi. Jo'natishlar kunlik hisobotda shu buyurtmaga bog'lanadi.": "Если цена не указана, берётся цена с НДС из калькуляции. Отгрузки привязываются к заказу в ежедневном отчёте.",
     // buxgalteriya: material hisoboti
     "Material, 1 dona": "Материалы, 1 шт",
     "Material, jami": "Материалы, всего",
@@ -1058,6 +1077,7 @@ export const DICT = {
   },
 
   ruPatterns: [
+    [/^Bitta buyurtmada (\d+) tadan ko'p mahsulot bo'lmaydi$/, "В одном заказе не более $1 изделий"],
     [/^Omborda yetarli emas\. Qoldiq: (.*)$/, "Недостаточно на складе. Остаток: $1"],
     [/^Ko'p marta noto'g'ri parol kiritildi\. (\d+) daqiqadan keyin urinib ko'ring$/, "Слишком много неверных попыток. Повторите через $1 мин."],
     [/^Noto'g'ri qiymat: (.*)$/, "Неверное значение: $1"],

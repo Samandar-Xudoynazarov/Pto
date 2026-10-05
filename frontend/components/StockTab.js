@@ -143,8 +143,7 @@ export default function StockTab({ data, notify, reloadSettings, version }) {
     const left = new Map();
     for (const o of orders) {
       if (o.status === "topshirildi") continue;
-      const l = Math.max(0, (+o.qty || 0) - (o.shipped || 0));
-      if (l) left.set(o.productId, (left.get(o.productId) || 0) + l);
+      for (const it of o.items || []) if (it.left) left.set(it.productId, (left.get(it.productId) || 0) + it.left);
     }
     const toMake = [];
     for (const [id, l] of left) {

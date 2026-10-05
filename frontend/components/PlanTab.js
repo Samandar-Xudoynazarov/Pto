@@ -43,14 +43,16 @@ export default function PlanTab({ data, notify, reloadOrders, reloadSettings }) 
     load();
   }, [load, data.orders, data.products, data.settings]);
 
+  // buyurtma bo'yicha: bir nechta mahsulotli buyurtmaning holati — eng yomon qatori
   const counts = useMemo(() => {
-    const c = { all: 0, ok: 0, risk: 0, bad: 0 };
+    const rank = (s) => (s === "ok" || s === "stock" ? 0 : s === "risk" ? 1 : 2);
+    const worst = new Map();
     for (const o of plan?.orders || []) {
-      c.all++;
-      if (o.status === "ok" || o.status === "stock") c.ok++;
-      else if (o.status === "risk") c.risk++;
-      else c.bad++;
+      const k = o.orderId || o.id;
+      worst.set(k, Math.max(worst.get(k) ?? 0, rank(o.status)));
     }
+    const c = { all: worst.size, ok: 0, risk: 0, bad: 0 };
+    for (const r of worst.values()) c[["ok", "risk", "bad"][r]]++;
     return c;
   }, [plan]);
 

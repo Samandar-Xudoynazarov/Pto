@@ -45,7 +45,7 @@ export function workDaysBetween(from, to, cfg) {
 /**
  * input:
  *   today      "YYYY-MM-DD"
- *   orders     [{ id, no, customer, productId, qty, shipped, deadline, status }]
+ *   orders     [{ id, orderId, no, customer, productId, qty, shipped, deadline, status }] — buyurtma qatorlari (bitta buyurtmada bir nechta mahsulot bo'lsa — har biri alohida)
  *   products   [{ id, code, name, forms, cycleDays, volume }]  (volume — m³/dona)
  *   stock      { productId: tayyor mahsulot qoldig'i }
  *   history    { productId: o'rtacha dona/kun }
@@ -152,7 +152,7 @@ export function planOrders({ today, orders = [], products = [], stock = {}, hist
     };
     for (const [r, q] of minimums(date)) if (q > 0) give(r, q, false);
     for (const r of rows) if (r.left > 0) give(r, r.left, true);
-    const items = [...made].map(([r, qty]) => ({ orderId: r.o.id, no: r.o.no, productId: r.o.productId, qty, extra: r.o.extra }));
+    const items = [...made].map(([r, qty]) => ({ orderId: r.o.orderId || r.o.id, lineId: r.o.id, no: r.o.no, productId: r.o.productId, qty, extra: r.o.extra }));
     if (days.length < showDays) days.push({ date, items, concrete: Math.round(used * 1000) / 1000 });
   }
 
@@ -179,6 +179,7 @@ export function planOrders({ today, orders = [], products = [], stock = {}, hist
     }
     return {
       id: o.id,
+      orderId: o.orderId || o.id,
       no: o.extra ? null : o.no,
       extra: o.extra,
       customer: o.customer,

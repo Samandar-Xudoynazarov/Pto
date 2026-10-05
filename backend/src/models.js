@@ -124,13 +124,26 @@ const daySchema = new Schema(
 );
 
 /* ---------- Buyurtmalar ---------- */
+// Bitta buyurtmada bir nechta mahsulot. Har mahsulot buyurtmada bir marta uchraydi.
+// shippedBefore — tizim ishga tushishidan OLDIN jo'natilgan miqdor (kunlik hisobotda yo'q, ombor qoldig'iga ta'sir qilmaydi)
+const orderItem = new Schema(
+  {
+    productId: ref("Product"),
+    qty: { type: Number, required: true, min: [1, "Soni kamida 1 bo'lishi kerak"] },
+    price: { type: Number, default: 0, min: [0, "Narx manfiy bo'lmaydi"] }, // so'm/dona QQS bilan, 0 — kalkulyatsiyadan
+    shippedBefore: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] },
+  },
+  sub
+);
 const orderSchema = new Schema(
   {
     no: { type: Number, index: true },
     customer: { type: String, required: [true, "Buyurtmachi kiritilmagan"], trim: true, maxlength: 200 },
-    productId: ref("Product"),
-    qty: { type: Number, required: true, min: [1, "Soni kamida 1 bo'lishi kerak"] },
-    price: { type: Number, default: 0, min: 0 },
+    items: { type: [orderItem], default: [] },
+    // eski (bitta mahsulotli) buyurtmalar maydonlari — migrateOrders() ularni items ga ko'chiradi
+    productId: { type: Schema.Types.ObjectId, ref: "Product", default: undefined },
+    qty: { type: Number, default: undefined },
+    price: { type: Number, default: undefined },
     date: { type: String, default: "" },
     deadline: { type: String, default: "" },
     status: { type: String, enum: STATUSES, default: "yangi" },

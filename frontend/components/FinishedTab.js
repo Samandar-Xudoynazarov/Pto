@@ -48,8 +48,7 @@ export default function FinishedTab({ data, notify, version }) {
     const m = new Map();
     for (const o of orders) {
       if (o.status === "topshirildi") continue;
-      const l = Math.max(0, (+o.qty || 0) - (o.shipped || 0));
-      if (l) m.set(o.productId, (m.get(o.productId) || 0) + l);
+      for (const it of o.items || []) if (it.left) m.set(it.productId, (m.get(it.productId) || 0) + it.left);
     }
     return m;
   }, [orders]);

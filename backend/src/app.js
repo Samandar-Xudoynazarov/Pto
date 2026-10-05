@@ -10,6 +10,7 @@ import { DEFAULT_SCHEMES, assignSchemes } from "./schemes.js";
 import { ROLES, ADMIN_ROLES, WRITE_ROLES, ACCT_ROLES, STORE_ROLES, DAY_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
 import { audit, diff } from "./audit.js";
 import { meterFactor } from "./metal.js";
+import { cleanItems, itemsOf, orderView, planLines, shippedMap } from "./orders.js";
 import { USER_LIMIT, USER_LOCK_MIN, IP_LIMIT, IP_LOCK_MIN, clientIp, userKey, ipKey, takeAttempt, lock, loginSucceeded, clearUserLocks } from "./limits.js";
 
 const app = express();
@@ -387,7 +388,7 @@ app.delete("/api/products/:id", async (req, res) => {
   const id = req.params.id;
   if (!isId(id)) return notFound(res);
   const used =
-    (await Order.exists({ productId: id })) ||
+    (await Order.exists({ $or: [{ "items.productId": id }, { productId: id }] })) ||
     (await Day.exists({ $or: [{ "production.productId": id }, { "shipments.productId": id }] })) ||
     (await ProductMove.exists({ productId: id }));
   if (used) return res.status(409).json({ error: "Mahsulot buyurtma yoki kunlik hisobotda ishlatilgan — o'chirib bo'lmaydi" });
@@ -450,6 +451,13 @@ app.put("/api/days/:date", async (req, res) => {
     data.shipments = data.shipments
       .filter((l) => l.productId && +l.qty > 0)
       .map((l) => ({ ...l, orderId: isId(l.orderId) ? l.orderId : null }));
+  // jo'natish faqat shu mahsulot bor buyurtmaga bog'lanadi (aks holda bog'lanmagan bo'lib qoladi)
+  if (data.shipments?.some((l) => l.orderId)) {
+    await migrateOrders();
+    const ids = [...new Set(data.shipments.filter((l) => l.orderId).map((l) => String(l.orderId)))];
+    const has = new Map((await Order.find({ _id: { $in: ids } }).select("items").lean()).map((o) => [String(o._id), new Set(itemsOf(o).map((i) => String(i.productId)))]));
+    for (const l of data.shipments) if (l.orderId && !has.get(String(l.orderId))?.has(String(l.productId))) l.orderId = null;
+  }
   const doc = await Day.findOneAndUpdate({ date }, { $set: { ...data, date } }, { ...upd, upsert: true, setDefaultsOnInsert: true });
   await audit(req, { action: before ? "update" : "create", entity: "day", entityId: date, label: date, before, after: doc });
   res.json(doc);
@@ -1106,7 +1114,9 @@ app.delete("/api/suppliers/:id", async (req, res) => {
 });
 
 /* ---------- Buyurtmalar ---------- */
-const ORDER_FIELDS = ["customer", "productId", "qty", "price", "date", "deadline", "status", "note"];
+// Bitta buyurtmada bir nechta mahsulot: items: [{ productId, qty, price, shippedBefore }]
+// shippedBefore — tizim ishga tushishidan oldin jo'natilgani; qolgan jo'natish kunlik hisobotdan (orderId + productId) olinadi
+const ORDER_FIELDS = ["customer", "date", "deadline", "status", "note"];
 const orderLabel = (o) => `№${o.no} ${o.customer}`;
 
 /** Keyingi buyurtma raqami. Birinchi chaqiruvda hisoblagich mavjud eng katta raqamdan boshlanadi. */
@@ -1122,33 +1132,86 @@ async function nextOrderNo() {
   return nextOrderNo();
 }
 
-app.get("/api/orders", async (_req, res) => {
-  const [orders, shipped] = await Promise.all([
-    Order.find().sort({ no: 1 }),
-    Day.aggregate([
-      { $unwind: "$shipments" },
-      { $match: { "shipments.orderId": { $ne: null } } },
-      { $group: { _id: "$shipments.orderId", qty: { $sum: "$shipments.qty" } } },
-    ]),
+/**
+ * Eski (bitta mahsulotli) buyurtmalarni items ko'rinishiga o'tkazish — bir marta, avtomatik.
+ * Zaxira nusxadan tiklangan eski buyurtmalar ham shu yerda ko'chadi.
+ */
+let ordersMigrated = null;
+function migrateOrders() {
+  ordersMigrated ||= Order.collection
+    .updateMany(
+      { productId: { $type: "objectId" }, $or: [{ items: { $exists: false } }, { items: { $size: 0 } }] },
+      [
+        { $set: { items: [{ productId: "$productId", qty: { $ifNull: ["$qty", 1] }, price: { $ifNull: ["$price", 0] }, shippedBefore: 0 }] } },
+        { $unset: ["productId", "qty", "price"] },
+      ]
+    )
+    .then((r) => r.modifiedCount && console.log(`buyurtmalar: ${r.modifiedCount} ta eski buyurtma yangi ko'rinishga o'tkazildi`))
+    .catch((err) => {
+      ordersMigrated = null;
+      throw err;
+    });
+  return ordersMigrated;
+}
+
+/** Kunlik hisobotdagi jo'natishlar: buyurtma + mahsulot bo'yicha jami */
+async function orderShipments(orderIds) {
+  const rows = await Day.aggregate([
+    { $unwind: "$shipments" },
+    { $match: { "shipments.orderId": orderIds ? { $in: orderIds } : { $ne: null } } },
+    { $group: { _id: { orderId: "$shipments.orderId", productId: "$shipments.productId" }, qty: { $sum: "$shipments.qty" } } },
   ]);
-  const map = new Map(shipped.map((s) => [String(s._id), s.qty]));
-  res.json(orders.map((o) => ({ ...o.toJSON(), shipped: map.get(o.id) || 0 })));
+  return shippedMap(rows);
+}
+async function orderOut(doc) {
+  const o = doc.toObject ? doc.toObject() : doc;
+  return orderView(o, await orderShipments([o._id]));
+}
+
+/** Body'dan buyurtma ma'lumotlari. Eski ko'rinish ({ productId, qty, price }) ham qabul qilinadi. */
+async function orderData(body, { create }) {
+  const data = pick(body, ORDER_FIELDS);
+  for (const k of ["date", "deadline"]) if (data[k] !== undefined && data[k] !== "" && !validDate(data[k])) return { error: "Sana formati YYYY-MM-DD" };
+  let raw = body?.items;
+  if (raw === undefined && body?.productId !== undefined) raw = [{ productId: body.productId, qty: body.qty, price: body.price, shippedBefore: body.shippedBefore }];
+  if (raw === undefined) return create ? { error: "Kamida bitta mahsulot qo'shing" } : { data };
+  const r = cleanItems(raw, isId);
+  if (r.error) return r;
+  const ids = r.items.map((i) => i.productId);
+  if ((await Product.countDocuments({ _id: { $in: ids } })) !== ids.length) return { error: "Mahsulot topilmadi" };
+  return { data: { ...data, items: r.items } };
+}
+
+app.get("/api/orders", async (_req, res) => {
+  await migrateOrders();
+  const [orders, shipped] = await Promise.all([Order.find().sort({ no: 1 }).lean(), orderShipments()]);
+  res.json(orders.map((o) => orderView(o, shipped)));
 });
 app.post("/api/orders", async (req, res) => {
-  const data = pick(req.body, ORDER_FIELDS);
-  if (!isId(data.productId) || !(await Product.exists({ _id: data.productId }))) return res.status(400).json({ error: "Mahsulot topilmadi" });
-  const doc = await Order.create({ ...data, no: await nextOrderNo() });
+  const r = await orderData(req.body, { create: true });
+  if (r.error) return res.status(400).json({ error: r.error });
+  const doc = await Order.create({ ...r.data, no: await nextOrderNo() });
   await audit(req, { action: "create", entity: "order", entityId: doc._id, label: orderLabel(doc), after: doc });
-  res.status(201).json(doc);
+  res.status(201).json(await orderOut(doc));
 });
 app.put("/api/orders/:id", async (req, res) => {
   if (!isId(req.params.id)) return notFound(res);
+  await migrateOrders();
   const before = await Order.findById(req.params.id).lean();
   if (!before) return notFound(res);
-  const doc = await Order.findByIdAndUpdate(req.params.id, pick(req.body, ORDER_FIELDS), upd);
+  const r = await orderData(req.body, { create: false });
+  if (r.error) return res.status(400).json({ error: r.error });
+  // buyurtmadan olib tashlangan mahsulotga kunlik hisobotda jo'natish bog'langan bo'lsa — ruxsat yo'q
+  if (r.data.items) {
+    const keep = new Set(r.data.items.map((i) => i.productId));
+    const gone = itemsOf(before).map((i) => String(i.productId)).filter((id) => !keep.has(id));
+    if (gone.length && (await Day.exists({ shipments: { $elemMatch: { orderId: before._id, productId: { $in: gone } } } })))
+      return res.status(400).json({ error: "Olib tashlanayotgan mahsulot kunlik hisobotda shu buyurtma bo'yicha jo'natilgan — avval o'sha jo'natishni boshqa buyurtmaga bog'lang" });
+  }
+  const doc = await Order.findByIdAndUpdate(req.params.id, r.data.items ? { $set: r.data, $unset: { productId: 1, qty: 1, price: 1 } } : { $set: r.data }, upd);
   if (!doc) return notFound(res);
-  await audit(req, { action: "update", entity: "order", entityId: doc._id, label: orderLabel(doc), before, after: doc });
-  res.json(doc);
+  await audit(req, { action: "update", entity: "order", entityId: doc._id, label: orderLabel(doc), before: { ...before, items: itemsOf(before) }, after: doc });
+  res.json(await orderOut(doc));
 });
 app.delete("/api/orders/:id", async (req, res) => {
   if (!isId(req.params.id)) return notFound(res);
@@ -1165,21 +1228,17 @@ async function planInput() {
   const s = await getSettings();
   const opening = s.opening?.date ? s.opening : { date: "", materials: {}, products: {} };
   const histFrom = addDays(today, -60);
+  await migrateOrders();
   const [products, materials, orders, shipped, days, recent, pmoves] = await Promise.all([
     Product.find().lean(),
     Material.find({ group: "beton" }).select("_id").lean(),
     Order.find().lean(),
-    Day.aggregate([
-      { $unwind: "$shipments" },
-      { $match: { "shipments.orderId": { $ne: null } } },
-      { $group: { _id: "$shipments.orderId", qty: { $sum: "$shipments.qty" } } },
-    ]),
+    orderShipments(),
     Day.find({ date: { $gte: opening.date || "0000-00-00", $lte: today } }).select("date production shipments").lean(),
     Day.find({ date: { $gte: histFrom, $lt: today } }).select("date production").lean(),
     ProductMove.find({ date: { $gte: opening.date || "0000-00-00", $lte: today } }).select("date productId qty").lean(),
   ]);
   const beton = new Set(materials.map((m) => String(m._id)));
-  const shippedMap = new Map(shipped.map((x) => [String(x._id), x.qty]));
   // o'rtacha: oxirgi 60 kunda shu mahsulot ishlab chiqarilgan kunlar bo'yicha
   const hist = {};
   for (const d of recent)
@@ -1203,7 +1262,8 @@ async function planInput() {
       cycleDays: p.cycleDays || 1,
       volume: (p.norms || []).reduce((t, l) => t + (beton.has(String(l.materialId)) ? +l.norm || 0 : 0), 0),
     })),
-    orders: orders.map((o) => ({ id: String(o._id), no: o.no, customer: o.customer, productId: String(o.productId), qty: o.qty, shipped: shippedMap.get(String(o._id)) || 0, deadline: o.deadline, status: o.status })),
+    // har buyurtma qatori (mahsulot) alohida rejalashtiriladi
+    orders: planLines(orders, shipped),
     stock: Object.fromEntries(Object.entries(stock).map(([k, v]) => [k, v.end])),
     history: Object.fromEntries(Object.entries(hist).map(([k, h]) => [k, Math.round((h.sum / h.n) * 100) / 100])),
     todayFact,

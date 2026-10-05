@@ -497,7 +497,11 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
                           <input id={`ds-c-${i}`} value={r.customer} onChange={(e) => setShipRow(i, { customer: e.target.value })} aria-label={tr("Qayerga")} placeholder={tr("Samarqand")} />
                         </td>
                         <td>
-                          <select id={`ds-p-${i}`} value={r.productId} onChange={(e) => setShipRow(i, { productId: e.target.value })} aria-label={tr("Mahsulot")}>
+                          <select id={`ds-p-${i}`} value={r.productId} onChange={(e) => {
+                              const pid = e.target.value;
+                              const o = orders.find((x) => x.id === r.orderId);
+                              setShipRow(i, { productId: pid, ...(o && !o.items.some((it) => it.productId === pid) && { orderId: "" }) });
+                            }} aria-label={tr("Mahsulot")}>
                             <option value="">—</option>
                             {products.map((p) => (
                               <option key={p.id} value={p.id}>
@@ -516,12 +520,16 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
                           <select id={`ds-o-${i}`} value={r.orderId || ""} onChange={(e) => setShipRow(i, { orderId: e.target.value })} aria-label={tr("Buyurtma")}>
                             <option value="">—</option>
                             {activeOrders
-                              .filter((o) => !r.productId || o.productId === r.productId || o.id === r.orderId)
-                              .map((o) => (
-                                <option key={o.id} value={o.id}>
-                                  №{o.no} {o.customer}
-                                </option>
-                              ))}
+                              .filter((o) => o.id === r.orderId || !r.productId || o.items.some((it) => it.productId === r.productId))
+                              .map((o) => {
+                                const it = o.items.find((x) => x.productId === r.productId);
+                                return (
+                                  <option key={o.id} value={o.id}>
+                                    №{o.no} {o.customer}
+                                    {it ? ` — ${tr("qoldi {n}", { n: fmtN(it.left) })}` : ""}
+                                  </option>
+                                );
+                              })}
                           </select>
                         </td>
                         <td className="no-print">
