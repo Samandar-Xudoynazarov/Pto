@@ -3,8 +3,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { tr, useT } from "@/lib/i18n";
 import { useUser } from "@/lib/role";
-import { fmt, fmtDate, fmtN, productLabel, today } from "@/lib/calc";
+import { fmt, fmtDate, fmtN, lsGet, lsSet, productLabel, today } from "@/lib/calc";
 import ExportButtons from "./ExportButtons";
+import Icon from "./Icon";
+import { buildPlanPdf, deliverPdf, planPdfDefinition } from "@/lib/plan-pdf";
 import { fileDate } from "@/lib/xlsx-export";
 
 const WEEK = ["Ya", "Du", "Se", "Ch", "Pa", "Ju", "Sh"]; // getUTCDay() tartibida
@@ -30,31 +32,92 @@ export default function PlanTab({ data, notify, reloadOrders, reloadSettings }) 
   const [plan, setPlan] = useState(null);
   const [err, setErr] = useState("");
   const [allDays, setAllDays] = useState(false);
+  // «Hamma buyurtmalar» yoki «Tanlangan buyurtmalar»; alone — faqat tanlanganlarni rejalashtirish (boshqalari quvvatni band qilmaydi)
+  const [mode, setMode] = useState(() => lsGet("pto.planMode", "all"));
+  const [sel, setSel] = useState(() => new Set(lsGet("pto.planSel", [])));
+  const [alone, setAlone] = useState(() => lsGet("pto.planAlone", false));
+  const [pickQ, setPickQ] = useState("");
+
+  // rejaga kiradigan (faol, jo'natilmagan qismi bor) buyurtmalar
+  const active = useMemo(
+    () => data.orders.filter((o) => o.status !== "tayyor" && o.status !== "topshirildi" && (o.left ?? 1) > 0).sort((a, b) => (a.deadline || "9999").localeCompare(b.deadline || "9999") || a.no - b.no),
+    [data.orders]
+  );
+  const selIds = useMemo(() => active.filter((o) => sel.has(o.id)).map((o) => o.id), [active, sel]);
+  const filtered = mode === "sel";
+  const selKey = selIds.join(",");
+  const remember = (k, v) => lsSet(k, v);
+  const chooseMode = (m) => {
+    setMode(m);
+    remember("pto.planMode", m);
+  };
+  const toggleSel = (id) =>
+    setSel((s) => {
+      const n = new Set(s);
+      n.has(id) ? n.delete(id) : n.add(id);
+      remember("pto.planSel", [...n]);
+      return n;
+    });
 
   const load = useCallback(async () => {
     try {
-      setPlan(await api("/plan"));
+      setPlan(await api(filtered && alone && selKey ? `/plan?orders=${selKey}` : "/plan"));
       setErr("");
     } catch (e) {
       setErr(t(e.message));
     }
-  }, [t]);
+  }, [t, filtered, alone, selKey]);
   useEffect(() => {
     load();
   }, [load, data.orders, data.products, data.settings]);
+
+  // ekranda ko'rinadigan reja: tanlangan buyurtmalar bo'yicha
+  const view = useMemo(() => {
+    if (!plan || !filtered) return plan;
+    const ids = new Set(selIds);
+    return {
+      ...plan,
+      orders: plan.orders.filter((o) => ids.has(o.orderId)),
+      days: plan.days.map((d) => ({ ...d, items: d.items.filter((it) => ids.has(it.orderId)) })),
+    };
+  }, [plan, filtered, selIds]);
+  // tanlanganlar boshqalar bilan birga rejalashtirilgan bo'lsa — kunlik beton jami hamma buyurtmalar bo'yicha
+  const concreteIsTotal = filtered && !alone;
+
+  // PDF: kunlik reja (A4, chop etish uchun)
+  const [pdfDays, setPdfDays] = useState(() => lsGet("pto.planPdfDays", 12));
+  const [pdfBusy, setPdfBusy] = useState(false);
+  async function makePdf(share) {
+    if (!view) return;
+    setPdfBusy(true);
+    try {
+      const chosen = active.filter((o) => selIds.includes(o.id));
+      const scope = filtered
+        ? `${t("Tanlangan buyurtmalar")}: ${chosen.map((o) => `№${o.no}`).join(", ") || "—"}${alone ? ` (${t("faqat shular rejalashtirilgan")})` : ""}`
+        : t("Hamma buyurtmalar");
+      const def = planPdfDefinition(view, { company: data.settings?.company, scope, filtered, prods, mats: data.mats, limit, concreteIsTotal }, { days: +pdfDays || 12 });
+      const blob = await buildPlanPdf(def);
+      const r = await deliverPdf(blob, `Kunlik_reja_${today().split("-").reverse().join(".")}.pdf`, { share });
+      if (r === "downloaded-fallback") notify("Bu qurilmada ulashish yo'q — fayl yuklab olindi");
+    } catch (e) {
+      notify(e.message || "PDF tayyorlab bo'lmadi");
+    } finally {
+      setPdfBusy(false);
+    }
+  }
 
   // buyurtma bo'yicha: bir nechta mahsulotli buyurtmaning holati — eng yomon qatori
   const counts = useMemo(() => {
     const rank = (s) => (s === "ok" || s === "stock" ? 0 : s === "risk" ? 1 : 2);
     const worst = new Map();
-    for (const o of plan?.orders || []) {
+    for (const o of view?.orders || []) {
       const k = o.orderId || o.id;
       worst.set(k, Math.max(worst.get(k) ?? 0, rank(o.status)));
     }
     const c = { all: worst.size, ok: 0, risk: 0, bad: 0 };
     for (const r of worst.values()) c[["ok", "risk", "bad"][r]]++;
     return c;
-  }, [plan]);
+  }, [view]);
 
   const code = (id) => prods.get(id)?.code || t("— o'chirilgan —");
   const noCap = products.filter((p) => !plan?.capacity?.[p.id]?.perDay);
@@ -62,9 +125,59 @@ export default function PlanTab({ data, notify, reloadOrders, reloadSettings }) 
 
   return (
     <section className="sheet plan">
+      <div className="plan-scope">
+        <div className="seg" role="tablist" aria-label={t("Qaysi buyurtmalar")}>
+          <button type="button" role="tab" aria-selected={!filtered} onClick={() => chooseMode("all")}>
+            {t("Hamma buyurtmalar")} · {active.length}
+          </button>
+          <button type="button" role="tab" aria-selected={filtered} onClick={() => chooseMode("sel")}>
+            {t("Kerakli buyurtmalar")}{selIds.length ? ` · ${selIds.length}` : ""}
+          </button>
+        </div>
+        {filtered && (
+          <div className="plan-pick">
+            <div className="plan-pick-bar">
+              <input type="search" placeholder={t("Qidirish: buyurtmachi, shartnoma, №")} value={pickQ} onChange={(e) => setPickQ(e.target.value)} aria-label={t("Qidirish")} />
+              {selIds.length > 0 && (
+                <button type="button" className="btn sm" onClick={() => { setSel(new Set()); remember("pto.planSel", []); }}>
+                  {t("Tozalash")}
+                </button>
+              )}
+              <label className="check">
+                <input type="checkbox" checked={alone} onChange={(e) => { setAlone(e.target.checked); remember("pto.planAlone", e.target.checked); }} />
+                {t("Faqat shularni rejalashtirish (boshqa buyurtmalarni hisobga olmasdan)")}
+              </label>
+            </div>
+            <div className="chips plan-pick-list">
+              {active
+                .filter((o) => {
+                  const s = pickQ.trim().toLowerCase();
+                  return !s || sel.has(o.id) || String(o.no) === s || o.customer.toLowerCase().includes(s) || (o.contractNo || "").toLowerCase().includes(s);
+                })
+                .map((o) => (
+                  <button type="button" key={o.id} className="chip" aria-pressed={sel.has(o.id)} onClick={() => toggleSel(o.id)}>
+                    №{o.no} {o.customer}
+                    {o.contractNo ? ` · ${o.contractNo}` : ""}
+                    {o.deadline ? <span className="muted"> · {fmtDate(o.deadline).slice(0, 5)}</span> : null}
+                  </button>
+                ))}
+              {!active.length && <span className="muted">{t("Faol buyurtma yo'q.")}</span>}
+            </div>
+            {!selIds.length && <p className="hint">{t("Rejasini ko'rmoqchi bo'lgan buyurtmalarni belgilang.")}</p>}
+            {selIds.length > 0 && (
+              <p className="hint">
+                {alone
+                  ? t("Faqat tanlangan buyurtmalar rejalashtirildi — boshqa buyurtmalar qoliplarni band qilmaydi deb hisoblandi (shularga ustuvorlik bersak nima bo'ladi).")
+                  : t("Reja hamma buyurtmalar bilan birga hisoblandi (navbat va quvvat umumiy) — ekranda faqat tanlanganlari ko'rsatilgan.")}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
       <div className="kpis">
         <div className="kpi">
-          <div className="k">{t("Faol buyurtmalar")}</div>
+          <div className="k">{t(filtered ? "Tanlangan buyurtmalar" : "Faol buyurtmalar")}</div>
           <div className="v">{counts.all}</div>
         </div>
         <div className="kpi kpi-in">
@@ -94,17 +207,32 @@ export default function PlanTab({ data, notify, reloadOrders, reloadSettings }) 
           <ExportButtons
             company={data.settings?.company}
             notify={notify}
-            disabled={!plan?.orders?.length}
-            build={() => planExcel(plan, code)}
+            disabled={!view?.orders?.length}
+            build={() => planExcel(view, code)}
           />
+          <div className="pdf-ctl">
+            <select aria-label={t("PDF: nechta ish kuni")} value={pdfDays} onChange={(e) => { setPdfDays(+e.target.value); lsSet("pto.planPdfDays", +e.target.value); }}>
+              {[6, 12, 24].map((n) => (
+                <option key={n} value={n}>
+                  {t("{n} kun", { n })}
+                </option>
+              ))}
+            </select>
+            <button type="button" className="btn" disabled={pdfBusy || !view?.days?.some((d) => d.items.length)} onClick={() => makePdf(false)}>
+              <Icon name="download" /> {pdfBusy ? t("Tayyorlanmoqda…") : t("Kunlik reja (PDF)")}
+            </button>
+            <button type="button" className="btn" disabled={pdfBusy || !view?.days?.some((d) => d.items.length)} onClick={() => makePdf(true)} aria-label={t("PDF ni ulashish")}>
+              <Icon name="share" />
+            </button>
+          </div>
         </div>
       </div>
       {err && <p className="err">{err}</p>}
       <div className="tbl-wrap">
         {!plan ? (
           <div className="empty">{t("Hisoblanmoqda…")}</div>
-        ) : !plan.orders.length ? (
-          <div className="empty">{t("Faol buyurtma yo'q.")}</div>
+        ) : !view.orders.length ? (
+          <div className="empty">{t(filtered ? (selIds.length ? "Tanlangan buyurtmalarda ishlab chiqarish kerak bo'lgan mahsulot yo'q." : "Buyurtma tanlanmagan.") : "Faol buyurtma yo'q.")}</div>
         ) : (
           <table>
             <thead>
@@ -121,7 +249,7 @@ export default function PlanTab({ data, notify, reloadOrders, reloadSettings }) 
               </tr>
             </thead>
             <tbody>
-              {plan.orders.map((o) => (
+              {view.orders.map((o) => (
                 <tr key={o.id}>
                   <td className="num">№{o.no}</td>
                   <td>
@@ -168,7 +296,7 @@ export default function PlanTab({ data, notify, reloadOrders, reloadSettings }) 
       <h2 className="plan-h">{t("Kunlik ishlab chiqarish taklifi")}</h2>
       <p className="hint">{t("Qaysi kuni qaysi buyurtma uchun nechta quyish kerak — eng qistovdagi buyurtma birinchi.")}</p>
       <div className="plan-days">
-        {(plan?.days || []).filter((d) => d.items.length).slice(0, allDays ? undefined : 6).map((d) => {
+        {(view?.days || []).filter((d) => d.items.length).slice(0, allDays ? undefined : 6).map((d) => {
           const used = d.concrete;
           return (
             <div key={d.date} className={`plan-day${d.date === today() ? " today" : ""}`}>
@@ -178,6 +306,7 @@ export default function PlanTab({ data, notify, reloadOrders, reloadSettings }) 
                   <span className={`muted${limit && used > limit - 1e-9 ? " warn-text" : ""}`}>
                     {fmtN(used, 2)}
                     {limit ? ` / ${fmtN(limit, 1)}` : ""} {t("m³ beton")}
+                    {concreteIsTotal ? ` · ${t("jami")}` : ""}
                   </span>
                 )}
               </div>
@@ -200,11 +329,11 @@ export default function PlanTab({ data, notify, reloadOrders, reloadSettings }) 
             </div>
           );
         })}
-        {plan && !plan.days.some((d) => d.items.length) && <div className="empty">{t("Ishlab chiqarish kerak bo'lgan buyurtma yo'q.")}</div>}
+        {view && !view.days.some((d) => d.items.length) && <div className="empty">{t("Ishlab chiqarish kerak bo'lgan buyurtma yo'q.")}</div>}
       </div>
-      {!allDays && (plan?.days || []).filter((d) => d.items.length).length > 6 && (
+      {!allDays && (view?.days || []).filter((d) => d.items.length).length > 6 && (
         <button type="button" className="btn sm more-days" onClick={() => setAllDays(true)}>
-          {t("Yana {n} kunni ko'rsatish", { n: plan.days.filter((d) => d.items.length).length - 6 })}
+          {t("Yana {n} kunni ko'rsatish", { n: view.days.filter((d) => d.items.length).length - 6 })}
         </button>
       )}
 

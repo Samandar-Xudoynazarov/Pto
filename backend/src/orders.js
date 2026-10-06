@@ -8,6 +8,9 @@
 
 export const MAX_ITEMS = 100;
 
+/** Shartnoma raqami: boshidagi «№» olib tashlanadi (ekranda «Shartnoma № …» deb yoziladi) */
+export const cleanContract = (s) => String(s ?? "").trim().replace(/^№\s*/, "").slice(0, 60);
+
 const oid = (v) => (v === null || v === undefined ? "" : String(v));
 export const shipKey = (orderId, productId) => `${oid(orderId)}:${oid(productId)}`;
 
@@ -70,7 +73,7 @@ export function orderView(o, shipped) {
   });
   const sum = (k) => items.reduce((s, it) => s + it[k], 0);
   const { _id, __v, productId, qty, price, items: _old, ...rest } = o;
-  return { ...rest, id, items, qty: sum("qty"), shipped: sum("shipped"), left: sum("left") };
+  return { ...rest, id, contractNo: cleanContract(rest.contractNo), items, qty: sum("qty"), shipped: sum("shipped"), left: sum("left") };
 }
 
 /**

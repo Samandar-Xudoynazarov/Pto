@@ -10,7 +10,7 @@ import { DEFAULT_SCHEMES, assignSchemes } from "./schemes.js";
 import { ROLES, ADMIN_ROLES, WRITE_ROLES, ACCT_ROLES, STORE_ROLES, DAY_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
 import { audit, diff } from "./audit.js";
 import { meterFactor } from "./metal.js";
-import { cleanItems, itemsOf, orderView, planLines, shippedMap } from "./orders.js";
+import { cleanContract, cleanItems, itemsOf, orderView, planLines, shippedMap } from "./orders.js";
 import { USER_LIMIT, USER_LOCK_MIN, IP_LIMIT, IP_LOCK_MIN, clientIp, userKey, ipKey, takeAttempt, lock, loginSucceeded, clearUserLocks } from "./limits.js";
 
 const app = express();
@@ -1178,6 +1178,7 @@ async function orderOut(doc) {
 /** Body'dan buyurtma ma'lumotlari. Eski ko'rinish ({ productId, qty, price }) ham qabul qilinadi. */
 async function orderData(body, { create }) {
   const data = pick(body, ORDER_FIELDS);
+  if (data.contractNo !== undefined) data.contractNo = cleanContract(data.contractNo);
   for (const k of ["date", "deadline"]) if (data[k] !== undefined && data[k] !== "" && !validDate(data[k])) return { error: "Sana formati YYYY-MM-DD" };
   let raw = body?.items;
   if (raw === undefined && body?.productId !== undefined) raw = [{ productId: body.productId, qty: body.qty, price: body.price, shippedBefore: body.shippedBefore }];
@@ -1230,7 +1231,8 @@ app.delete("/api/orders/:id", async (req, res) => {
 });
 
 /* ---------- Buyurtmalar rejasi (qancha kunda tugatamiz) ---------- */
-async function planInput() {
+/** only — faqat shu buyurtmalar (id ro'yxati) rejalashtiriladi; bo'sh — hammasi */
+async function planInput({ only = null } = {}) {
   const today = todayTashkent();
   const s = await getSettings();
   const opening = s.opening?.date ? s.opening : { date: "", materials: {}, products: {} };
@@ -1270,14 +1272,16 @@ async function planInput() {
       volume: (p.norms || []).reduce((t, l) => t + (beton.has(String(l.materialId)) ? +l.norm || 0 : 0), 0),
     })),
     // har buyurtma qatori (mahsulot) alohida rejalashtiriladi
-    orders: planLines(orders, shipped),
+    orders: planLines(only ? orders.filter((o) => only.has(String(o._id))) : orders, shipped),
     stock: Object.fromEntries(Object.entries(stock).map(([k, v]) => [k, v.end])),
     history: Object.fromEntries(Object.entries(hist).map(([k, h]) => [k, Math.round((h.sum / h.n) * 100) / 100])),
     todayFact,
   };
 }
-app.get("/api/plan", async (_req, res) => {
-  res.json(planOrders(await planInput()));
+// ?orders=id1,id2 — faqat tanlangan buyurtmalar (boshqalari quvvatni band qilmaydi deb hisoblanadi)
+app.get("/api/plan", async (req, res) => {
+  const ids = String(req.query.orders || "").split(",").filter(isId).slice(0, 500);
+  res.json(planOrders(await planInput({ only: ids.length ? new Set(ids) : null })));
 });
 app.post("/api/plan/check", async (req, res) => {
   const b = req.body || {};

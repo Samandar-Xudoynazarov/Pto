@@ -69,7 +69,6 @@ export default function OrdersTab({ data, notify, reload }) {
 
   const td = today();
   const summaOf = (o) => o.items.reduce((t, it) => t + itemPrice(it, byId, mats) * it.qty, 0);
-  let sum = 0;
 
   return (
     <section className="sheet">
@@ -96,97 +95,26 @@ export default function OrdersTab({ data, notify, reload }) {
         <input id="ord-q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={tr("Qidirish: buyurtmachi, shartnoma, mahsulot")} aria-label={tr("Qidirish")} />
       </div>
 
-      <div className="tbl-wrap">
-        {!list.length ? (
-          <div className="empty">{tr("Bu filtr bo'yicha buyurtma yo'q.")}</div>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>№</th>
-                <th>{tr("Buyurtmachi")}</th>
-                <th>{tr("Mahsulotlar")}</th>
-                <th>{tr("Jo'natildi")}</th>
-                <th>{tr("Muddat")}</th>
-                <th>{tr("Holat")}</th>
-                <th className="n">{tr("Summa, so'm")}</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {list.map((o) => {
-                const late = o.deadline && o.deadline < td && !CLOSED.includes(o.status);
-                const summa = summaOf(o);
-                sum += summa;
-                return (
-                  <tr key={o.id}>
-                    <td className="num">{o.no}</td>
-                    <td>
-                      {o.customer}
-                      {o.contractNo && <span className="sub contract">{tr("Shartnoma № {n}", { n: o.contractNo })}</span>}
-                      {o.date && <span className="sub">{tr("qabul {d}", { d: fmtDate(o.date) })}</span>}
-                      {o.note && <span className="sub">{o.note}</span>}
-                    </td>
-                    <td>
-                      <div className="ord-items">
-                        {o.items.map((it) => (
-                          <div key={it.productId} className={`ord-item${it.left === 0 ? " done" : ""}`}>
-                            <span className="code">{byId.get(it.productId)?.code || tr("— o'chirilgan —")}</span>
-                            <span className="num">
-                              {fmt(it.shipped)}/{fmt(it.qty)}
-                            </span>
-                            {it.shippedBefore > 0 && <span className="muted sm" title={tr("Tizimdan oldin jo'natilgan")}>{tr("oldin {n}", { n: fmt(it.shippedBefore) })}</span>}
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="prog">
-                        <div className="track">
-                          <div className="fill" style={{ width: `${pct(o.shipped, o.qty)}%` }} />
-                        </div>
-                        <span>
-                          {fmt(o.shipped)}/{fmt(o.qty)}
-                        </span>
-                      </div>
-                      {o.left > 0 && <span className="sub">{tr("qoldi {n}", { n: fmt(o.left) })}</span>}
-                    </td>
-                    <td className={`num${late ? " late" : ""}`}>
-                      {fmtDate(o.deadline)}
-                      {late && tr(" · kechikdi")}
-                    </td>
-                    <td>
-                      <select id={`st-${o.id}`} className={`st st-${o.status}`} aria-label={tr("Holat")} value={o.status} disabled={!canEdit} onChange={(e) => setStatus(o, e.target.value)}>
-                        {STATUSES.map(([k, l]) => (
-                          <option key={k} value={k}>
-                            {tr(l)}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="n">{fmt(summa)}</td>
-                    <td>
-                      {canEdit && (
-                        <div className="acts">
-                          <button className="btn sm" onClick={() => setEdit(o)}>{tr("Tahrirlash")}</button>
-                          <DeleteButton onConfirm={() => del(o.id)} />
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colSpan={6}>{tr("Jami ({n} ta)", { n: list.length })}</td>
-                <td className="n">{fmt(sum)}</td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        )}
-      </div>
+      {!list.length ? (
+        <div className="empty">{tr("Bu filtr bo'yicha buyurtma yo'q.")}</div>
+      ) : (
+        <>
+          <div className="ord-list">
+            {list.map((o) => (
+              <OrderCard key={o.id} o={o} td={td} byId={byId} summa={summaOf(o)} canEdit={canEdit} onEdit={() => setEdit(o)} onDelete={() => del(o.id)} onStatus={(st) => setStatus(o, st)} />
+            ))}
+          </div>
+          <div className="ord-total">
+            <span>{tr("Jami ({n} ta)", { n: list.length })}</span>
+            <span>
+              {tr("qoldi {n}", { n: fmt(list.reduce((t, o) => t + (o.left || 0), 0)) })} {tr("dona")}
+            </span>
+            <strong>
+              {fmt(list.reduce((t, o) => t + summaOf(o), 0))} {tr("so'm")}
+            </strong>
+          </div>
+        </>
+      )}
       <p className="hint">{tr(
         "Bitta buyurtmada bir nechta mahsulot bo'lishi mumkin. «Jo'natildi» = tizimdan oldin jo'natilgan (buyurtmada qo'lda kiritiladi) + kunlik hisobotda shu buyurtmaga bog'langan jo'natishlar. Narx 0 bo'lsa, kalkulyatsiyadagi QQS bilan narx olinadi."
       )}</p>
@@ -201,6 +129,115 @@ export default function OrdersTab({ data, notify, reload }) {
         }}
       />
     </section>
+  );
+}
+
+const SHOW_ITEMS = 8; // shundan ko'p mahsulot bo'lsa — «yana N ta»
+const contractText = (c) => String(c || "").replace(/^№\s*/, "");
+
+/** Bitta buyurtma kartasi: sarlavha, ko'rsatkichlar va mahsulotlar (ixcham to'r) */
+function OrderCard({ o, td, byId, summa, canEdit, onEdit, onDelete, onStatus }) {
+  const [open, setOpen] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const late = o.deadline && o.deadline < td && !CLOSED.includes(o.status);
+  const items = [...o.items].sort((a, b) => (a.left === 0) - (b.left === 0)); // tugaganlari oxirida
+  const shown = open ? items : items.slice(0, SHOW_ITEMS);
+  const done = o.items.filter((it) => it.left === 0).length;
+  const p = pct(o.shipped, o.qty);
+  return (
+    <article className={`ord-card${late ? " is-late" : ""}`}>
+      <header className="ord-head">
+        <div className="ord-title">
+          <span className="ord-no">№{o.no}</span>
+          <div className="ord-name">
+            <strong>{o.customer}</strong>
+            <span className="ord-meta">
+              {o.contractNo && <span className="ord-contract">{tr("Shartnoma № {n}", { n: contractText(o.contractNo) })}</span>}
+              {o.date && <span>{tr("qabul {d}", { d: fmtDate(o.date) })}</span>}
+            </span>
+          </div>
+        </div>
+        <div className="ord-side">
+          <select id={`st-${o.id}`} className={`st st-${o.status}`} aria-label={tr("Holat")} value={o.status} disabled={!canEdit} onChange={(e) => onStatus(e.target.value)}>
+            {STATUSES.map(([k, l]) => (
+              <option key={k} value={k}>
+                {tr(l)}
+              </option>
+            ))}
+          </select>
+          {canEdit && (
+            <div className="acts">
+              <button className="btn sm" onClick={onEdit}>{tr("Tahrirlash")}</button>
+              <DeleteButton onConfirm={onDelete} />
+            </div>
+          )}
+        </div>
+      </header>
+
+      {o.note && (
+        <button type="button" className={`ord-note${noteOpen ? " open" : ""}`} onClick={() => setNoteOpen((v) => !v)} title={o.note}>
+          {o.note}
+        </button>
+      )}
+
+      <div className="ord-stats">
+        <div className="ord-stat ord-stat-prog">
+          <span className="k">{tr("Jo'natildi")}</span>
+          <div className="prog">
+            <div className="track">
+              <div className="fill" style={{ width: `${p}%` }} />
+            </div>
+            <span>
+              {fmt(o.shipped)} / {fmt(o.qty)} · {Math.round(p)}%
+            </span>
+          </div>
+        </div>
+        <div className="ord-stat">
+          <span className="k">{tr("Qoldi")}</span>
+          <strong>{fmt(o.left)}</strong>
+        </div>
+        <div className={`ord-stat${late ? " late" : ""}`}>
+          <span className="k">{tr("Muddat")}</span>
+          <strong>
+            {o.deadline ? fmtDate(o.deadline) : "—"}
+            {late && <small>{tr(" · kechikdi")}</small>}
+          </strong>
+        </div>
+        <div className="ord-stat">
+          <span className="k">{tr("Summa, so'm")}</span>
+          <strong>{fmt(summa)}</strong>
+        </div>
+      </div>
+
+      <div className="ord-grid">
+        {shown.map((it) => {
+          const ip = pct(it.shipped, it.qty);
+          return (
+            <div key={it.productId} className={`ord-chip${it.left === 0 ? " done" : ""}`} title={it.shippedBefore ? tr("Tizimdan oldin jo'natilgan: {n}", { n: fmt(it.shippedBefore) }) : undefined}>
+              <div className="ord-chip-top">
+                <span className="code">{byId.get(it.productId)?.code || tr("— o'chirilgan —")}</span>
+                <span className="num">
+                  {fmt(it.shipped)}/{fmt(it.qty)}
+                </span>
+              </div>
+              <div className="ord-chip-bar">
+                <div style={{ width: `${ip}%` }} />
+              </div>
+              <span className="ord-chip-sub">{it.left === 0 ? tr("to'liq jo'natildi") : tr("qoldi {n}", { n: fmt(it.left) })}</span>
+            </div>
+          );
+        })}
+      </div>
+      {items.length > SHOW_ITEMS && (
+        <button type="button" className="linkbtn ord-more" onClick={() => setOpen((v) => !v)}>
+          {open ? tr("Yig'ish") : tr("Yana {n} ta mahsulot", { n: items.length - SHOW_ITEMS })}
+        </button>
+      )}
+      <footer className="ord-foot muted">
+        {tr("{n} xil mahsulot", { n: o.items.length })}
+        {done > 0 && ` · ${tr("{n} tasi to'liq jo'natilgan", { n: done })}`}
+      </footer>
+    </article>
   );
 }
 
