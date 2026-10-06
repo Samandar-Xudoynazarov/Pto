@@ -178,12 +178,17 @@ const settingsSchema = new Schema(
   opts
 );
 
-/* ---------- Tayyor mahsulot: brakka chiqarish (ombordagi tayyor mahsulot yaroqsiz bo'lib qolsa) ---------- */
+/* ---------- Tayyor mahsulot harakati ----------
+ * brak — ombordagi tayyor mahsulot yaroqsiz bo'lib qolsa (qoldiqdan ayriladi)
+ * fix  — xato kiritilgan markani tuzatish (пересортица): productId dan qty ayriladi, toProductId ga qo'shiladi
+ */
+export const PRODUCT_MOVE_TYPES = ["brak", "fix"];
 const productMoveSchema = new Schema(
   {
-    type: { type: String, enum: ["brak"], default: "brak" },
+    type: { type: String, enum: PRODUCT_MOVE_TYPES, default: "brak" },
     date: { type: String, required: true, match: [DATE_RE, "Sana formati YYYY-MM-DD"] },
     productId: ref("Product"),
+    toProductId: { type: Schema.Types.ObjectId, ref: "Product", default: null }, // faqat «fix»: to'g'ri marka
     qty: { type: Number, required: true, min: [1, "Soni kamida 1"] },
     reason: { type: String, enum: BRAK_REASONS, default: "boshqa" },
     note: { type: String, default: "", trim: true, maxlength: 300 },

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { tr, useT } from "@/lib/i18n";
 import { useUser } from "@/lib/role";
+import ProductFixDialog from "./ProductFixDialog";
 import { BRAK_REASONS, brakLabel, costCard, fmt, fmtDate, fmtN, shiftDate, today } from "@/lib/calc";
 import ExportButtons from "./ExportButtons";
 import Icon from "./Icon";
@@ -32,6 +33,18 @@ export default function FinishedTab({ data, notify, version }) {
   const [open, setOpen] = useState(null);
   const [tick, setTick] = useState(0);
   const refresh = () => setTick((x) => x + 1);
+  const { canEdit } = useUser();
+  const [fix, setFix] = useState(null); // marka tuzatish oynasi: { fromId? }
+  async function cancelFix(f) {
+    if (!window.confirm(t("Tuzatishni bekor qilasizmi?"))) return; // eslint-disable-line no-alert
+    try {
+      await api(`/product-moves/${f.id}`, { method: "DELETE" });
+      notify("Bekor qilindi");
+      refresh();
+    } catch (e) {
+      notify(e.message);
+    }
+  }
 
   useEffect(() => {
     const d = today();
@@ -148,6 +161,11 @@ export default function FinishedTab({ data, notify, version }) {
             </div>
             <div className="r">
               <ExportButtons company={data.settings?.company} notify={notify} disabled={!rows.length} build={() => stockExcel(rows)} />
+              {canEdit && (
+                <button type="button" className="btn" onClick={() => setFix({})}>
+                  <Icon name="swap" /> {t("Markani tuzatish")}
+                </button>
+              )}
             </div>
           </div>
           <div className="tbl-wrap">
@@ -188,15 +206,41 @@ export default function FinishedTab({ data, notify, version }) {
               </table>
             )}
           </div>
+          {rep?.fixes?.length > 0 && (
+            <div className="fx-list">
+              <h3>{t("Marka tuzatishlari")} <span className="muted">· {fmtDate(from)} — {fmtDate(to)}</span></h3>
+              <ul>
+                {rep.fixes.map((f) => (
+                  <li key={f.id}>
+                    <span className="num">{fmtDate(f.date)}</span>
+                    <span>
+                      <span className="code">{prods.get(f.productId)?.code || "?"}</span> → <span className="code">{prods.get(f.toProductId)?.code || "?"}</span>
+                    </span>
+                    <strong>{fmtN(f.qty)} {t("dona")}</strong>
+                    <span className="muted">
+                      {f.createdBy?.name}
+                      {f.note ? ` · ${f.note}` : ""}
+                    </span>
+                    {canEdit && (
+                      <button type="button" className="btn sm" onClick={() => cancelFix(f)}>
+                        {t("Bekor qilish")}
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <p className="hint">
-            {t("Qoldiq = boshlang'ich + sifatli fakt − jo'natilgan − brakka chiqarilgan. «Band» — faol buyurtmalarning jo'natilmagan qismi. Qiymat kalkulyatsiyadagi tannarx (marja va QQSsiz) bo'yicha.")}
+            {t("Qoldiq = boshlang'ich + sifatli fakt − jo'natilgan − brakka chiqarilgan ± marka tuzatishlari. «Band» — faol buyurtmalarning jo'natilmagan qismi. Qiymat kalkulyatsiyadagi tannarx (marja va QQSsiz) bo'yicha.")}
           </p>
         </>
       ) : (
         <BrakView B={B} rep={rep} period={period} setPeriod={setPeriod} from={from} to={to} data={data} notify={notify} onChanged={refresh} />
       )}
 
-      <ProductSheet product={open} end={open ? stock?.products?.[open.id]?.end || 0 : 0} onClose={() => setOpen(null)} notify={notify} onChanged={refresh} />
+      <ProductSheet product={open} end={open ? stock?.products?.[open.id]?.end || 0 : 0} onClose={() => setOpen(null)} notify={notify} onChanged={refresh} onFix={canEdit ? (id) => { setOpen(null); setFix({ fromId: id }); } : null} />
+      <ProductFixDialog init={fix} products={products} stock={stock} onClose={() => setFix(null)} onSaved={refresh} notify={notify} />
     </section>
   );
 }
@@ -357,7 +401,7 @@ function BrakView({ B, rep, period, setPeriod, from, to, data, notify, onChanged
 }
 
 /** Mahsulot kartasi: 30 kunlik harakat, brakka chiqarish */
-function ProductSheet({ product, end, onClose, notify, onChanged }) {
+function ProductSheet({ product, end, onClose, notify, onChanged, onFix }) {
   const t = useT();
   const { canDay } = useUser();
   const ref = useRef(null);
@@ -412,10 +456,19 @@ function ProductSheet({ product, end, onClose, notify, onChanged }) {
           <div className="big-qty">
             <span>{fmtN(end)}</span> {t("dona omborda")}
           </div>
-          {canDay && !form && end > 0 && (
-            <button className="btn danger" onClick={() => setForm({ qty: "", reason: "tashish", note: "", date: today() })}>
-              {t("Brakka chiqarish")}
-            </button>
+          {!form && end > 0 && (canDay || onFix) && (
+            <div className="two-btn">
+              {canDay && (
+                <button className="btn danger" onClick={() => setForm({ qty: "", reason: "tashish", note: "", date: today() })}>
+                  {t("Brakka chiqarish")}
+                </button>
+              )}
+              {onFix && (
+                <button className="btn" onClick={() => onFix(product.id)}>
+                  {t("Boshqa markaga o'tkazish")}
+                </button>
+              )}
+            </div>
           )}
           {form && (
             <form className="brak-form" onSubmit={save}>
@@ -483,6 +536,7 @@ function ProductSheet({ product, end, onClose, notify, onChanged }) {
                       <td className={`n${e.brak || e.writeoff ? " late" : ""}`}>
                         {e.brak || e.writeoff ? fmtN(e.brak + e.writeoff) : "—"}
                         {e.writeoff > 0 && <span className="sub">{t("ombordan {n}", { n: e.writeoff })}</span>}
+                        {e.corr ? <span className="sub">{t("tuzatish {n}", { n: `${e.corr > 0 ? "+" : "−"}${fmtN(Math.abs(e.corr))}` })}</span> : null}
                       </td>
                     </tr>
                   ))}

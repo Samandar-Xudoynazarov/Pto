@@ -9,7 +9,7 @@
  * pmoves:  tayyor mahsulotni brakka chiqarish { date, productId, qty }
  *
  * Material: start + kirim − sarf − chiqim = end
- * Tayyor mahsulot: start + fact − shipped − writeoff = end (brak — ishlab chiqarishdagi yaroqsiz, omborga kirmagan; ma'lumot uchun)
+ * Tayyor mahsulot: start + fact − shipped − writeoff + corr = end (corr — marka tuzatishlari, ±) (brak — ishlab chiqarishdagi yaroqsiz, omborga kirmagan; ma'lumot uchun)
  *   kirim  = kunlik hisobotdagi kirim + omborchi kirimi (moveIn — alohida ham beriladi)
  *   sarf   = kunlik hisobotdagi ishlab chiqarish sarfi
  *   chiqim = omborchi chiqimi (sex, texnika, shaxsga)
@@ -24,7 +24,7 @@ export function stockReport(opening, days, from, to, moves = [], pmoves = []) {
     return mats.get(id);
   };
   const p = (id) => {
-    if (!prods.has(id)) prods.set(id, { start: 0, fact: 0, brak: 0, shipped: 0, writeoff: 0, end: 0 });
+    if (!prods.has(id)) prods.set(id, { start: 0, fact: 0, brak: 0, shipped: 0, writeoff: 0, corr: 0, end: 0 });
     return prods.get(id);
   };
 
@@ -71,6 +71,20 @@ export function stockReport(opening, days, from, to, moves = [], pmoves = []) {
   }
   for (const pm of pmoves) {
     if (pm.date < openDate || pm.date > to) continue;
+    // marka tuzatish: bir markadan ayirib, ikkinchisiga qo'shish (jami o'zgarmaydi)
+    if (pm.type === "fix") {
+      const a = p(String(pm.productId));
+      const b = p(String(pm.toProductId));
+      const q = +pm.qty || 0;
+      if (pm.date >= from) {
+        a.corr -= q;
+        b.corr += q;
+      } else {
+        a.start -= q;
+        b.start += q;
+      }
+      continue;
+    }
     const r = p(String(pm.productId));
     if (pm.date >= from) r.writeoff += +pm.qty || 0;
     else r.start -= +pm.qty || 0;
@@ -80,7 +94,7 @@ export function stockReport(opening, days, from, to, moves = [], pmoves = []) {
     r.end = round(r.start + r.kirim - r.sarf - r.chiqim);
     for (const k of ["start", "kirim", "sarf", "chiqim", "moveIn", "inv"]) r[k] = round(r[k]);
   }
-  for (const r of prods.values()) r.end = r.start + r.fact - r.shipped - r.writeoff;
+  for (const r of prods.values()) r.end = r.start + r.fact - r.shipped - r.writeoff + r.corr;
 
   return {
     openingDate: opening?.date || "",

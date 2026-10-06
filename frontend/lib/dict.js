@@ -74,6 +74,24 @@ export const DICT = {
     "Nusxalandi ✓": "Скопировано ✓",
     "Havolani nusxalash": "Скопировать ссылку",
     "Qanday?": "Как?",
+    // tayyor mahsulot: marka tuzatish
+    "Markani tuzatish": "Исправить марку",
+    "Boshqa markaga o'tkazish": "Перенести на другую марку",
+    "Marka tuzatishlari": "Исправления марок",
+    "Tuzatishni bekor qilasizmi?": "Отменить исправление?",
+    "Noto'g'ri yozilgan marka (qayerdan)": "Ошибочная марка (откуда)",
+    "To'g'ri marka (qayerga)": "Правильная марка (куда)",
+    "Ikkala markani tanlang": "Выберите обе марки",
+    "Tuzatildi: {a} → {b}, {n} dona": "Исправлено: {a} → {b}, {n} шт",
+    "tuzatish {n}": "исправление {n}",
+    "Tuzatish": "Исправить",
+    "Masalan: 02.10 kunlik hisobotda adashib yozilgan": "Например: ошибочно внесено в отчёт за 02.10",
+    "Kunlik hisobotga mahsulot boshqa marka bilan yozib yuborilgan bo'lsa — noto'g'ri markadan ayirib, to'g'risiga o'tkazing. Jami tayyor mahsulot soni o'zgarmaydi, o'zgarish tarixda saqlanadi.": "Если в ежедневный отчёт изделие внесено под другой маркой — спишите с ошибочной и перенесите на правильную. Общее количество готовой продукции не меняется, изменение сохраняется в истории.",
+    "To'g'ri mahsulotni tanlang (boshqa marka bo'lishi kerak)": "Выберите правильное изделие (другая марка)",
+    "Markani tuzatishni faqat ПТО, administrator yoki rahbar qila oladi": "Исправлять марку могут только ПТО, администратор или руководитель",
+    "Markani tuzatishni faqat ПТО, administrator yoki rahbar bekor qila oladi": "Отменить исправление марки могут только ПТО, администратор или руководитель",
+    "Qoldiq = boshlang'ich + sifatli fakt − jo'natilgan − brakka chiqarilgan ± marka tuzatishlari. «Band» — faol buyurtmalarning jo'natilmagan qismi. Qiymat kalkulyatsiyadagi tannarx (marja va QQSsiz) bo'yicha.": "Остаток = начальный + годный факт − отгружено − списано в брак ± исправления марок. «Занято» — неотгруженная часть активных заказов. Стоимость — по себестоимости из калькуляции (без маржи и НДС).",
+    "Omborda yetarli emas. Qoldiq: {n} dona": "Недостаточно на складе. Остаток: {n} шт",
     // buyurtmalar rejasi: hamma / tanlangan buyurtmalar
     "yan": "янв",
     "fev": "фев",
@@ -1224,6 +1242,7 @@ export const DICT = {
   },
 
   ruPatterns: [
+    [/^Bekor qilib bo'lmaydi: to'g'ri markadan keyin jo'natilgan\. Qoldiq: (.*)$/, "Нельзя отменить: с правильной марки уже отгружено. Остаток: $1"],
     [/^Bitta buyurtmada (\d+) tadan ko'p mahsulot bo'lmaydi$/, "В одном заказе не более $1 изделий"],
     [/^Omborda yetarli emas\. Qoldiq: (.*)$/, "Недостаточно на складе. Остаток: $1"],
     [/^Ko'p marta noto'g'ri parol kiritildi\. (\d+) daqiqadan keyin urinib ko'ring$/, "Слишком много неверных попыток. Повторите через $1 мин."],

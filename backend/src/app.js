@@ -397,7 +397,7 @@ app.delete("/api/products/:id", async (req, res) => {
   const used =
     (await Order.exists({ $or: [{ "items.productId": id }, { productId: id }] })) ||
     (await Day.exists({ $or: [{ "production.productId": id }, { "shipments.productId": id }] })) ||
-    (await ProductMove.exists({ productId: id }));
+    (await ProductMove.exists({ $or: [{ productId: id }, { toProductId: id }] }));
   if (used) return res.status(409).json({ error: "Mahsulot buyurtma yoki kunlik hisobotda ishlatilgan — o'chirib bo'lmaydi" });
   const doc = await Product.findByIdAndDelete(id);
   if (!doc) return notFound(res);
@@ -486,7 +486,7 @@ app.get("/api/stock", async (req, res) => {
   const [days, moves, pmoves] = await Promise.all([
     Day.find({ date: range }).lean(),
     Movement.find({ date: range }).select("type date materialId qty reason").lean(),
-    ProductMove.find({ date: range }).select("date productId qty").lean(),
+    ProductMove.find({ date: range }).select("type date productId toProductId qty").lean(),
   ]);
   res.json(stockReport(opening, days, from, to, moves, pmoves));
 });
@@ -640,7 +640,7 @@ async function dashAggregate(keys, keyOf, from, to) {
   const [days, moves, pmoves] = await Promise.all([
     Day.find({ date: { $gte: from, $lte: to } }).select("date production materials shipments").lean(),
     Movement.find({ date: { $gte: from, $lte: to }, reason: { $ne: "inventar" } }).select("type date materialId qty price").lean(),
-    ProductMove.find({ date: { $gte: from, $lte: to } }).select("date qty").lean(),
+    ProductMove.find({ date: { $gte: from, $lte: to }, type: { $ne: "fix" } }).select("date qty").lean(),
   ]);
   const M = new Map(keys.map((k) => [k, { key: k, plan: 0, fact: 0, brak: 0, writeoff: 0, shipped: 0, activeDays: 0, prod: {}, sarf: {}, chiqim: {}, kirimSum: 0 }]));
   const add = (o, k, v) => (o[k] = Math.round(((o[k] || 0) + v) * 1e6) / 1e6);
@@ -794,7 +794,7 @@ async function productStockAt(date) {
   const range = { $gte: opening.date || "0000-00-00", $lte: date };
   const [days, pmoves] = await Promise.all([
     Day.find({ date: range }).select("date production shipments").lean(),
-    ProductMove.find({ date: range }).select("date productId qty").lean(),
+    ProductMove.find({ date: range }).select("type date productId toProductId qty").lean(),
   ]);
   return stockReport(opening, days, date, date, [], pmoves).products;
 }
@@ -834,8 +834,19 @@ app.get("/api/finished", async (req, res) => {
     if (ev && (ev.fact || ev.brak || ev.shipped)) events.push(ev);
   }
   const list = [];
+  const fixes = [];
   for (const m of pmoves) {
     if (m.date < from) continue;
+    if (m.type === "fix") {
+      const f = { id: String(m._id), date: m.date, productId: String(m.productId), toProductId: String(m.toProductId), qty: m.qty, note: m.note, createdBy: m.createdBy, createdAt: m.createdAt };
+      fixes.push(f);
+      if (pid && (f.productId === pid || f.toProductId === pid)) {
+        let ev = events.find((e) => e.date === m.date);
+        if (!ev) events.push((ev = { date: m.date, fact: 0, brak: 0, shipped: 0, writeoff: 0, corr: 0, customers: [] }));
+        ev.corr = (ev.corr || 0) + (f.toProductId === pid ? m.qty : -m.qty);
+      }
+      continue;
+    }
     const o = { id: String(m._id), date: m.date, productId: String(m.productId), qty: m.qty, reason: m.reason, source: "ombor", note: m.note, createdBy: m.createdBy, createdAt: m.createdAt };
     brak.push(o);
     list.push(o);
@@ -847,8 +858,10 @@ app.get("/api/finished", async (req, res) => {
   }
   brak.sort((a, b) => b.date.localeCompare(a.date));
   events.sort((a, b) => b.date.localeCompare(a.date));
-  res.json({ from, to, openingDate: report.openingDate, products: report.products, brak, writeoffs: list, ...(pid && { events }) });
+  fixes.sort((a, b) => b.date.localeCompare(a.date) || String(b.createdAt).localeCompare(String(a.createdAt)));
+  res.json({ from, to, openingDate: report.openingDate, products: report.products, brak, writeoffs: list, fixes, ...(pid && { events }) });
 });
+const fixLabel = (m, a, b) => `Marka tuzatildi: ${a?.code || "?"} → ${b?.code || "?"}, ${m.qty} dona (${m.date})`;
 app.post("/api/product-moves", async (req, res) => {
   const b = req.body || {};
   const date = b.date === undefined || b.date === "" ? todayTashkent() : b.date;
@@ -858,6 +871,19 @@ app.post("/api/product-moves", async (req, res) => {
   if (!p) return res.status(400).json({ error: "Mahsulot topilmadi" });
   const qty = Math.floor(+b.qty);
   if (!(qty >= 1)) return res.status(400).json({ error: "Soni kamida 1" });
+  // xato kiritilgan markani tuzatish — faqat ПТО, administrator va rahbar
+  if (b.type === "fix") {
+    if (!WRITE_ROLES.includes(req.user.role)) return res.status(403).json({ error: "Markani tuzatishni faqat ПТО, administrator yoki rahbar qila oladi" });
+    if (!isId(b.toProductId) || String(b.toProductId) === String(p._id)) return res.status(400).json({ error: "To'g'ri mahsulotni tanlang (boshqa marka bo'lishi kerak)" });
+    const to = await Product.findById(b.toProductId).lean();
+    if (!to) return res.status(400).json({ error: "Mahsulot topilmadi" });
+    const [at, now] = await Promise.all([productStockAt(date), productStockAt(todayTashkent())]);
+    const have = Math.min(at[String(p._id)]?.end || 0, now[String(p._id)]?.end || 0);
+    if (have < qty) return res.status(400).json({ error: `Omborda yetarli emas. Qoldiq: ${Math.max(0, have)} dona` });
+    const doc = await ProductMove.create({ type: "fix", date, productId: p._id, toProductId: to._id, qty, note: String(b.note ?? "").slice(0, 300), createdBy: who(req.user) });
+    await audit(req, { action: "create", entity: "productMove", entityId: doc._id, label: fixLabel(doc, p, to), after: doc });
+    return res.status(201).json(doc);
+  }
   const reason = BRAK_REASONS.includes(b.reason) ? b.reason : "boshqa";
   // qoldiq tekshiruvi: shu sanada ham, bugun ham (keyingi jo'natishlar hisobga olinsin)
   const [at, now] = await Promise.all([productStockAt(date), productStockAt(todayTashkent())]);
@@ -872,6 +898,17 @@ app.delete("/api/product-moves/:id", async (req, res) => {
   if (!isId(req.params.id)) return notFound(res);
   const doc = await ProductMove.findById(req.params.id);
   if (!doc) return notFound(res);
+  if (doc.type === "fix") {
+    if (!WRITE_ROLES.includes(req.user.role)) return res.status(403).json({ error: "Markani tuzatishni faqat ПТО, administrator yoki rahbar bekor qila oladi" });
+    // bekor qilinsa, to'g'ri markadan qaytib olinadi — u yerda yetarli bo'lishi kerak
+    const now = await productStockAt(todayTashkent());
+    const have = now[String(doc.toProductId)]?.end || 0;
+    if (have < doc.qty) return res.status(400).json({ error: `Bekor qilib bo'lmaydi: to'g'ri markadan keyin jo'natilgan. Qoldiq: ${Math.max(0, have)} dona` });
+    const [a, t] = await Promise.all([Product.findById(doc.productId).lean(), Product.findById(doc.toProductId).lean()]);
+    await doc.deleteOne();
+    await audit(req, { action: "delete", entity: "productMove", entityId: doc._id, label: `${fixLabel(doc, a, t)} — bekor qilindi`, before: doc });
+    return res.json({ ok: true });
+  }
   if (!WRITE_ROLES.includes(req.user.role) && (doc.createdBy?.id !== String(req.user._id) || Date.now() - doc.createdAt > 24 * 36e5))
     return res.status(403).json({ error: "Faqat o'zingiz kiritgan yozuvni 24 soat ichida bekor qila olasiz" });
   const p = await Product.findById(doc.productId).lean();
@@ -1245,7 +1282,7 @@ async function planInput({ only = null } = {}) {
     orderShipments(),
     Day.find({ date: { $gte: opening.date || "0000-00-00", $lte: today } }).select("date production shipments").lean(),
     Day.find({ date: { $gte: histFrom, $lt: today } }).select("date production").lean(),
-    ProductMove.find({ date: { $gte: opening.date || "0000-00-00", $lte: today } }).select("date productId qty").lean(),
+    ProductMove.find({ date: { $gte: opening.date || "0000-00-00", $lte: today } }).select("type date productId toProductId qty").lean(),
   ]);
   const beton = new Set(materials.map((m) => String(m._id)));
   // o'rtacha: oxirgi 60 kunda shu mahsulot ishlab chiqarilgan kunlar bo'yicha
