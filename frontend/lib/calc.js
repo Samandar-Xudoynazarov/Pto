@@ -25,6 +25,11 @@ export const GROUPS = [
   ["zaklad", "Zakladnoy detallar"],
   ["yoqilgi", "Yoqilg'i va moylar"],
   ["ehtiyot", "Ehtiyot qismlar"],
+  ["texnika", "Texnika va jihozlar"],
+  ["asbob", "Asbob-uskunalar"],
+  ["xojalik", "Xo'jalik mollari"],
+  ["kiyim", "Maxsus kiyim va himoya"],
+  ["elektr", "Elektr mollari"],
   ["boshqa", "Boshqa"],
   ["xizmat", "Xizmat / energiya"],
 ];

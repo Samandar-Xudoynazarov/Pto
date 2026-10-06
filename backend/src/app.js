@@ -289,7 +289,14 @@ const materialFields = (req) => (WRITE_ROLES.includes(req.user.role) ? MATERIAL_
 app.get("/api/materials", async (_req, res) => {
   res.json(await Material.find().sort({ sort: 1, name: 1 }));
 });
+// nomni solishtirish: katta-kichik harf, «ё/е» va bo'shliqlar farqi hisobga olinmaydi
+const matKey = (s) => String(s || "").toLowerCase().replace(/ё/g, "е").replace(/\s+/g, " ").trim();
 app.post("/api/materials", async (req, res) => {
+  const name = matKey(req.body?.name);
+  if (name) {
+    const dup = (await Material.find().select("name archived").lean()).find((m) => matKey(m.name) === name);
+    if (dup) return res.status(409).json({ error: dup.archived ? "Bu nomdagi material arxivda bor — «Materiallar» bo'limida arxivdan chiqaring" : "Bu nomdagi material allaqachon bor" });
+  }
   const last = await Material.findOne().sort({ sort: -1 }).select("sort");
   const doc = await Material.create({ sort: (last?.sort || 0) + 1, ...pick(req.body, materialFields(req)) });
   await audit(req, { action: "create", entity: "material", entityId: doc._id, label: doc.name, after: doc });

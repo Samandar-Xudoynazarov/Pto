@@ -390,7 +390,7 @@ function App() {
                 notify={notify}
                 onSaved={reloadProducts}
               />
-              <MoveSheet init={move} onClose={() => setMove(null)} onSaved={bump} data={data} notify={notify} />
+              <MoveSheet init={move} onClose={() => setMove(null)} onSaved={bump} data={data} notify={notify} reloadMaterials={reloadMaterials} />
             </>
           )}
         </main>

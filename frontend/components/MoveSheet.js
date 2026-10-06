@@ -6,14 +6,18 @@ import { fmtDate, fmtN, today, GROUPS } from "@/lib/calc";
 
 const GROUP_FUEL = (m) => m?.group === "yoqilgi";
 import Icon from "./Icon";
+import NewMaterialSheet from "./NewMaterialSheet";
+import { useUser } from "@/lib/role";
 import { meterFactor } from "@/lib/metal";
 
 /**
  * Ombor kirimi / chiqimi — telefonda pastdan chiqadigan oyna.
  * init: { type: "in"|"out", materialId? }
  */
-export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
+export default function MoveSheet({ init, onClose, onSaved, data, notify, reloadMaterials }) {
   const t = useT();
+  const { canStore, canEdit } = useUser();
+  const [adding, setAdding] = useState(false);
   const ref = useRef(null);
   const { materials, targets = [] } = data;
   const [type, setType] = useState("in");
@@ -58,8 +62,12 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
       setQ("");
       setF({ date: today(), qty: "", price: "", supplier: "", docNumber: "", departmentId: "", vehicleId: "", person: "", note: "", meter: "" });
       setErr("");
+      setAdding(false);
       if (d && !d.open) d.showModal();
-    } else if (d?.open) d.close();
+    } else {
+      setAdding(false);
+      if (d?.open) d.close();
+    }
   }, [init]);
 
   const mat = materials.find((m) => m.id === materialId);
@@ -123,7 +131,8 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
   }
 
   return (
-    <dialog ref={ref} className="bsheet" onClose={onClose}>
+    <>
+    <dialog ref={ref} className="bsheet" onClose={(e) => e.target === e.currentTarget && onClose()}>
       {init && (
         <form onSubmit={submit}>
           <div className="bsheet-grip" aria-hidden="true" />
@@ -149,6 +158,14 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
               <input id="mv-q" type="search" autoFocus placeholder={t("Qidirish…")} value={q} onChange={(e) => setQ(e.target.value)} />
               <div className="pick-list">
                 {!list.length && <div className="empty">{t("Hech narsa topilmadi")}</div>}
+                {canStore && reloadMaterials && (
+                  <button type="button" className="pick-item pick-new" onClick={() => setAdding(true)}>
+                    <span>
+                      <Icon name="plus" size={15} /> {q.trim() ? t("«{q}» — yangi material qo'shish", { q: q.trim() }) : t("Yangi material / mol qo'shish")}
+                    </span>
+                    <span className="muted">{t("ro'yxatda yo'q bo'lsa")}</span>
+                  </button>
+                )}
                 {list.map((m) => (
                   <button
                     type="button"
@@ -309,5 +326,20 @@ export default function MoveSheet({ init, onClose, onSaved, data, notify }) {
         </form>
       )}
     </dialog>
+      <NewMaterialSheet
+        open={adding}
+        initialName={q.trim()}
+        materials={materials}
+        canEdit={canEdit}
+        notify={notify}
+        onClose={() => setAdding(false)}
+        onSaved={async (doc) => {
+          await reloadMaterials();
+          setMaterialId(doc.id);
+          setPicking(false);
+          setTimeout(() => qtyRef.current?.focus(), 80);
+        }}
+      />
+    </>
   );
 }

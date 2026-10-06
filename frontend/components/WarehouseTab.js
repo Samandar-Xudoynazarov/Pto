@@ -6,6 +6,7 @@ import { useUser } from "@/lib/role";
 import { GROUPS, fmt, fmtDate, fmtN, priceOf, today } from "@/lib/calc";
 import Icon from "./Icon";
 import ExportButtons from "./ExportButtons";
+import NewMaterialSheet from "./NewMaterialSheet";
 import { meterFactor } from "@/lib/metal";
 import { fileDate } from "@/lib/xlsx-export";
 
@@ -123,7 +124,7 @@ export default function WarehouseTab({ data, notify, version, openMove, reloadMa
           />
           {canStore && (
             <button className="btn" onClick={() => setAdding(true)}>
-              <Icon name="plus" /> {t("Yangi material")}
+              <Icon name="plus" /> {t("Yangi material / mol")}
             </button>
           )}
         </div>
@@ -190,8 +191,9 @@ export default function WarehouseTab({ data, notify, version, openMove, reloadMa
         canStore={canStore}
         version={version}
       />
-      <NewMaterial
+      <NewMaterialSheet
         open={adding}
+        materials={materials}
         onClose={() => setAdding(false)}
         notify={notify}
         onSaved={async () => {
@@ -274,101 +276,6 @@ function MaterialCard({ material, qty, data, onClose, openMove, canStore, versio
             </ul>
           )}
         </div>
-      )}
-    </dialog>
-  );
-}
-
-/** Yangi material (omborchi ham qo'sha oladi — narx va retseptsiz) */
-function NewMaterial({ open, onClose, notify, onSaved, canEdit }) {
-  const t = useT();
-  const ref = useRef(null);
-  const [f, setF] = useState({});
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-  useEffect(() => {
-    const d = ref.current;
-    if (open) {
-      setF({ name: "", unit: "шт", group: "boshqa", code: "", minQty: "", price: "" });
-      setErr("");
-      if (d && !d.open) d.showModal();
-    } else if (d?.open) d.close();
-  }, [open]);
-  const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
-  async function submit(e) {
-    e.preventDefault();
-    setBusy(true);
-    setErr("");
-    try {
-      const body = { name: f.name.trim(), unit: f.unit.trim(), group: f.group, code: f.code.trim(), minQty: +f.minQty || 0, stock: true };
-      if (canEdit) body.price = +f.price || 0;
-      await api("/materials", { method: "POST", body });
-      notify(t("Material qo'shildi"));
-      await onSaved();
-      onClose();
-    } catch (e2) {
-      setErr(t(e2.message));
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <dialog ref={ref} className="bsheet" onClose={onClose}>
-      {open && (
-        <form onSubmit={submit}>
-          <div className="bsheet-grip" aria-hidden="true" />
-          <h2>{t("Yangi material")}</h2>
-          <div className="field">
-            <label htmlFor="nm-name">{t("Nomi")}</label>
-            <input id="nm-name" value={f.name} onChange={set("name")} required autoFocus />
-          </div>
-          <div className="form-grid two">
-            <div className="field">
-              <label htmlFor="nm-unit">{t("Birlik")}</label>
-              <input id="nm-unit" list="nm-units" value={f.unit} onChange={set("unit")} required />
-              <datalist id="nm-units">
-                {["шт", "кг", "т", "л", "м", "м²", "м³", "п/м", "комп"].map((u) => (
-                  <option key={u} value={u} />
-                ))}
-              </datalist>
-            </div>
-            <div className="field">
-              <label htmlFor="nm-group">{t("Guruh")}</label>
-              <select id="nm-group" value={f.group} onChange={set("group")}>
-                {GROUPS.filter(([k]) => k !== "beton" && k !== "xizmat").map(([k, l]) => (
-                  <option key={k} value={k}>
-                    {t(l)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="nm-min">{t("Minimal qoldiq")}</label>
-              <input id="nm-min" type="number" inputMode="decimal" min="0" step="any" value={f.minQty} onChange={set("minQty")} />
-            </div>
-            <div className="field">
-              <label htmlFor="nm-code">{t("Kod / artikul")}</label>
-              <input id="nm-code" value={f.code} onChange={set("code")} />
-            </div>
-            {canEdit && (
-              <div className="field">
-                <label htmlFor="nm-price">
-                  {t("Narxi")} <span className="u">({t("so'm")})</span>
-                </label>
-                <input id="nm-price" type="number" inputMode="decimal" min="0" step="any" value={f.price} onChange={set("price")} />
-              </div>
-            )}
-          </div>
-          {err && <p className="err">{err}</p>}
-          <div className="dlg-actions">
-            <button type="button" className="btn" onClick={onClose}>
-              {t("Bekor qilish")}
-            </button>
-            <button className="btn primary" disabled={busy}>
-              {busy ? t("Saqlanmoqda…") : t("Saqlash")}
-            </button>
-          </div>
-        </form>
       )}
     </dialog>
   );

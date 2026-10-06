@@ -15,7 +15,8 @@ const opts = { timestamps: true, toJSON: jsonOpts, minimize: false };
 const sub = { _id: false };
 
 export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-export const MATERIAL_GROUPS = ["beton", "xomashyo", "metall", "zaklad", "yoqilgi", "ehtiyot", "boshqa", "xizmat"];
+// texnika — ombordagi asbob-uskuna va jihozlar (generator, payvand apparati…); mashinalarning o'zi «Sex va texnika»da (chiqim manzili)
+export const MATERIAL_GROUPS = ["beton", "xomashyo", "metall", "zaklad", "yoqilgi", "ehtiyot", "texnika", "asbob", "xojalik", "kiyim", "elektr", "boshqa", "xizmat"];
 export const MOVE_TYPES = ["in", "out"]; // ombor: kirim / chiqim
 export const TARGET_KINDS = ["department", "vehicle"]; // chiqim manzili: bo'lim/sex yoki texnika
 export const ROW_TYPES = ["m3", "kg", "pctPrev", "pctSS", "fixed"];

@@ -312,6 +312,10 @@ button.card-row:hover{border-color:var(--ink-3)}
 .dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--ink-3)}
 .g-xomashyo{background:#A16207}.g-metall{background:#475569}.g-zaklad{background:#7C3AED}.g-yoqilgi{background:#DC2626}
 .g-ehtiyot{background:#0891B2}.g-beton{background:#2563EB}.g-boshqa{background:#9CA3AF}.g-xizmat{background:#16A34A}
+.g-texnika{background:#EA580C}.g-asbob{background:#4D7C0F}.g-xojalik{background:#DB2777}.g-kiyim{background:#0F766E}.g-elektr{background:#CA8A04}
+.nm-groups .chip{display:inline-flex;align-items:center;gap:6px}.nm-groups .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.nm-suggest{margin-top:6px}.nm-suggest .chip{font-size:12px;padding:4px 9px}
+.pick-item.pick-new{border:1px dashed var(--accent);color:var(--accent)}.pick-item.pick-new span:first-child{display:inline-flex;align-items:center;gap:6px}
 
 .mv{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);color:inherit;font:inherit;text-align:left;cursor:pointer}
 li.mv{cursor:default}
