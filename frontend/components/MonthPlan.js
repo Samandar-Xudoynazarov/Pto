@@ -9,6 +9,7 @@ import {
   applyPastFacts, applyProgramDays, emptyRow, exportMonthPlanXlsx, guessMonth, monthTitle, normalizePlan, parseBossExcel,
   rowLeft, rowOrdered, rowTotal, rowsFromOrders, shiftMonth, spreadRow, sum,
 } from "@/lib/month-plan";
+import { buildPlanPdf, deliverPdf, planPdfDefinition } from "@/lib/plan-pdf";
 import DeleteButton from "./DeleteButton";
 import Icon from "./Icon";
 
@@ -211,6 +212,91 @@ export default function MonthPlan({ data, notify }) {
     }
   }
 
+  // Kunlik reja PDF — «Dastur rejasi»dagi kabi kalendar (A4), mahsulot tagida o'tgan kunlar uchun fakt
+  const [pdfBusy, setPdfBusy] = useState(false);
+  async function makePdf(share) {
+    if (!plan || !stats) return;
+    setPdfBusy(true);
+    try {
+      const from = isCurMonth && range === "next" ? todayIdx : 0;
+      const days = [];
+      for (let i = from; i < n; i++) {
+        const items = [];
+        plan.rows.forEach((r, ri) => {
+          const q = +r.days[i] || 0;
+          const f = factOf(r);
+          // o'tgan kunlar — fakt (0 bo'lsa ham); bugun — faqat allaqachon quyilgan bo'lsa (kun hali tugamagan)
+          const fv = !f ? null : i < todayIdx ? f[i] || 0 : i === todayIdx && f[i] > 0 ? f[i] : null;
+          if (q > 0 || (fv && i < todayIdx)) items.push({ key: ri, productId: r.productId || null, label: (r.productId && prods.get(r.productId)?.code) || r.name, qty: q, fact: fv, today: i === todayIdx });
+        });
+        if (items.length) days.push({ date: dateOf(month, i), items, concrete: stats.dayM3[i] });
+      }
+      const C = { head: "#1F3A68", soft: "#EEF2F8", ok: "#15803D", okBg: "#DCFCE7", warn: "#B45309", warnBg: "#FEF3C7", bad: "#B91C1C" };
+      const pct = stats.planToDate ? `${fmtN((stats.factToDate / stats.planToDate) * 100, 0)} %` : "—";
+      const def = planPdfDefinition(
+        { days, today: isCurMonth ? todayS : "", settings: { workDays, holidays: [...holidays] } },
+        {
+          company: settings?.company,
+          prods,
+          mats,
+          limit,
+          concreteIsTotal: true,
+          title: `${tr("Kunlik ishlab chiqarish rejasi")} — ${monthTitle(month)}`,
+          headerRight: tr("Tasdiqlangan reja"),
+          scope: `${tr(SOURCE[plan.source] || SOURCE.qolda)}${plan.fileName ? ` (${plan.fileName})` : ""}`,
+          kpis: [
+            ["Oylik reja", `${fmt(stats.total)} ${tr("dona")}`, C.head, C.soft],
+            ["Beton, m³", fmtN(stats.m3, 1), C.head, C.soft],
+            [todayIdx >= n ? "Bajarildi (oy bo'yicha)" : "Bajarildi (kechagacha)", pct, stats.planToDate && stats.factToDate < stats.planToDate ? C.warn : C.ok, stats.planToDate && stats.factToDate < stats.planToDate ? C.warnBg : C.okBg],
+            ["Rejadan keyin buyurtma qoldig'i", `${fmt(stats.left)} ${tr("dona")}`, C.head, C.soft],
+          ],
+          subOf: (r) =>
+            r.fact == null
+              ? null
+              : !r.qty
+                ? { text: tr("rejadan tashqari: {n}", { n: fmt(r.fact) }), color: C.warn }
+                : { text: `${tr("fakt")} ${fmt(r.fact)}`, color: r.fact >= r.qty ? C.ok : r.today ? undefined : C.bad },
+          legend: tr("Har katakda: mahsulot va rejadagi soni (dona); o'tgan kunlarda tagida — kunlik hisobotdagi fakt (yashil — bajarildi, qizil — kam). Pastki satr — kun bo'yicha jami va beton hajmi."),
+          extraContent: ({ cell, head, tableLayout, pageBreak }) => [
+            { text: tr("Mahsulotlar bo'yicha"), fontSize: 13, bold: true, color: C.head, margin: [0, 8, 0, 6], pageBreak },
+            {
+              table: {
+                headerRows: 1,
+                widths: ["*", 70, 60, 60, 60, 60, 50],
+                body: [
+                  [head("Mahsulot"), head("Buyurtma", "right"), head("Jo'natildi", "right"), head("Oylik reja", "right"), head("Fakt", "right"), head("Qoldiq", "right"), head("m³", "right")],
+                  ...plan.rows.map((r, i) => {
+                    const fill = i % 2 ? "#F9FAFB" : undefined;
+                    const f = factOf(r);
+                    const left = rowLeft(r);
+                    return [
+                      cell(`${(r.productId && prods.get(r.productId)?.code) || ""}${r.productId ? "  " : ""}${r.name}`, { fill, size: 8.5 }),
+                      cell(fmt(rowOrdered(r)), { align: "right", fill }),
+                      cell(fmt(r.shipped), { align: "right", fill }),
+                      cell(fmt(rowTotal(r)), { align: "right", fill, bold: true }),
+                      cell(f ? fmt(sum(f)) : "—", { align: "right", fill }),
+                      cell(fmt(left), { align: "right", fill, color: left < 0 ? C.bad : undefined }),
+                      cell(fmtN(rowTotal(r) * (+r.m3 || 0), 1), { align: "right", fill }),
+                    ];
+                  }),
+                ],
+              },
+              layout: tableLayout,
+            },
+          ],
+        },
+        { days: 999 }
+      );
+      const blob = await buildPlanPdf(def);
+      const r = await deliverPdf(blob, `Tasdiqlangan_reja_${month}.pdf`, { share });
+      if (r === "downloaded-fallback") notify("Bu qurilmada ulashish yo'q — fayl yuklab olindi");
+    } catch (e) {
+      notify(e.message || "PDF tayyorlab bo'lmadi");
+    } finally {
+      setPdfBusy(false);
+    }
+  }
+
   async function doExport(share) {
     try {
       const r = await exportMonthPlanXlsx(plan, { company: settings?.company, facts: showFact ? facts : null, isOff, share });
@@ -303,6 +389,16 @@ export default function MonthPlan({ data, notify }) {
                 <button type="button" className="btn primary" onClick={() => startDraft(saved)}>
                   <Icon name="edit" /> {t("Tahrirlash")}
                 </button>
+              )}
+              {saved && (
+                <span className="export-btns">
+                  <button type="button" className="btn" onClick={() => makePdf(false)} disabled={pdfBusy || !saved.rows.length} title={isCurMonth && range === "next" ? t("Bugundan oy oxirigacha") : t("Butun oy")}>
+                    <Icon name="download" /> {pdfBusy ? t("Tayyorlanmoqda…") : t("Kunlik reja (PDF)")}
+                  </button>
+                  <button type="button" className="btn" onClick={() => makePdf(true)} disabled={pdfBusy || !saved.rows.length} aria-label={t("PDF ni ulashish")}>
+                    <Icon name="share" />
+                  </button>
+                </span>
               )}
               {saved && (
                 <span className="export-btns">
