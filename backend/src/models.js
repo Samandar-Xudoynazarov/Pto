@@ -307,6 +307,39 @@ const acctReportSchema = new Schema(
   opts
 );
 
+/* ---------- Oylik ishlab chiqarish rejasi (rahbar tuzgan: Excel'dan yoki qo'lda) ---------- */
+// Excel shakli: mahsulot × kunlar (1..31), buyurtmachilar ustunlari, jo'natildi, oldingi qoldiqlar, m³/dona.
+// customers — buyurtmachi ustunlari nomi; har qatorda orders[i] — shu buyurtmachining buyurtmasi (dona)
+// extraCols — «Остаток от Августа» kabi oldin qilingan/hisobga olinadigan ustunlar; qatorda extra[i]
+const mplanRow = new Schema(
+  {
+    productId: { type: Schema.Types.ObjectId, ref: "Product", default: null }, // null — katalogda yo'q (faqat nomi)
+    name: { type: String, default: "", trim: true, maxlength: 200 },
+    unit: { type: String, default: "шт", trim: true, maxlength: 20 },
+    orders: { type: [Number], default: [] },
+    shipped: { type: Number, default: 0 },
+    extra: { type: [Number], default: [] },
+    days: { type: [Number], default: [] }, // index 0 — 1-kun
+    m3: { type: Number, default: 0, min: [0, "Manfiy son kiritib bo'lmaydi"] }, // 1 dona hajmi
+    note: { type: String, default: "", maxlength: 300 },
+  },
+  sub
+);
+const monthPlanSchema = new Schema(
+  {
+    month: { type: String, required: true, unique: true, match: [/^\d{4}-\d{2}$/, "Oy formati YYYY-MM"] },
+    title: { type: String, default: "", trim: true, maxlength: 200 },
+    source: { type: String, enum: ["excel", "qolda", "dastur"], default: "qolda" },
+    fileName: { type: String, default: "", maxlength: 200 },
+    customers: { type: [String], default: [] },
+    extraCols: { type: [String], default: [] },
+    rows: { type: [mplanRow], default: [] },
+    note: { type: String, default: "", maxlength: 1000 },
+    updatedBy: { id: String, username: String, name: String },
+  },
+  opts
+);
+
 /* ---------- Ombor: chiqim manzillari va harakatlar ---------- */
 const targetSchema = new Schema(
   {
@@ -402,3 +435,4 @@ export const Supplier = models.Supplier || model("Supplier", supplierSchema);
 export const ProductMove = models.ProductMove || model("ProductMove", productMoveSchema);
 export const VehicleLog = models.VehicleLog || model("VehicleLog", vehicleLogSchema);
 export const AcctReport = models.AcctReport || model("AcctReport", acctReportSchema);
+export const MonthPlan = models.MonthPlan || model("MonthPlan", monthPlanSchema);

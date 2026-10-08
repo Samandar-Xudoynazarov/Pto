@@ -23,6 +23,7 @@ import MovesTab from "@/components/MovesTab";
 import TargetsTab from "@/components/TargetsTab";
 import MoveSheet from "@/components/MoveSheet";
 import PlanTab from "@/components/PlanTab";
+import { confirmLeave as confirmUnsaved, hasUnsaved } from "@/lib/dirty";
 import InventoryTab from "@/components/InventoryTab";
 import SuppliersTab from "@/components/SuppliersTab";
 import FinishedTab from "@/components/FinishedTab";
@@ -45,7 +46,7 @@ const TABS = [
   ["stock", "Qoldiq va ehtiyoj", "Material va tayyor mahsulot qiymati, buyurtmalar uchun ehtiyoj", NO_STORE],
   ["fg", "Tayyor mahsulot", "Qoldiq, buyurtmalarga band va brak hisobi", WITH_USTA],
   ["ord", "Buyurtmalar", "Buyurtmachilar, muddatlar va jo'natish holati", NO_STORE],
-  ["plan", "Buyurtmalar rejasi", "Qancha kunda tugatamiz, yangi buyurtmani olsak ulguramizmi", WITH_USTA],
+  ["plan", "Buyurtmalar rejasi", "Dastur prognozi va tasdiqlangan oylik reja (Excel / qo'lda)", WITH_USTA],
   ["cost", "Kalkulyatsiya", "Tannarx va sotuv narxi — Excel tartibida", NO_STORE],
   ["cat", "Katalog", "Mahsulotlar, sarf normalari va kalkulyatsiya kartalari", NO_STORE],
   ["mat", "Materiallar", "Narxlar, beton retseptlari va sozlamalar", NO_STORE],
@@ -232,8 +233,10 @@ function App() {
   const onDirtyChange = useCallback((v) => {
     unsaved.current = v;
   }, []);
+  // boshqa bo'limlar (masalan, oylik reja tahriri) lib/dirty orqali xabar beradi
   const confirmLeave = () =>
-    !unsaved.current || window.confirm(t("Kunlik hisobotda saqlanmagan o'zgarishlar bor. Ularni tashlab ketasizmi?"));
+    (!unsaved.current || window.confirm(t("Kunlik hisobotda saqlanmagan o'zgarishlar bor. Ularni tashlab ketasizmi?"))) &&
+    (!hasUnsaved() || confirmUnsaved(t("Saqlanmagan o'zgarishlar bor. Ularni tashlab ketasizmi?")));
 
   const chooseTab = (k) => {
     setMenuOpen(false);

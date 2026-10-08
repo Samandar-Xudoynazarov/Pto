@@ -108,6 +108,40 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
     }
   }
 
+  // «Tasdiqlangan reja» (oylik reja)dagi shu kun ustunidan rejani to'ldirish (faktga tegmaydi)
+  async function fillFromBoss() {
+    try {
+      const { plan } = await api(`/month-plans/${date.slice(0, 7)}`);
+      if (!plan) return notify("Bu oy uchun tasdiqlangan reja kiritilmagan");
+      const di = +date.slice(8, 10) - 1;
+      const need = new Map();
+      let skipped = 0;
+      for (const r of plan.rows) {
+        const q = +r.days?.[di] || 0;
+        if (!q) continue;
+        if (!r.productId) {
+          skipped++;
+          continue;
+        }
+        need.set(String(r.productId), (need.get(String(r.productId)) || 0) + q);
+      }
+      if (!need.size) return notify(skipped ? "Tasdiqlangan rejadagi bu kun qatorlari katalog bilan bog'lanmagan" : "Tasdiqlangan rejada bu kunga ish yo'q");
+      setProd((rows) => {
+        const out = rows.filter((r) => r.productId || r.fact || r.plan).map((r) => (need.has(r.productId) ? { ...r, plan: String(need.get(r.productId)) } : r));
+        for (const [id, q] of need) if (!out.some((r) => r.productId === id)) out.push({ ...emptyProd(), productId: id, plan: String(q) });
+        return out.length ? out : [emptyProd()];
+      });
+      setDirty(true);
+      notify(
+        skipped
+          ? tr("Reja tasdiqlangan rejadan to'ldirildi ({n} ta mahsulot, {s} ta bog'lanmagan qator o'tkazib yuborildi) — tekshirib, saqlang", { n: need.size, s: skipped })
+          : tr("Reja tasdiqlangan rejadan to'ldirildi ({n} ta mahsulot) — tekshirib, saqlang", { n: need.size })
+      );
+    } catch (e) {
+      notify(e.message);
+    }
+  }
+
   // norma bo'yicha sarf: fakt va reja
   const normFact = useMemo(
     // brak ham material sarflagan — norma bo'yicha sarf sifatli + brak donadan
@@ -367,6 +401,7 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
                 {date >= today() && (
                   <button className="btn sm" onClick={fillFromPlan} title={tr("Buyurtmalar rejasidagi taklif bo'yicha")}>{tr("Rejani buyurtmalardan to'ldirish")}</button>
                 )}
+                <button className="btn sm" onClick={fillFromBoss} title={tr("«Buyurtmalar rejasi» → «Tasdiqlangan reja»dagi shu kun bo'yicha")}>{tr("Tasdiqlangan rejadan to'ldirish")}</button>
               </div>
             )}
           </div>

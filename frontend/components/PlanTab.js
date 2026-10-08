@@ -8,6 +8,8 @@ import ExportButtons from "./ExportButtons";
 import Icon from "./Icon";
 import { buildPlanPdf, deliverPdf, planPdfDefinition } from "@/lib/plan-pdf";
 import { fileDate } from "@/lib/xlsx-export";
+import MonthPlan from "./MonthPlan";
+import { confirmLeave } from "@/lib/dirty";
 
 const WEEK = ["Ya", "Du", "Se", "Ch", "Pa", "Ju", "Sh"]; // getUTCDay() tartibida
 const wd = (s) => WEEK[new Date(s + "T00:00:00Z").getUTCDay()];
@@ -24,8 +26,51 @@ const STATUS = {
 const statusText = (o) => (o.status === "late" ? tr("Kechikadi · {n} kun", { n: o.lateDays }) : tr(STATUS[o.status]?.[0] || o.status));
 const basisText = (b) => (b === "qolip" ? tr("qoliplardan") : b === "tarix" ? tr("o'rtachadan") : tr("noma'lum"));
 
-/** Buyurtmalar rejasi: qancha kunda tugatamiz, yangi buyurtmani olsak ulguramizmi */
-export default function PlanTab({ data, notify, reloadOrders, reloadSettings }) {
+/**
+ * Buyurtmalar rejasi — ikki ko'rinish:
+ *  «Dastur rejasi» — avtomatik prognoz (qancha kunda tugatamiz, yangi buyurtmani olsak ulguramizmi);
+ *  «Tasdiqlangan reja» — rahbar tuzgan oylik reja (Excel'dan yuklanadi yoki qo'lda tuziladi), fakt bilan solishtiriladi.
+ */
+export default function PlanTab(props) {
+  const t = useT();
+  const [view, setView] = useState(() => lsGet("pto.planView", "dastur"));
+  const choose = (v) => {
+    if (v === view || !confirmLeave()) return;
+    setView(v);
+    lsSet("pto.planView", v);
+  };
+  const VIEWS = [
+    ["dastur", "auto", "Dastur rejasi", "Buyurtmalar bo'yicha avtomatik prognoz"],
+    ["rahbar", "boss", "Tasdiqlangan reja", "Oylik reja: Excel'dan yoki qo'lda"],
+  ];
+  return (
+    <>
+      <div className="plan-switch" role="tablist" aria-label={t("Reja turi")}>
+        {VIEWS.map(([k, ic, title, sub]) => (
+          <button key={k} type="button" role="tab" aria-selected={view === k} onClick={() => choose(k)}>
+            <span className="ps-ic">
+              <Icon name={ic} size={20} />
+            </span>
+            <span className="ps-t">
+              <strong>{t(title)}</strong>
+              <small>{t(sub)}</small>
+            </span>
+          </button>
+        ))}
+      </div>
+      {view === "rahbar" ? (
+        <section className="sheet plan">
+          <MonthPlan data={props.data} notify={props.notify} />
+        </section>
+      ) : (
+        <ProgramPlan {...props} />
+      )}
+    </>
+  );
+}
+
+/** Dastur rejasi: qancha kunda tugatamiz, yangi buyurtmani olsak ulguramizmi */
+function ProgramPlan({ data, notify, reloadOrders, reloadSettings }) {
   const t = useT();
   const { canEdit } = useUser();
   const { products, prods } = data;

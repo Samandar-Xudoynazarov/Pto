@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import { connectDB } from "./db.js";
-import { Material, Product, Day, Order, Settings, User, AuditLog, Counter, Target, Movement, Inventory, Supplier, ProductMove, VehicleLog, AcctReport, VEHICLE_LOG_KINDS, DATE_RE, MOVE_TYPES, TARGET_KINDS, MATERIAL_GROUPS, BRAK_REASONS } from "./models.js";
+import { Material, Product, Day, Order, Settings, User, AuditLog, Counter, Target, Movement, Inventory, Supplier, ProductMove, VehicleLog, AcctReport, MonthPlan, VEHICLE_LOG_KINDS, DATE_RE, MOVE_TYPES, TARGET_KINDS, MATERIAL_GROUPS, BRAK_REASONS } from "./models.js";
 import { stockReport } from "./stock.js";
 import { planOrders, checkNewOrder, planConfig, addDays } from "./plan.js";
 import { vehicleStats } from "./fleet.js";
@@ -248,7 +248,7 @@ app.get("/api/audit", adminOnly, async (req, res) => {
 
 /* ---------- Zaxira nusxa (faqat admin) ---------- */
 app.get("/api/backup", adminOnly, async (req, res) => {
-  const [materials, products, days, orders, settings, users, targets, movements, inventories, suppliers, productMoves, vehicleLogs, acctReports] = await Promise.all([
+  const [materials, products, days, orders, settings, users, targets, movements, inventories, suppliers, productMoves, vehicleLogs, acctReports, monthPlans] = await Promise.all([
     Material.find().lean(),
     Product.find().lean(),
     Day.find().sort({ date: 1 }).lean(),
@@ -262,6 +262,7 @@ app.get("/api/backup", adminOnly, async (req, res) => {
     ProductMove.find().sort({ date: 1 }).lean(),
     VehicleLog.find().sort({ date: 1 }).lean(),
     AcctReport.find().sort({ month: 1 }).lean(),
+    MonthPlan.find().sort({ month: 1 }).lean(),
   ]);
   const now = new Date();
   const stamp = new Date(now.getTime() + 5 * 36e5).toISOString().slice(0, 16).replace(/[T:]/g, "-");
@@ -276,8 +277,8 @@ app.get("/api/backup", adminOnly, async (req, res) => {
     format: 1,
     createdAt: now.toISOString(),
     createdBy: req.user.username,
-    counts: { materials: materials.length, products: products.length, days: days.length, orders: orders.length, users: users.length, targets: targets.length, movements: movements.length, inventories: inventories.length, suppliers: suppliers.length, productMoves: productMoves.length, vehicleLogs: vehicleLogs.length, acctReports: acctReports.length },
-    data: { materials, products, days, orders, settings, users, targets, movements, inventories, suppliers, productMoves, vehicleLogs, acctReports },
+    counts: { materials: materials.length, products: products.length, days: days.length, orders: orders.length, users: users.length, targets: targets.length, movements: movements.length, inventories: inventories.length, suppliers: suppliers.length, productMoves: productMoves.length, vehicleLogs: vehicleLogs.length, acctReports: acctReports.length, monthPlans: monthPlans.length },
+    data: { materials, products, days, orders, settings, users, targets, movements, inventories, suppliers, productMoves, vehicleLogs, acctReports, monthPlans },
   });
 });
 
@@ -1318,7 +1319,9 @@ async function planInput({ only = null } = {}) {
 // ?orders=id1,id2 — faqat tanlangan buyurtmalar (boshqalari quvvatni band qilmaydi deb hisoblanadi)
 app.get("/api/plan", async (req, res) => {
   const ids = String(req.query.orders || "").split(",").filter(isId).slice(0, 500);
-  res.json(planOrders(await planInput({ only: ids.length ? new Set(ids) : null })));
+  // ?days=N — kunlik taklifda nechta ish kuni (oylik rejaga nusxalash uchun ko'proq kerak)
+  const showDays = Math.min(80, Math.max(1, Math.floor(+req.query.days) || 24));
+  res.json(planOrders({ ...(await planInput({ only: ids.length ? new Set(ids) : null })), showDays }));
 });
 app.post("/api/plan/check", async (req, res) => {
   const b = req.body || {};
@@ -1376,6 +1379,75 @@ app.delete("/api/acct-reports/:month", async (req, res) => {
   const doc = await AcctReport.findOneAndDelete({ month: req.params.month });
   if (!doc) return notFound(res);
   await audit(req, { action: "delete", entity: "acct", entityId: doc.month, label: `Material hisoboti ${doc.month}`, before: doc });
+  res.json({ ok: true });
+});
+
+/* ---------- Oylik ishlab chiqarish rejasi (rahbar rejasi) ---------- */
+// Excel'dan yuklangan yoki qo'lda tuzilgan reja. Saqlash — ПТО, admin, rahbar; ko'rish — hamma
+const num0 = (v, max = 1e7) => {
+  const n = +v;
+  return Number.isFinite(n) ? Math.min(max, Math.max(-max, Math.round(n * 1000) / 1000)) : 0;
+};
+const cleanLabels = (arr, max) => (Array.isArray(arr) ? arr.slice(0, max).map((x) => String(x ?? "").trim().slice(0, 80)) : []);
+function cleanMonthPlan(b, month) {
+  const customers = cleanLabels(b.customers, 12);
+  const extraCols = cleanLabels(b.extraCols, 4);
+  if (!Array.isArray(b.rows) || b.rows.length > 400) return { error: "Qatorlar ro'yxati noto'g'ri" };
+  const [y, m] = month.split("-").map(Number);
+  const nDays = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const rows = b.rows.map((r) => ({
+    productId: isId(r?.productId) ? r.productId : null,
+    name: String(r?.name ?? "").trim().slice(0, 200),
+    unit: String(r?.unit ?? "шт").trim().slice(0, 20) || "шт",
+    orders: customers.map((_, i) => Math.max(0, num0(r?.orders?.[i]))),
+    shipped: Math.max(0, num0(r?.shipped)),
+    extra: extraCols.map((_, i) => num0(r?.extra?.[i])),
+    days: Array.from({ length: nDays }, (_, i) => Math.max(0, num0(r?.days?.[i], 1e5))),
+    m3: Math.max(0, num0(r?.m3, 1000)),
+    note: String(r?.note ?? "").slice(0, 300),
+  }));
+  if (rows.some((r) => !r.productId && !r.name)) return { error: "Har bir qatorda mahsulot tanlang yoki nomini yozing" };
+  return {
+    data: {
+      title: String(b.title ?? "").trim().slice(0, 200),
+      source: ["excel", "qolda", "dastur"].includes(b.source) ? b.source : "qolda",
+      fileName: String(b.fileName ?? "").slice(0, 200),
+      note: String(b.note ?? "").slice(0, 1000),
+      customers,
+      extraCols,
+      rows,
+    },
+  };
+}
+// oylar ro'yxati (qaysi oylarga reja bor)
+app.get("/api/month-plans", async (_req, res) => {
+  const list = await MonthPlan.find().sort({ month: -1 }).select("month title source rows.days updatedAt updatedBy").lean();
+  res.json(list.map((p) => ({ month: p.month, title: p.title, source: p.source, rows: p.rows.length, total: p.rows.reduce((s, r) => s + (r.days || []).reduce((a, b) => a + b, 0), 0), updatedAt: p.updatedAt, updatedBy: p.updatedBy })));
+});
+app.get("/api/month-plans/:month", async (req, res) => {
+  const month = req.params.month;
+  if (!MONTH_RE.test(month)) return res.status(400).json({ error: "Oy formati YYYY-MM" });
+  res.json({ plan: await MonthPlan.findOne({ month }) });
+});
+app.put("/api/month-plans/:month", async (req, res) => {
+  const month = req.params.month;
+  if (!MONTH_RE.test(month)) return res.status(400).json({ error: "Oy formati YYYY-MM" });
+  const r = cleanMonthPlan(req.body || {}, month);
+  if (r.error) return res.status(400).json({ error: r.error });
+  const ids = [...new Set(r.data.rows.filter((x) => x.productId).map((x) => String(x.productId)))];
+  if (ids.length && (await Product.countDocuments({ _id: { $in: ids } })) !== ids.length) return res.status(400).json({ error: "Mahsulot topilmadi" });
+  const u = req.user;
+  const doc = (await MonthPlan.findOne({ month })) || new MonthPlan({ month });
+  const before = doc.isNew ? null : doc.toObject();
+  doc.set({ ...r.data, updatedBy: { id: String(u._id), username: u.username, name: u.name || u.username } });
+  await doc.save();
+  await audit(req, { action: before ? "update" : "create", entity: "mplan", entityId: month, label: `Oylik reja ${month}`, before, after: doc });
+  res.json(doc);
+});
+app.delete("/api/month-plans/:month", async (req, res) => {
+  const doc = await MonthPlan.findOneAndDelete({ month: req.params.month });
+  if (!doc) return notFound(res);
+  await audit(req, { action: "delete", entity: "mplan", entityId: doc.month, label: `Oylik reja ${doc.month}`, before: doc });
   res.json({ ok: true });
 });
 

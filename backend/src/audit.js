@@ -33,6 +33,7 @@ function normalize(entity, obj) {
   }
   if (entity === "order" && Array.isArray(o.items)) o.items = keyed(o.items, "productId");
   if (entity === "acct") o.rows = keyed(o.rows, "name");
+  if (entity === "mplan" && Array.isArray(o.rows)) o.rows = keyed(o.rows.map((r) => ({ ...r, key: r.name || String(r.productId) })), "key");
   if (entity === "product") {
     o.norms = keyed(o.norms, "materialId");
     if (o.calc) o.calc = { ...o.calc, items: keyed(o.calc.items, "materialId") };
