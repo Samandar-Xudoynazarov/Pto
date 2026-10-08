@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
 import Icon from "./Icon";
+import NakladnoyDialog from "./NakladnoyDialog";
 import { addDaySheet, deliver, newWorkbook, pickRows } from "@/lib/excel";
 import { BRAK_REASONS, consumption, fmtDate, fmtN, lsGet, lsSet, productOptions, round, shiftDate, today } from "@/lib/calc";
 
@@ -26,6 +27,7 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
   const [saving, setSaving] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [nkOpen, setNkOpen] = useState(false); // накладная oynasi
 
   // Sana tez almashtirilsa, eski so'rov javobi kechikib kelib, yangi sanadagi jadvalni
   // boshqa kunning ma'lumoti bilan to'ldirib yubormasligi uchun faqat oxirgi so'rov hisobga olinadi.
@@ -578,9 +580,17 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
                   </tbody>
                 </table></fieldset>
               </div>
-              {canEdit && (
-                <button className="btn sm no-print" style={{ marginTop: 8 }} onClick={touch(() => setShips((rows) => [...rows, emptyShip()]))}>{tr("+ Jo'natish qo'shish")}</button>
-              )}
+              <div className="no-print" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                {canEdit && (
+                  <button className="btn sm" onClick={touch(() => setShips((rows) => [...rows, emptyShip()]))}>{tr("+ Jo'natish qo'shish")}</button>
+                )}
+                {ships.some((r) => r.productId && num(r.qty) > 0) && (
+                  <button className="btn sm" onClick={() => setNkOpen(true)} title={tr("Shu kungi jo'natish bo'yicha yuk xati (PDF)")}>
+                    <Icon name="print" size={14} /> {tr("Накладная (PDF)")}
+                  </button>
+                )}
+              </div>
+              {nkOpen && <NakladnoyDialog ships={ships} date={date} data={data} notify={notify} onClose={() => setNkOpen(false)} />}
             </div>
           </div>
 

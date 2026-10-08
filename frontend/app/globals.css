@@ -825,3 +825,22 @@ select.need{border-color:var(--signal);background:var(--signal-soft)}
 .mp .mp-eday .plan-item .code{overflow:hidden;text-overflow:ellipsis;min-width:0}
 .mp-saved{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;font-size:13px}
 .mp-qty.bad{border-color:var(--bad);background:var(--bad-soft)}
+
+/* ================= накладная ================= */
+.nk-dlg{width:min(860px,calc(100vw - 24px))}
+.nk-h{display:grid;gap:2px}
+.nk-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.nk-grid .span2{grid-column:span 2}
+.nk-grid .field>input{width:100%}
+.nk-grid .lbl,.nk-dlg .lbl{font-size:12.5px;color:var(--ink-2);font-weight:500}
+.nk-items td.wide{min-width:220px}
+.nk-items td.n input{width:96px}
+.nk-items tfoot td{font-weight:600}
+.nk-sig{display:flex;align-items:center;gap:8px;min-height:36px}
+.nk-sig img{height:34px;max-width:120px;border-bottom:1px solid var(--line)}
+.nk-pad{position:fixed;inset:0;z-index:60;background:rgba(10,15,25,.55);display:grid;place-content:center;padding:16px}
+.nk-pad>*{width:min(560px,calc(100vw - 32px))}
+.nk-pad-t{margin:0 0 8px;color:#fff;font-weight:600}
+.nk-pad canvas{height:220px;background:#fff;border-radius:12px;touch-action:none;display:block}
+.nk-pad .dlg-actions{position:static;background:transparent;margin:10px 0 0}
+@media (max-width:640px){.nk-grid{grid-template-columns:1fr}.nk-grid .span2{grid-column:auto}}
