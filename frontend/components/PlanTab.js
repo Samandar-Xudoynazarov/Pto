@@ -24,7 +24,8 @@ const STATUS = {
   far: ["2 yildan uzoq", "st-bad"],
 };
 const statusText = (o) => (o.status === "late" ? tr("Kechikadi · {n} kun", { n: o.lateDays }) : tr(STATUS[o.status]?.[0] || o.status));
-const basisText = (b) => (b === "qolip" ? tr("qoliplardan") : b === "tarix" ? tr("o'rtachadan") : tr("noma'lum"));
+const basisText = (b, lid) =>
+  b === "qopqoq" && lid ? tr("{h} qolibida, {n} tadan", { h: lid.hostCode, n: lid.batch }) : b === "qolip" ? tr("qoliplardan") : b === "tarix" ? tr("o'rtachadan") : tr("noma'lum");
 
 /**
  * Buyurtmalar rejasi — ikki ko'rinish:
@@ -311,7 +312,7 @@ function ProgramPlan({ data, notify, reloadOrders, reloadSettings }) {
                   <td className="n hide-s">{fmt(o.toProduce)}</td>
                   <td className="n">
                     {o.perDay ? fmtN(o.perDay, 2) : "—"}
-                    <span className="sub">{basisText(o.basis)}</span>
+                    <span className="sub">{basisText(o.basis, o.lid)}</span>
                   </td>
                   <td className={`n${o.needPerDay && o.perDay && o.needPerDay > o.perDay ? " late" : ""}`}>{o.needPerDay ? fmt(o.needPerDay) : "—"}</td>
                   <td className="num">
@@ -357,9 +358,10 @@ function ProgramPlan({ data, notify, reloadOrders, reloadSettings }) {
               </div>
               {Object.values(
                 d.items.reduce((acc, it) => {
-                  const a = (acc[it.productId] ||= { productId: it.productId, qty: 0, nos: [] });
+                  const a = (acc[it.productId] ||= { productId: it.productId, qty: 0, nos: [], spare: 0 });
                   a.qty += it.qty;
-                  a.nos.push(it.no);
+                  if (it.spare) a.spare += it.qty;
+                  else a.nos.push(it.no);
                   return acc;
                 }, {})
               ).map((a) => (
@@ -368,7 +370,10 @@ function ProgramPlan({ data, notify, reloadOrders, reloadSettings }) {
                   <strong>
                     {fmt(a.qty)} {t("dona")}
                   </strong>
-                  <span className="muted">№ {a.nos.join(", ")}</span>
+                  <span className="muted">
+                    {a.nos.length ? `№ ${a.nos.join(", ")}` : ""}
+                    {a.spare ? `${a.nos.length ? " + " : ""}${t("{n} omborga", { n: a.spare })}` : ""}
+                  </span>
                 </div>
               ))}
             </div>
@@ -509,7 +514,7 @@ function WhatIf({ products, prods, notify, canEdit, onCreated }) {
               <strong>
                 {o.perDay ? `${fmtN(o.perDay, 2)} ${t("dona/kun")}` : "—"}
               </strong>
-              <span className="muted sm">{basisText(o.basis)}</span>
+              <span className="muted sm">{basisText(o.basis, o.lid)}</span>
             </div>
             {o.needPerDay && (
               <div>
@@ -631,13 +636,13 @@ function PlanSettings({ plan, notify, onSaved }) {
 function planExcel(plan, code) {
   const rows = plan.orders.map((o) => ({
     no: o.no, customer: o.customer, contract: o.contractNo || "", product: code(o.productId), qty: o.qty, shipped: o.shipped, remaining: o.remaining, fromStock: o.fromStock,
-    toProduce: o.toProduce, perDay: o.perDay || null, basis: basisText(o.basis), need: o.needPerDay, start: o.start ? fmtDate(o.start) : "",
+    toProduce: o.toProduce, perDay: o.perDay || null, basis: basisText(o.basis, o.lid), need: o.needPerDay, start: o.start ? fmtDate(o.start) : "",
     finish: o.finish ? fmtDate(o.finish) : "", deadline: o.deadline ? fmtDate(o.deadline) : "", status: statusText(o),
     _cell: o.status === "late" || o.status === "nocap" || o.status === "far" ? { status: "bad", finish: "bad" } : o.status === "risk" ? { status: "warn" } : { status: "ok" },
   }));
   const days = [];
   for (const d of plan.days)
-    for (const it of d.items) days.push({ date: fmtDate(d.date), wd: tr(wd(d.date)), product: code(it.productId), qty: it.qty, no: it.no, concrete: d.concrete || null });
+    for (const it of d.items) days.push({ date: fmtDate(d.date), wd: tr(wd(d.date)), product: code(it.productId), qty: it.qty, no: it.no || null, concrete: d.concrete || null });
   return {
     filename: `Buyurtmalar_rejasi_${fileDate()}.xlsx`,
     sheets: [

@@ -1,0 +1,27 @@
+[
+  {
+    "name": "accounting-month-race",
+    "outcome": "defect-reproduced-in-offline-hook-harness",
+    "selectedMonth": "2026-10",
+    "staleDataMonth": "2026-09",
+    "writtenPath": "/acct-reports/2026-10",
+    "writtenRows": [
+      {
+        "productId": null,
+        "name": "2026-09",
+        "unit": "м3",
+        "qty": 9,
+        "m3": 1,
+        "unitCost": 10,
+        "unitPrice": 20
+      }
+    ]
+  },
+  {
+    "name": "daily-load-failure",
+    "outcome": "defect-reproduced-in-offline-hook-harness",
+    "failedDay": "2026-10-09",
+    "writtenPath": "/days/2026-10-09",
+    "staleNote": "FIRST-DAY-NOTE"
+  }
+]

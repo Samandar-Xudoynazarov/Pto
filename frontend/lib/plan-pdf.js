@@ -116,7 +116,8 @@ export function planPdfDefinition(plan, ctx, { days: maxDays = 12 } = {}) {
     for (const it of d.items) {
       const a = byProd.get(it.productId) || { productId: it.productId, qty: 0, nos: [] };
       a.qty += it.qty;
-      if (!a.nos.includes(it.no)) a.nos.push(it.no);
+      if (it.no && !a.nos.includes(it.no)) a.nos.push(it.no);
+      if (it.spare) a.spare = (a.spare || 0) + it.qty;
       byProd.set(it.productId, a);
     }
     const rows = [...byProd.values()];
@@ -136,7 +137,7 @@ export function planPdfDefinition(plan, ctx, { days: maxDays = 12 } = {}) {
                 { text: fmt(r.qty), fontSize: 9.5, bold: true, alignment: "right", width: "auto", color: C.head },
               ],
             },
-            { text: r.nos.map((n) => `№${n}`).join(", "), fontSize: 6.5, color: C.muted },
+            { text: [r.nos.map((n) => `№${n}`).join(", "), r.spare ? tr("{n} omborga", { n: r.spare }) : ""].filter(Boolean).join(" + "), fontSize: 6.5, color: C.muted },
           ],
         })),
         {

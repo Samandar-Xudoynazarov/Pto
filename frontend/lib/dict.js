@@ -1346,6 +1346,17 @@ export const DICT = {
     "Bugundan keyin rejada ish yo'q.": "С сегодняшнего дня работ в плане нет.",
     "Rejada ish yo'q.": "В плане нет работ.",
     "Mahsulotlar bo'yicha": "По изделиям",
+    "{m} oyi uchun reja saqlandi — hamma foydalanuvchilarga ko'rinadi": "План на {m} сохранён — виден всем пользователям",
+    "Saqlangan rejalar:": "Сохранённые планы:",
+    "O'tgan kunlar kunlik hisobotdan olindi ({n} ta yozuv)": "Прошедшие дни взяты из дневного отчёта (записей: {n})",
+    "Bugundan oldingi kunlarga kunlik hisobotdagi fakt yoziladi": "В дни до сегодняшнего записывается факт из дневного отчёта",
+    "O'tgan kunlarni hisobotdan olish": "Прошедшие дни — из отчёта",
+    "Qopqoq: kuniga {n} ta yoki 0 («{h}» qolibida)": "Крышка: в день {n} шт или 0 (в форме «{h}»)",
+    "{h} qolibida, {n} tadan": "в форме {h}, по {n} шт",
+    "{n} omborga": "{n} на склад",
+    "{n} / quyish": "{n} / заливка",
+    "{h} qolibida": "в форме {h}",
+    "Lotok qopqog'i: «{h}» qolibiga bo'lib quyiladi — kuniga yo {n} ta, yo umuman yo'q; o'sha kuni «{h}»ning bitta qolibi band bo'ladi. «Qoliplar soni» — bitta quyishdagi qopqoqlar soni.": "Крышка лотка: заливается в форму «{h}», разделённую на части — в день либо {n} шт, либо ничего; в этот день одна форма «{h}» занята. «Количество форм» — число крышек за одну заливку.",
   },
 
   ruPatterns: [

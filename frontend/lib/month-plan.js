@@ -252,6 +252,29 @@ export function rowsFromOrders(orders, products, mats, month, base = { customers
   return { customers, extraCols: base.extraCols, rows, added };
 }
 
+/** O'tgan kunlar (bugundan oldingi) — kunlik hisobotdagi faktdan. facts: Map(mahsulot → [kunlar]) */
+export function applyPastFacts(plan, facts, todayIdx, products, mats) {
+  const upto = Math.min(todayIdx, plan.rows[0]?.days.length ?? 31);
+  if (!(upto > 0) || !facts) return { ...plan, pastCells: 0 };
+  const prods = new Map(products.map((p) => [p.id, p]));
+  const n = plan.rows[0]?.days.length ?? monthDays(plan.month);
+  const rows = plan.rows.map((r) => ({ ...r, days: [...r.days] }));
+  let pastCells = 0;
+  for (const r of rows) if (r.productId) for (let i = 0; i < upto; i++) r.days[i] = 0;
+  for (const [pid, arr] of facts) {
+    if (!arr.slice(0, upto).some((v) => v > 0)) continue;
+    let r = rows.find((x) => x.productId === pid);
+    if (!r) {
+      const p = prods.get(pid);
+      if (!p) continue;
+      r = { ...emptyRow(n), productId: pid, name: `${p.name ? p.name + " " : ""}${p.code}`, orders: plan.customers.map(() => 0), extra: plan.extraCols.map(() => 0), m3: Math.round(concreteVolume(p, mats) * 1000) / 1000 };
+      rows.push(r);
+    }
+    for (let i = 0; i < upto; i++) if (arr[i] > 0) (r.days[i] = arr[i]), pastCells++;
+  }
+  return { ...plan, rows, pastCells };
+}
+
 /** Dastur taklifi (/plan) kunlarini shu oy jadvaliga ko'chirish */
 export function applyProgramDays(plan, programDays, month) {
   const rows = plan.rows.map((r) => ({ ...r, days: [...r.days] }));
@@ -269,11 +292,23 @@ export function applyProgramDays(plan, programDays, month) {
   return { ...plan, rows, cells };
 }
 
-/** Qatorning qoldig'ini tanlangan ish kunlariga teng taqsimlash (oldingi qiymatlar tozalanadi) */
-export function spreadRow(row, workDayIdx) {
+/**
+ * Qatorning qoldig'ini tanlangan ish kunlariga teng taqsimlash (oldingi qiymatlar tozalanadi).
+ * batch — lotok qopqog'i: kuniga yo butun partiya (masalan 4), yo 0 — partiyalar ketma-ket ish kunlariga
+ */
+export function spreadRow(row, workDayIdx, batch = 0) {
   const need = Math.max(0, rowOrdered(row) - (+row.shipped || 0) - sum(row.extra) - row.days.reduce((s, x, i) => s + (workDayIdx.includes(i) ? 0 : +x || 0), 0));
   const days = row.days.map((x, i) => (workDayIdx.includes(i) ? 0 : x));
   if (!need || !workDayIdx.length) return { ...row, days };
+  if (batch > 0) {
+    let left = need;
+    for (const i of workDayIdx) {
+      if (left <= 0) break;
+      days[i] = batch;
+      left -= batch;
+    }
+    return { ...row, days };
+  }
   const base = Math.floor(need / workDayIdx.length);
   let rest = need - base * workDayIdx.length;
   for (const i of workDayIdx) {

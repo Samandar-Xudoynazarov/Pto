@@ -119,6 +119,13 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
   const scheme = schemes.find((x) => x.id === calc.scheme);
   const card = useMemo(() => (numeric ? costCard(applyScheme(numeric, schemes), mats) : null), [numeric, mats, schemes]);
   const groups = [...new Set(products.map((p) => p.group).filter(Boolean))];
+  // «Л 5д-15» → asosiy lotok «Л 5-15» (qolibi bo'lsa)
+  const lidHost = (() => {
+    const m = String(d?.code || "").toLowerCase().replace(/\s+/g, "").replace(/,/g, ".").match(/^(.*\d)д(-.+)$/);
+    if (!m) return null;
+    const h = products.find((p) => p.id !== product?.id && String(p.code).toLowerCase().replace(/\s+/g, "").replace(/,/g, ".") === m[1] + m[2]);
+    return h && +h.forms > 0 ? h : null;
+  })();
 
   async function save(e) {
     e.preventDefault();
@@ -175,7 +182,12 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
               </label>
               <input id="pe-cycle" type="number" min="0.1" step="any" value={d.cycleDays} onChange={(e) => setD({ ...d, cycleDays: e.target.value })} />
             </div>
-            {+d.forms > 0 && (
+            {lidHost && (
+              <p className="hint" style={{ gridColumn: "1/-1", margin: 0 }}>
+                {tr("Lotok qopqog'i: «{h}» qolibiga bo'lib quyiladi — kuniga yo {n} ta, yo umuman yo'q; o'sha kuni «{h}»ning bitta qolibi band bo'ladi. «Qoliplar soni» — bitta quyishdagi qopqoqlar soni.", { h: lidHost.code, n: +d.forms || 4 })}
+              </p>
+            )}
+            {!lidHost && +d.forms > 0 && (
               <p className="hint" style={{ gridColumn: "1/-1", margin: 0 }}>
                 {tr("Kunlik quvvat: {n} dona/kun — buyurtmalar rejasida ishlatiladi.", { n: fmtN(+d.forms / Math.max(0.1, +d.cycleDays || 1), 2) })}
               </p>

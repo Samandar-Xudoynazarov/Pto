@@ -78,6 +78,25 @@ export function lsSet(k, v) {
 }
 
 export const byId = (list) => new Map(list.map((x) => [x.id, x]));
+
+/**
+ * Lotok qopqog'i («Л 5д-15»): asosiy lotok («Л 5-15») qolibiga bo'lib quyiladi — bir kunda yo butun partiya
+ * (qopqoqning «qoliplar soni», odatda 4), yo umuman yo'q. Backend: src/plan.js → lidLinks (qoida bir xil).
+ * Qaytaradi: Map(qopqoq id → { host, hostCode, batch })
+ */
+const normCode = (s) => String(s || "").toLowerCase().replace(/ё/g, "е").replace(/,/g, ".").replace(/\s+/g, "");
+export function lidLinks(products) {
+  const byCode = new Map(products.map((p) => [normCode(p.code), p]));
+  const out = new Map();
+  for (const p of products) {
+    const m = normCode(p.code).match(/^(.*\d)д(-.+)$/);
+    if (!m) continue;
+    const host = byCode.get(m[1] + m[2]);
+    if (!host || host.id === p.id || !(+host.forms > 0)) continue;
+    out.set(p.id, { host: host.id, hostCode: host.code, batch: Math.max(1, Math.round(+p.forms || 4)) });
+  }
+  return out;
+}
 export const productLabel = (p) => (p ? `${p.code}${p.name ? " — " + p.name : ""}` : "— o'chirilgan —");
 export const productOptions = (products) => products.map((p) => [p.id, productLabel(p)]);
 export const materialOptions = (materials, filter = () => true) =>

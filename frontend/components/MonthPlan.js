@@ -4,9 +4,9 @@ import { api } from "@/lib/api";
 import { tr, useT } from "@/lib/i18n";
 import { useUser } from "@/lib/role";
 import { setUnsaved } from "@/lib/dirty";
-import { concreteVolume, fmt, fmtDate, fmtN, lsGet, lsSet, monthDays, productLabel, today } from "@/lib/calc";
+import { concreteVolume, fmt, fmtDate, fmtN, lidLinks, lsGet, lsSet, monthDays, productLabel, today } from "@/lib/calc";
 import {
-  applyProgramDays, emptyRow, exportMonthPlanXlsx, guessMonth, monthTitle, normalizePlan, parseBossExcel,
+  applyPastFacts, applyProgramDays, emptyRow, exportMonthPlanXlsx, guessMonth, monthTitle, normalizePlan, parseBossExcel,
   rowLeft, rowOrdered, rowTotal, rowsFromOrders, shiftMonth, spreadRow, sum,
 } from "@/lib/month-plan";
 import DeleteButton from "./DeleteButton";
@@ -27,6 +27,8 @@ export default function MonthPlan({ data, notify }) {
   const { canEdit } = useUser();
   const { products, prods, mats, settings } = data;
   const [month, setMonthRaw] = useState(() => lsGet("pto.mplanMonth", today().slice(0, 7)));
+  const [list, setList] = useState(null); // bazada saqlangan rejalar (oylar)
+  const picked = useRef(lsGet("pto.mplanMonth", null) !== null); // foydalanuvchi oyni o'zi tanlaganmi
   const [saved, setSaved] = useState(undefined); // undefined — yuklanmoqda, null — reja yo'q
   const [dayDocs, setDayDocs] = useState([]);
   const [draft, setDraft] = useState(null);
@@ -54,6 +56,7 @@ export default function MonthPlan({ data, notify }) {
     if (draft && !window.confirm(tr("Saqlanmagan o'zgarishlar bor. Ularni tashlab ketasizmi?"))) return;
     setDraft(null);
     setUnsaved(false);
+    picked.current = true;
     setMonthRaw(m);
     lsSet("pto.mplanMonth", m);
   };
@@ -73,6 +76,26 @@ export default function MonthPlan({ data, notify }) {
   useEffect(() => {
     load();
   }, [load]);
+  // saqlangan rejalar ro'yxati. Oy tanlanmagan bo'lsa va joriy oyga reja yo'q bo'lsa —
+  // eng yaqin saqlangan rejali oy ochiladi (Excel boshqa oyga, masalan o'tgan oyga saqlangan bo'lishi mumkin)
+  const loadList = useCallback(async () => {
+    try {
+      const l = await api("/month-plans");
+      setList(l);
+      if (!picked.current && l.length && !l.some((x) => x.month === month)) {
+        const cur = today().slice(0, 7);
+        const best = l.filter((x) => x.month <= cur).sort((a, b) => b.month.localeCompare(a.month))[0] || l[l.length - 1];
+        picked.current = true;
+        setMonthRaw(best.month);
+      }
+    } catch {
+      setList([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    loadList();
+  }, [loadList]);
   useEffect(() => () => setUnsaved(false), []);
   useEffect(() => {
     if (!draft) return;
@@ -131,7 +154,9 @@ export default function MonthPlan({ data, notify }) {
         setMonthRaw(targetMonth);
         lsSet("pto.mplanMonth", targetMonth);
       } else setSaved(normalizePlan(doc, month));
-      notify("Saqlandi");
+      notify(tr("{m} oyi uchun reja saqlandi — hamma foydalanuvchilarga ko'rinadi", { m: monthTitle(targetMonth) }));
+      picked.current = true;
+      loadList();
       return true;
     } catch (e) {
       notify(e.message);
@@ -145,6 +170,7 @@ export default function MonthPlan({ data, notify }) {
       await api(`/month-plans/${month}`, { method: "DELETE" });
       setSaved(null);
       notify("O'chirildi");
+      loadList();
     } catch (e) {
       notify(e.message);
     }
@@ -157,8 +183,10 @@ export default function MonthPlan({ data, notify }) {
     try {
       const p = await api("/plan?days=80");
       const withRows = fromOrders(base || { customers: [], extraCols: [], rows: [] });
-      const out = applyProgramDays(normalizePlan(withRows, month), p.days, month);
-      if (!out.cells) notify("Dastur taklifida bu oyga ish chiqmadi — faqat buyurtmalar qo'shildi");
+      const prog = applyProgramDays(normalizePlan(withRows, month), p.days, month);
+      // bugundan oldingi kunlar — kunlik hisobotdagi haqiqiy fakt
+      const out = applyPastFacts(prog, facts, todayIdx, products, mats);
+      if (!prog.cells && !out.pastCells) notify("Dastur taklifida bu oyga ish chiqmadi — faqat buyurtmalar qo'shildi");
       return out;
     } catch (e) {
       notify(e.message);
@@ -299,6 +327,8 @@ export default function MonthPlan({ data, notify }) {
         <div className="empty">{t("Yuklanmoqda…")}</div>
       ) : !plan ? (
         <EmptyStart
+          list={list}
+          onPick={setMonth}
           canEdit={canEdit}
           busy={busy}
           month={month}
@@ -374,6 +404,11 @@ export default function MonthPlan({ data, notify }) {
                   const r = await fromProgram(base);
                   if (r) change(() => ({ ...normalizePlan(r, month), source: draft.source, title: draft.title, fileName: draft.fileName }));
                 }}
+                onPast={todayIdx > 0 ? () => {
+                  const r = applyPastFacts(draft, facts, todayIdx, products, mats);
+                  change(() => ({ ...normalizePlan(r, month), source: draft.source, title: draft.title, fileName: draft.fileName }));
+                  notify(tr("O'tgan kunlar kunlik hisobotdan olindi ({n} ta yozuv)", { n: r.pastCells }));
+                } : null}
               />
             ) : (
               <div className="chips">
@@ -460,9 +495,28 @@ export default function MonthPlan({ data, notify }) {
 }
 
 /* ================= bo'sh oy: reja tuzish usullari ================= */
-function EmptyStart({ canEdit, busy, month, onExcel, onEmpty, onOrders, onProgram }) {
+function EmptyStart({ list, onPick, canEdit, busy, month, onExcel, onEmpty, onOrders, onProgram }) {
   const t = useT();
-  if (!canEdit) return <div className="empty">{t("{m} oyiga reja kiritilmagan.", { m: monthTitle(month) })}</div>;
+  const others = (list || []).filter((x) => x.month !== month);
+  const savedList = others.length > 0 && (
+    <div className="mp-saved">
+      <span className="muted">{t("Saqlangan rejalar:")}</span>
+      <div className="chips">
+        {others.map((x) => (
+          <button key={x.month} type="button" className="chip" onClick={() => onPick(x.month)}>
+            {monthTitle(x.month)} · {fmt(x.total)} {t("dona")}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+  if (!canEdit)
+    return (
+      <>
+        <div className="empty">{t("{m} oyiga reja kiritilmagan.", { m: monthTitle(month) })}</div>
+        {savedList}
+      </>
+    );
   const opts = [
     ["upload", "Excel'dan yuklash", "Tasdiqlangan reja Excel faylini tanlang — mahsulotlar katalog bilan avtomatik bog'lanadi, saqlashdan oldin ko'rib chiqasiz.", onExcel],
     ["grid", "Qo'lda tuzish", "Bo'sh jadval: mahsulot, buyurtmachi va kunlarni o'zingiz kiritasiz. Excel'dan nusxalab qo'yish ham mumkin.", onEmpty],
@@ -475,6 +529,7 @@ function EmptyStart({ canEdit, busy, month, onExcel, onEmpty, onOrders, onProgra
         <strong>{t("{m} oyiga reja hali yo'q", { m: monthTitle(month) })}</strong>
         <span className="muted">{t("Qanday boshlaymiz?")}</span>
       </div>
+      {savedList}
       <div className="mp-start-grid">
         {opts.map(([ic, title, text, fn]) => (
           <button key={title} type="button" className="mp-opt" onClick={fn} disabled={busy}>
@@ -491,7 +546,7 @@ function EmptyStart({ canEdit, busy, month, onExcel, onEmpty, onOrders, onProgra
 }
 
 /* ================= tahrirlash asboblari ================= */
-function EditTools({ busy, onOrders, onProgram }) {
+function EditTools({ busy, onOrders, onProgram, onPast }) {
   const t = useT();
   return (
     <div className="mp-edit-tools">
@@ -501,6 +556,11 @@ function EditTools({ busy, onOrders, onProgram }) {
       <button type="button" className="btn sm" onClick={onProgram} disabled={busy}>
         <Icon name="auto" size={14} /> {t("Kunlarni dastur taklifidan to'ldirish")}
       </button>
+      {onPast && (
+        <button type="button" className="btn sm" onClick={onPast} disabled={busy} title={t("Bugundan oldingi kunlarga kunlik hisobotdagi fakt yoziladi")}>
+          <Icon name="day" size={14} /> {t("O'tgan kunlarni hisobotdan olish")}
+        </button>
+      )}
     </div>
   );
 }
@@ -535,6 +595,8 @@ function Calendar({ plan, n, month, editing, showFact, range, factOf, isOff, tod
     if (!val) return;
     if (val.startsWith("r:")) {
       const ri = +val.slice(2);
+      const b = lids.get(plan.rows[ri]?.productId)?.batch;
+      if (b) setQty(i, ri, b);
       setOpen((s) => new Set(s).add(`${i}:${ri}`));
       return;
     }
@@ -542,7 +604,9 @@ function Calendar({ plan, n, month, editing, showFact, range, factOf, isOff, tod
     if (!p) return;
     const ri = plan.rows.length;
     change((d) => {
-      d.rows.push({ ...emptyRow(n), productId: p.id, name: autoName(p), orders: d.customers.map(() => 0), extra: d.extraCols.map(() => 0), m3: Math.round(concreteVolume(p, mats) * 1000) / 1000 });
+      const row = { ...emptyRow(n), productId: p.id, name: autoName(p), orders: d.customers.map(() => 0), extra: d.extraCols.map(() => 0), m3: Math.round(concreteVolume(p, mats) * 1000) / 1000 };
+      if (lids.get(p.id)) row.days[i] = lids.get(p.id).batch;
+      d.rows.push(row);
       return d;
     });
     setOpen((s) => new Set(s).add(`${i}:${ri}`));
@@ -553,6 +617,7 @@ function Calendar({ plan, n, month, editing, showFact, range, factOf, isOff, tod
       return d;
     });
   const inPlan = new Set(plan.rows.map((r) => r.productId).filter(Boolean));
+  const lids = useMemo(() => lidLinks(products), [products]);
 
   return (
     <>
@@ -588,11 +653,12 @@ function Calendar({ plan, n, month, editing, showFact, range, factOf, isOff, tod
                     {editing ? (
                       <>
                         <input
-                          className="mp-qty"
+                          className={`mp-qty${lids.get(r.productId) && q % lids.get(r.productId).batch ? " bad" : ""}`}
+                          title={lids.get(r.productId) ? t("Qopqoq: kuniga {n} ta yoki 0 («{h}» qolibida)", { n: lids.get(r.productId).batch, h: lids.get(r.productId).hostCode }) : undefined}
                           type="number"
                           inputMode="numeric"
                           min="0"
-                          step="1"
+                          step={lids.get(r.productId)?.batch || 1}
                           value={q || ""}
                           placeholder="0"
                           onChange={(e) => setQty(d.i, ri, Math.max(0, +e.target.value || 0))}
@@ -681,6 +747,7 @@ function Calendar({ plan, n, month, editing, showFact, range, factOf, isOff, tod
 /* ================= mahsulotlar bo'yicha jami (yig'iladigan) ================= */
 function Summary({ plan, editing, showFact, factOf, products, prods, mats, change, n, todayIdx, isOff, month }) {
   const t = useT();
+  const lids = useMemo(() => lidLinks(products), [products]);
   if (!plan.rows.length) return null;
   const workFrom = Array.from({ length: n }, (_, i) => i).filter((i) => i >= Math.max(0, Math.min(todayIdx, n)) && !isOff(dateOf(month, i)));
   return (
@@ -769,7 +836,7 @@ function Summary({ plan, editing, showFact, factOf, products, prods, mats, chang
                   {editing && (
                     <td>
                       <div className="acts">
-                        <button type="button" className="btn sm" title={t("Qoldiqni bugundan oy oxirigacha ish kunlariga teng taqsimlash")} onClick={() => change((d) => ((d.rows[ri] = spreadRow(d.rows[ri], workFrom)), d))}>
+                        <button type="button" className="btn sm" title={t("Qoldiqni bugundan oy oxirigacha ish kunlariga teng taqsimlash")} onClick={() => change((d) => ((d.rows[ri] = spreadRow(d.rows[ri], workFrom, lids.get(d.rows[ri].productId)?.batch || 0)), d))}>
                           <Icon name="spread" size={14} /> {t("Taqsimlash")}
                         </button>
                         <button type="button" className="btn sm danger" title={t("Mahsulotni rejadan o'chirish")} onClick={() => window.confirm(tr("Bu mahsulot butun oy rejasidan o'chiriladi. Davom etamizmi?")) && change((d) => (d.rows.splice(ri, 1), d))}>

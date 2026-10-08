@@ -1,0 +1,123 @@
+[
+  {
+    "name": "password-and-token",
+    "outcome": "passed"
+  },
+  {
+    "name": "stock-basic-arithmetic",
+    "outcome": "passed"
+  },
+  {
+    "name": "invalid-calendar-values",
+    "outcome": "defect-reproduced",
+    "accepted": [
+      "2026-99-99",
+      "2026-99"
+    ]
+  },
+  {
+    "name": "concurrent-material-outflows",
+    "outcome": "defect-reproduced-with-in-memory-db-stubs",
+    "initial": 10,
+    "accepted": [
+      7,
+      7
+    ],
+    "remaining": -4
+  },
+  {
+    "name": "backdated-outflow",
+    "outcome": "defect-reproduced-with-in-memory-db-stubs",
+    "balanceAtDate": -7
+  },
+  {
+    "name": "inventory-approval-audit",
+    "outcome": "defect-reproduced",
+    "auditEntries": 0
+  },
+  {
+    "name": "inventory-double-approval",
+    "outcome": "defect-reproduced-with-in-memory-db-stubs",
+    "adjustments": [
+      2,
+      2
+    ],
+    "finalBalance": 6,
+    "actual": 8,
+    "mongooseUpdates": [
+      {
+        "filter": {
+          "_id": "333333333333333333333333",
+          "__v": 0
+        },
+        "update": {
+          "$set": {
+            "lines.0.system": 10,
+            "status": "done",
+            "approvedBy": {
+              "id": "444444444444444444444444",
+              "username": "offline-review",
+              "name": "offline-review",
+              "at": "2026-10-08T06:26:40.455Z"
+            },
+            "updatedAt": "2026-10-08T06:26:40.465Z",
+            "group": "",
+            "blind": false,
+            "note": ""
+          }
+        }
+      },
+      {
+        "filter": {
+          "_id": "333333333333333333333333",
+          "__v": 0
+        },
+        "update": {
+          "$set": {
+            "lines.0.system": 10,
+            "status": "done",
+            "approvedBy": {
+              "id": "444444444444444444444444",
+              "username": "offline-review",
+              "name": "offline-review",
+              "at": "2026-10-08T06:26:40.458Z"
+            },
+            "updatedAt": "2026-10-08T06:26:40.466Z",
+            "group": "",
+            "blind": false,
+            "note": ""
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "excel-writeoff-mismatch",
+    "outcome": "defect-reproduced",
+    "actualStock": 8,
+    "exportedStock": 10
+  },
+  {
+    "name": "daily-shipment-without-stock-validation",
+    "outcome": "defect-reproduced-with-in-memory-db-stubs",
+    "acceptedShipment": 50
+  },
+  {
+    "name": "daily-stale-editor-overwrite",
+    "outcome": "defect-reproduced-with-in-memory-db-stubs",
+    "firstSavedFact": 20,
+    "overwrittenFact": 10
+  },
+  {
+    "name": "ready-order-stock-reused",
+    "outcome": "defect-reproduced",
+    "readyUnshipped": 10,
+    "totalStock": 10,
+    "anotherOrderAllocated": 10,
+    "anotherOrderToProduce": 0
+  },
+  {
+    "name": "planner-capacity-and-quantity-20-cases",
+    "outcome": "passed"
+  }
+]

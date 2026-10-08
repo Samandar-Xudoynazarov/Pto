@@ -823,3 +823,5 @@ select.need{border-color:var(--signal);background:var(--signal-soft)}
   .plan-switch,.mp-acts,.mp-tools{display:none}
 }
 .mp .mp-eday .plan-item .code{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.mp-saved{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;font-size:13px}
+.mp-qty.bad{border-color:var(--bad);background:var(--bad-soft)}

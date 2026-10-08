@@ -22,6 +22,27 @@ const ACTIVE = (o) => o.status !== "tayyor" && o.status !== "topshirildi";
 const HORIZON = 730; // kalendar kun — undan uzoqqa rejalashtirilmaydi
 const RISK_SLACK = 1; // muddatdan oldin shuncha ish kunidan kam zaxira qolsa — «xavf»
 
+/**
+ * Lotok qopqoqlari («д»li marka, masalan «Л 5д-15»): asosiy lotok («Л 5-15») qolibiga 4 bo'lakka bo'lib quyiladi.
+ * Bir kunda yo bitta to'liq partiya (qopqoqning «qoliplar soni», odatda 4 dona), yo umuman yo'q;
+ * o'sha kuni asosiy lotokning bitta qolibi band bo'ladi.
+ * Qaytaradi: Map(qopqoq id → { host: asosiy mahsulot id, batch })
+ */
+const normCode = (s) => String(s || "").toLowerCase().replace(/ё/g, "е").replace(/,/g, ".").replace(/\s+/g, "");
+export const LID_RE = /^(.*\d)д(-.+)$/i;
+export function lidLinks(products) {
+  const byCode = new Map(products.map((p) => [normCode(p.code), p]));
+  const out = new Map();
+  for (const p of products) {
+    const m = normCode(p.code).match(/^(.*\d)д(-.+)$/);
+    if (!m) continue;
+    const host = byCode.get(m[1] + m[2]);
+    if (!host || String(host.id) === String(p.id) || !(+host.forms > 0)) continue;
+    out.set(String(p.id), { host: String(host.id), batch: Math.max(1, Math.round(+p.forms || 4)) });
+  }
+  return out;
+}
+
 export function planConfig(p) {
   const days = Array.isArray(p?.workDays) ? [...new Set(p.workDays.map(Number).filter((d) => d >= 0 && d <= 6))] : null;
   return {
@@ -60,8 +81,17 @@ export function planOrders({ today, orders = [], products = [], stock = {}, hist
 
   // mahsulot bo'yicha kunlik quvvat
   const capacity = {};
+  const lids = lidLinks(products);
   for (const p of products) {
     const id = String(p.id);
+    const lid = lids.get(id);
+    if (lid) {
+      const host = prod.get(lid.host);
+      const hc = Math.max(0.1, +host.cycleDays || 1);
+      // asosiy qolibning bitta o'rni har aylanishda bir partiya beradi
+      capacity[id] = { perDay: lid.batch / hc, basis: "qopqoq", host: lid.host, hostCode: host.code, batch: lid.batch, cycleDays: hc };
+      continue;
+    }
     const forms = +p.forms || 0;
     const cycle = Math.max(0.1, +p.cycleDays || 1);
     if (forms > 0) capacity[id] = { perDay: forms / cycle, basis: "qolip", forms, cycleDays: cycle };
@@ -112,6 +142,7 @@ export function planOrders({ today, orders = [], products = [], stock = {}, hist
     }
     return need;
   };
+  const lidLast = {}; // qopqoq: oxirgi partiya quyilgan ish kuni raqami
   const acc = {}; // qolip quvvatining kasr qismi (masalan 2,5 dona/kun → 2, 3, 2, 3…)
   const days = [];
   let pending = rows.filter((r) => r.left > 0 && capacity[r.o.productId]?.perDay > 0).length;
@@ -119,22 +150,42 @@ export function planOrders({ today, orders = [], products = [], stock = {}, hist
     if (!isWorkDay(date, cfg)) continue;
     const cap = {};
     let concrete = cfg.concretePerDay > 0 ? cfg.concretePerDay : Infinity;
+    const lidDone = {}; // shu kuni partiyasi quyilgan qopqoqlar
+    const lidSpare = {}; // partiyadan ortib qolgan dona (keyingi buyurtmaga)
     for (const [id, c] of Object.entries(capacity)) {
-      if (!(c.perDay > 0)) continue;
+      if (!(c.perDay > 0) || c.basis === "qopqoq") continue;
       acc[id] = (acc[id] || 0) + c.perDay;
       cap[id] = Math.floor(acc[id] + 1e-9);
       acc[id] -= cap[id];
       if (date === today) cap[id] = Math.max(0, cap[id] - (+todayFact[id] || 0));
     }
+    // bugun qopqoq allaqachon quyilgan bo'lsa — bugungi partiya bo'ldi (qolib ham band)
+    if (date === today)
+      for (const [id, q] of Object.entries(todayFact))
+        if (lids.has(id) && +q > 0) {
+          lidDone[id] = true;
+          const h = lids.get(id).host;
+          cap[h] = Math.max(0, (cap[h] || 0) - 1);
+        }
+    // asosiy qolib aylanishi 1 kundan uzun bo'lsa — qopqoq partiyalari orasida shuncha ish kuni
+    const lidCycleOk = (id) => {
+      const k = Math.max(1, Math.round(capacity[id].cycleDays || 1));
+      const n = wdIdx.get(date);
+      if (lidLast[id] !== undefined && n - lidLast[id] < k) return false;
+      lidLast[id] = n;
+      return true;
+    };
     if (date === today && concrete !== Infinity) {
       for (const [id, q] of Object.entries(todayFact)) concrete -= (+prod.get(id)?.volume || 0) * (+q || 0);
       concrete = Math.max(0, concrete);
     }
     const made = new Map();
+    const batchMade = new Map(); // qopqoq: partiya bo'yicha haqiqatda quyiladigan dona
     let used = 0;
     const give = (r, want, note) => {
       const pid = r.o.productId;
       const vol = +prod.get(pid)?.volume || 0;
+      if (capacity[pid]?.basis === "qopqoq") return giveLid(r, want, note, pid, vol);
       const byConcrete = vol > 0 && concrete !== Infinity ? Math.floor(concrete / vol + 1e-9) : Infinity;
       const take = Math.max(0, Math.min(want, r.left, cap[pid] || 0, byConcrete));
       if (note && take < r.left) r.limit[byConcrete < (cap[pid] || 0) ? "beton" : "qolip"]++;
@@ -150,9 +201,40 @@ export function planOrders({ today, orders = [], products = [], stock = {}, hist
         pending--;
       }
     };
+    // qopqoq: avval shu kungi partiyadan qolgani, bo'lmasa — yangi partiya (asosiy qolibdan bitta o'rin, butun partiya betoni)
+    function giveLid(r, want, note, pid, vol) {
+      const c = capacity[pid];
+      let take = Math.min(want, r.left, lidSpare[pid] || 0);
+      if (take <= 0 && !lidDone[pid]) {
+        const byConcrete = vol > 0 && concrete !== Infinity ? concrete >= c.batch * vol - 1e-9 : true;
+        if ((cap[c.host] || 0) >= 1 && byConcrete && lidCycleOk(pid)) {
+          lidDone[pid] = true;
+          cap[c.host] -= 1;
+          if (concrete !== Infinity) concrete -= c.batch * vol;
+          used += c.batch * vol;
+          batchMade.set(pid, (batchMade.get(pid) || 0) + c.batch);
+          lidSpare[pid] = c.batch;
+          take = Math.min(want, r.left, c.batch);
+        } else if (note) r.limit[(cap[c.host] || 0) >= 1 ? "beton" : "qolip"]++;
+      }
+      if (take <= 0) return;
+      lidSpare[pid] -= take;
+      r.left -= take;
+      r.first ||= date;
+      made.set(r, (made.get(r) || 0) + take);
+      if (r.left <= 0) {
+        r.finish = date;
+        pending--;
+      }
+    }
     for (const [r, q] of minimums(date)) if (q > 0) give(r, q, false);
     for (const r of rows) if (r.left > 0) give(r, r.left, true);
     const items = [...made].map(([r, qty]) => ({ orderId: r.o.orderId || r.o.id, lineId: r.o.id, no: r.o.no, productId: r.o.productId, qty, extra: r.o.extra }));
+    // partiyadan ortgan qopqoqlar ham quyiladi (omborga) — kunlik taklifda alohida qator
+    for (const [pid, q] of batchMade) {
+      const spare = q - items.filter((it) => it.productId === pid).reduce((a, it) => a + it.qty, 0);
+      if (spare > 0) items.push({ orderId: null, lineId: null, no: null, productId: pid, qty: spare, spare: true });
+    }
     if (days.length < showDays) days.push({ date, items, concrete: Math.round(used * 1000) / 1000 });
   }
 
@@ -197,6 +279,7 @@ export function planOrders({ today, orders = [], products = [], stock = {}, hist
       needPerDay: deadline && daysLeft > 0 && toProduce > 0 ? Math.ceil(toProduce / daysLeft) : null,
       perDay: Math.round(c.perDay * 100) / 100,
       basis: c.basis,
+      lid: c.basis === "qopqoq" ? { hostCode: c.hostCode, batch: c.batch } : null,
       status,
       lateDays,
       slack,

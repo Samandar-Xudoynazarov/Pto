@@ -3,7 +3,7 @@ import { tr } from "@/lib/i18n";
 import { useState } from "react";
 import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
-import { concreteVolume, fmtN } from "@/lib/calc";
+import { concreteVolume, fmtN, lidLinks } from "@/lib/calc";
 import DeleteButton from "./DeleteButton";
 
 export default function CatalogTab({ data, notify, reload, onEdit }) {
@@ -12,6 +12,7 @@ export default function CatalogTab({ data, notify, reload, onEdit }) {
   const [group, setGroup] = useState("all");
   const [q, setQ] = useState("");
   const groups = [...new Set(products.map((p) => p.group).filter(Boolean))];
+  const lids = lidLinks(products);
 
   const list = products.filter(
     (p) => (group === "all" || p.group === group) && (!q || `${p.code} ${p.name}`.toLowerCase().includes(q.toLowerCase()))
@@ -80,7 +81,18 @@ export default function CatalogTab({ data, notify, reload, onEdit }) {
                   <td className="n">{v ? fmtN(v, 3) : "—"}</td>
                   <td className="n">{metal ? fmtN(metal, 1) : "—"}</td>
                   <td className="n">{v ? fmtN(v * 2.5 + metal / 1000, 2) : "—"}</td>
-                  <td className="n">{p.forms > 0 ? fmtN(p.forms / (p.cycleDays || 1), 2) : "—"}</td>
+                  <td className="n">
+                    {lids.has(p.id) ? (
+                      <>
+                        {tr("{n} / quyish", { n: lids.get(p.id).batch })}
+                        <span className="sub">{tr("{h} qolibida", { h: lids.get(p.id).hostCode })}</span>
+                      </>
+                    ) : p.forms > 0 ? (
+                      fmtN(p.forms / (p.cycleDays || 1), 2)
+                    ) : (
+                      "—"
+                    )}
+                  </td>
                   <td>
                     {canEdit && (
                       <div className="acts">
