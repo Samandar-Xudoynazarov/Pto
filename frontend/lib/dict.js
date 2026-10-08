@@ -1379,6 +1379,11 @@ export const DICT = {
     "Shu kungi jo'natish bo'yicha yuk xati (PDF)": "Накладная по отгрузке за этот день (PDF)",
     "tanlang yoki yozing": "выберите или введите",
     "Bu kunda jo'natish yozilmagan. «Договор №» dan shartnomani tanlang — mahsulotlar shu buyurtmadan qo'yiladi, yoki qatorlarni o'zingiz yozing.": "За этот день отгрузка не записана. Выберите договор в поле «Договор №» — изделия подставятся из этого заказа, или заполните строки вручную.",
+    "«{c}» shartnomasidagi mahsulotlar": "Изделия по договору «{c}»",
+    "Katalogdagi mahsulotlar": "Изделия из каталога",
+    "Summa ustunini PDF'ga chiqarish": "Выводить столбец «Сумма» в PDF",
+    "Bu kunda jo'natish yozilmagan. «Договор №» ni tanlang, keyin «Наименование» katagini bosing — shu shartnomadagi mahsulot kodlari chiqadi. Soni, summa va ob'ektni o'zingiz yozasiz.": "За этот день отгрузка не записана. Выберите «Договор №», затем нажмите на ячейку «Наименование» — появятся коды изделий этого договора. Количество, сумму и объект вводите сами.",
+    "Topilmadi": "Не найдено",
   },
 
   ruPatterns: [

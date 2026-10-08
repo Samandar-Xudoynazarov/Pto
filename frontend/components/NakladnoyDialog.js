@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@/lib/i18n";
-import { costCard, fmtDate, lsGet, lsSet } from "@/lib/calc";
+import { fmtDate, lsGet, lsSet } from "@/lib/calc";
 import { buildPlanPdf, deliverPdf } from "@/lib/plan-pdf";
 import { cyr, money, nakladnoyDefinition, nextNo } from "@/lib/nakladnoy-pdf";
 import Icon from "./Icon";
@@ -38,18 +38,9 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
   const [busy, setBusy] = useState(false);
   const [sigOpen, setSigOpen] = useState(false);
 
-  // narx: buyurtmadagi (shartnoma) narx, bo'lmasa kalkulyatsiyadagi QQS bilan narx
-  const priceOf = (order, productId) => {
-    const it = order?.items?.find((x) => x.productId === productId);
-    if (it?.price > 0) return it.price;
-    const p = prods.get(productId);
-    return p ? costCard(p, mats).final : 0;
-  };
-  // накладнаяda mahsulot faqat markasi (kodi) bilan
-  const line = (productId, qty, order) => {
-    const price = priceOf(order, productId);
-    return { productId, name: prods.get(productId)?.code || "", unit: "шт", qty: String(num(qty)), price, sum: price ? money(price * num(qty)) : "" };
-  };
+  // накладнаяda mahsulot faqat markasi (kodi) bilan; summa — qo'lda
+  const line = (productId, qty) => ({ productId, name: prods.get(productId)?.code || "", unit: "шт", qty: String(num(qty)), sum: "" });
+  const blank = () => ({ productId: "", name: "", unit: "шт", qty: "", sum: "" });
   // shartnomali buyurtmalar (faollari birinchi) — «Договор №» ro'yxati
   const contracts = useMemo(
     () =>
@@ -62,8 +53,8 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
   // tanlangan guruhdan shaklni to'ldirish
   useEffect(() => {
     const g = groups.find((x) => x.key === gk);
-    const items = (g?.lines || []).map((l) => line(l.productId, l.qty, l.order));
-    const receiver = [g?.customer, g?.order?.customer].filter(Boolean).filter((x, i, a) => a.findIndex((y) => y.toLowerCase() === x.toLowerCase()) === i).join(", ");
+    const items = (g?.lines || []).map((l) => line(l.productId, l.qty));
+    const receiver = g?.customer || ""; // ob'ekt nomi — jo'natishdagi «Qayerga» (qo'lda o'zgartiriladi)
     setF({
       num: nextNo(saved.lastNo, date),
       sender: saved.sender || '"ЭКМ" МЧЖ',
@@ -72,7 +63,7 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
       contract: g?.order?.contractNo || "",
       orderId: g?.order?.id || "",
       place: g?.customer || "",
-      items: items.length ? items : [{ name: "", unit: "шт", qty: "", sum: "" }],
+      items: items.length ? items : [blank(), blank(), blank()],
       sentBy: saved.sentBy || "",
       driver: (saved.drivers || {})[(g?.vehicle || "").replace(/\s+/g, "").toUpperCase()] || "",
       receivedBy: "",
@@ -81,7 +72,7 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
       showSum: saved.showSum !== false,
       signature: saved.signature || "",
     });
-  }, [gk, groups, date, prods, mats, saved]);
+  }, [gk, groups, date, prods, saved]);
 
   // shakl to'lgandan keyin (birinchi renderda dialog hali yo'q) ochiladi
   useEffect(() => {
@@ -91,22 +82,20 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
 
   if (!f) return null;
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
-  // «Договор №» tanlansa — shu shartnomadagi buyurtmadan: qabul qiluvchi va narxlar;
-  // jo'natishda mahsulot bo'lmasa — buyurtmaning qolgan (jo'natilmagan) mahsulotlari
+  // «Договор №» tanlansa — faqat shartnoma eslab qolinadi: «Наименование» katagida shu shartnomadagi
+  // mahsulot kodlari taklif qilinadi. Soni, summa va ob'ekt — qo'lda
   const onContract = (e) => {
     const v = e.target.value;
     const o = contracts.find((x) => x.contractNo.trim().toLowerCase() === v.trim().toLowerCase());
-    if (!o) return setF((x) => ({ ...x, contract: v }));
-    setF((x) => {
-      const has = x.items.some((it) => it.productId && num(it.qty) > 0);
-      const items = has
-        ? x.items.map((it) => (it.productId ? line(it.productId, it.qty, o) : it))
-        : o.items.filter((it) => it.left > 0).map((it) => line(it.productId, it.left, o));
-      const receiver = [x.place, o.customer].filter(Boolean).filter((a, i, arr) => arr.findIndex((b) => b.toLowerCase() === a.toLowerCase()) === i).join(", ");
-      return { ...x, contract: o.contractNo, orderId: o.id, receiver, items: items.length ? items : x.items };
-    });
+    setF((x) => ({ ...x, contract: v, orderId: o?.id || "" }));
   };
-  const setItem = (i, k, v) => setF((x) => ({ ...x, items: x.items.map((it, j) => (j === i ? { ...it, [k]: v, ...(k === "qty" && it.price ? { sum: money(it.price * num(v)) } : {}) } : it)) }));
+  const order = orders.find((o) => o.id === f.orderId);
+  const codes = (order ? order.items.map((it) => prods.get(it.productId)).filter(Boolean) : [...prods.values()]).map((p) => ({
+    id: p.id,
+    code: p.code,
+    left: order?.items.find((it) => it.productId === p.id)?.left,
+  }));
+  const setItem = (i, k, v) => setF((x) => ({ ...x, items: x.items.map((it, j) => (j === i ? { ...it, [k]: v } : it)) }));
   const totalQty = f.items.reduce((s, it) => s + num(it.qty), 0);
   const total = f.items.reduce((s, it) => s + num(it.sum), 0);
 
@@ -137,7 +126,7 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
           <span className="muted">{t("{d} kungi jo'natish", { d: fmtDate(date) })}</span>
         </div>
 
-        {!groups.length && <p className="notice">{t("Bu kunda jo'natish yozilmagan. «Договор №» dan shartnomani tanlang — mahsulotlar shu buyurtmadan qo'yiladi, yoki qatorlarni o'zingiz yozing.")}</p>}
+        {!groups.length && <p className="notice">{t("Bu kunda jo'natish yozilmagan. «Договор №» ni tanlang, keyin «Наименование» katagini bosing — shu shartnomadagi mahsulot kodlari chiqadi. Soni, summa va ob'ektni o'zingiz yozasiz.")}</p>}
         {groups.length > 1 && (
           <div className="field">
             <span className="lbl">{t("Qaysi jo'natish (mashina)")}</span>
@@ -198,7 +187,12 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
                 <tr key={i}>
                   <td className="num muted">{i + 1}</td>
                   <td className="wide">
-                    <input value={it.name} onChange={(e) => setItem(i, "name", e.target.value)} aria-label={t("Наименование")} />
+                    <CodePicker
+                      value={it.name}
+                      codes={codes}
+                      hint={order ? t("«{c}» shartnomasidagi mahsulotlar", { c: order.contractNo }) : t("Katalogdagi mahsulotlar")}
+                      onChange={(v, id) => setF((x) => ({ ...x, items: x.items.map((r, j) => (j === i ? { ...r, name: v, productId: id ?? "" } : r)) }))}
+                    />
                   </td>
                   <td>
                     <input value={it.unit} onChange={(e) => setItem(i, "unit", e.target.value)} aria-label={t("Ед.изм")} style={{ width: 64 }} />
@@ -221,7 +215,7 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
               <tr>
                 <td />
                 <td>
-                  <button type="button" className="btn sm" onClick={() => setF((x) => ({ ...x, items: [...x.items, { name: "", unit: "шт", qty: "", sum: "" }] }))}>
+                  <button type="button" className="btn sm" onClick={() => setF((x) => ({ ...x, items: [...x.items, blank()] }))}>
                     <Icon name="plus" size={14} /> {t("Qator")}
                   </button>
                 </td>
@@ -235,7 +229,7 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
         </div>
         <label className="check">
           <input type="checkbox" checked={f.showSum} onChange={(e) => setF((x) => ({ ...x, showSum: e.target.checked }))} />
-          {t("Summani yozish (buyurtmadagi narx, bo'lmasa kalkulyatsiyadagi QQS bilan narx)")}
+          {t("Summa ustunini PDF'ga chiqarish")}
         </label>
 
         <div className="form-grid nk-grid">
@@ -304,6 +298,63 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
         />
       )}
     </dialog>
+  );
+}
+
+/** Mahsulot kodi: katakni bosganda ro'yxat (shartnomadagi yoki katalogdagi kodlar), yozib qidirish ham mumkin */
+function CodePicker({ value, codes, hint, onChange }) {
+  const t = useT();
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const box = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => !box.current?.contains(e.target) && setOpen(false);
+    document.addEventListener("pointerdown", close);
+    return () => document.removeEventListener("pointerdown", close);
+  }, [open]);
+  const norm = (s) => String(s || "").toLowerCase().replace(/\s+/g, "");
+  const list = codes.filter((c) => !q || norm(c.code).includes(norm(q)));
+  return (
+    <div className="nk-pick" ref={box}>
+      <input
+        value={value}
+        onFocus={() => {
+          setQ("");
+          setOpen(true);
+        }}
+        onClick={() => setOpen(true)}
+        onChange={(e) => {
+          setQ(e.target.value);
+          setOpen(true);
+          onChange(e.target.value, null);
+        }}
+        onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
+        aria-label={t("Наименование")}
+        autoComplete="off"
+      />
+      {open && (
+        <div className="nk-pick-list" role="listbox">
+          <div className="nk-pick-h">{hint}</div>
+          {list.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              role="option"
+              aria-selected={c.code === value}
+              onClick={() => {
+                onChange(c.code, c.id);
+                setOpen(false);
+              }}
+            >
+              <span className="code">{c.code}</span>
+              {c.left != null && <span className="muted">{t("qoldi {n}", { n: c.left })}</span>}
+            </button>
+          ))}
+          {!list.length && <div className="nk-pick-h">{t("Topilmadi")}</div>}
+        </div>
+      )}
+    </div>
   );
 }
 

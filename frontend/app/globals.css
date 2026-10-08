@@ -844,3 +844,10 @@ select.need{border-color:var(--signal);background:var(--signal-soft)}
 .nk-pad canvas{height:220px;background:#fff;border-radius:12px;touch-action:none;display:block}
 .nk-pad .dlg-actions{position:static;background:transparent;margin:10px 0 0}
 @media (max-width:640px){.nk-grid{grid-template-columns:1fr}.nk-grid .span2{grid-column:auto}}
+.nk-pick{position:relative}
+.nk-pick input{width:100%}
+.nk-pick-list{position:absolute;z-index:5;left:0;right:0;top:calc(100% + 4px);max-height:240px;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-sm);box-shadow:var(--shadow-lg);padding:4px}
+.nk-pick-list button{display:flex;justify-content:space-between;gap:10px;width:100%;padding:7px 10px;border:0;background:none;border-radius:6px;cursor:pointer;font:inherit;text-align:left;color:var(--ink)}
+.nk-pick-list button:hover,.nk-pick-list button[aria-selected="true"]{background:var(--accent-soft)}
+.nk-pick-h{font-size:11.5px;color:var(--ink-3);padding:4px 10px}
+.nk-items .tbl-wrap,.nk-dlg .tbl-wrap{overflow:visible}
