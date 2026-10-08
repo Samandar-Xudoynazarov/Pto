@@ -42,6 +42,9 @@ const tableLayout = {
 /**
  * plan — /api/plan javobi (filtrlangan ko'rinish), days — nechta ish kuni
  * ctx: { company, scope, prods (Map), mats (Map), limit, concreteIsTotal, signers }
+ *  ixtiyoriy (tasdiqlangan oylik reja uchun): title, headerRight, kpis: [[nom, qiymat, rang, fon]],
+ *  subOf(qator) → { text, color } — mahsulot tagidagi satr, legend, extraContent (prognoz jadvali o'rniga)
+ *  kun qatorlarida: key (guruhlash), label (marka o'rniga), fact
  */
 export function planPdfDefinition(plan, ctx, { days: maxDays = 12 } = {}) {
   const { prods, mats } = ctx;
@@ -64,7 +67,7 @@ export function planPdfDefinition(plan, ctx, { days: maxDays = 12 } = {}) {
   });
 
   const content = [
-    { text: tr("Kunlik ishlab chiqarish rejasi"), fontSize: 17, bold: true, color: C.head },
+    { text: ctx.title || tr("Kunlik ishlab chiqarish rejasi"), fontSize: 17, bold: true, color: C.head },
     {
       text: [
         days.length ? `${fmtDate(days[0].date)} — ${fmtDate(days[days.length - 1].date)}` : tr("Ishlab chiqarish kerak bo'lgan buyurtma yo'q."),
@@ -75,12 +78,14 @@ export function planPdfDefinition(plan, ctx, { days: maxDays = 12 } = {}) {
       margin: [0, 3, 0, 10],
     },
     {
-      columns: [
-        kpi(ctx.filtered ? "Tanlangan buyurtmalar" : "Faol buyurtmalar", worst.size, C.head, C.soft),
-        kpi("Muddatida tugaydi", cnt[0], C.ok, C.okBg),
-        kpi("Xavfli", cnt[1], C.warn, C.warnBg),
-        kpi("Kechikadi", cnt[2], C.bad, C.badBg),
-      ],
+      columns: ctx.kpis
+        ? ctx.kpis.map(([l, v, c, f]) => kpi(l, v, c, f))
+        : [
+            kpi(ctx.filtered ? "Tanlangan buyurtmalar" : "Faol buyurtmalar", worst.size, C.head, C.soft),
+            kpi("Muddatida tugaydi", cnt[0], C.ok, C.okBg),
+            kpi("Xavfli", cnt[1], C.warn, C.warnBg),
+            kpi("Kechikadi", cnt[2], C.bad, C.badBg),
+          ],
       columnGap: 8,
       margin: [0, 0, 0, 10],
     },
@@ -114,15 +119,16 @@ export function planPdfDefinition(plan, ctx, { days: maxDays = 12 } = {}) {
     }
     const byProd = new Map();
     for (const it of d.items) {
-      const a = byProd.get(it.productId) || { productId: it.productId, qty: 0, nos: [] };
+      const k = it.key ?? it.productId;
+      const a = byProd.get(k) || { productId: it.productId, label: it.label, fact: it.fact, today: it.today, qty: 0, nos: [] };
       a.qty += it.qty;
       if (it.no && !a.nos.includes(it.no)) a.nos.push(it.no);
       if (it.spare) a.spare = (a.spare || 0) + it.qty;
-      byProd.set(it.productId, a);
+      byProd.set(k, a);
     }
     const rows = [...byProd.values()];
     const totalQty = rows.reduce((t, r) => t + r.qty, 0);
-    const totalVol = rows.reduce((t, r) => t + r.qty * vol(r.productId), 0);
+    const totalVol = rows.reduce((t, r) => t + r.qty * (r.productId ? vol(r.productId) : 0), 0);
     const concrete = ctx.concreteIsTotal ? d.concrete : totalVol;
     const over = ctx.limit && concrete > ctx.limit + 1e-9;
     return {
@@ -133,11 +139,13 @@ export function planPdfDefinition(plan, ctx, { days: maxDays = 12 } = {}) {
           stack: [
             {
               columns: [
-                { text: code(r.productId), fontSize: 8.5, bold: true, width: "*" },
+                { text: r.label || code(r.productId), fontSize: 8.5, bold: true, width: "*" },
                 { text: fmt(r.qty), fontSize: 9.5, bold: true, alignment: "right", width: "auto", color: C.head },
               ],
             },
-            { text: [r.nos.map((n) => `№${n}`).join(", "), r.spare ? tr("{n} omborga", { n: r.spare }) : ""].filter(Boolean).join(" + "), fontSize: 6.5, color: C.muted },
+            ctx.subOf
+              ? { text: ctx.subOf(r)?.text || "", fontSize: 6.5, bold: !!ctx.subOf(r)?.color, color: ctx.subOf(r)?.color || C.muted }
+              : { text: [r.nos.map((n) => `№${n}`).join(", "), r.spare ? tr("{n} omborga", { n: r.spare }) : ""].filter(Boolean).join(" + "), fontSize: 6.5, color: C.muted },
           ],
         })),
         {
@@ -177,13 +185,14 @@ export function planPdfDefinition(plan, ctx, { days: maxDays = 12 } = {}) {
       },
     });
     content.push({
-      text: tr("Har katakda: mahsulot va soni (dona), tagida — qaysi buyurtmalar uchun. Pastki satr — kun bo'yicha jami va beton hajmi (qizil — kunlik beton cheklovidan oshgan)."),
+      text: ctx.legend || tr("Har katakda: mahsulot va soni (dona), tagida — qaysi buyurtmalar uchun. Pastki satr — kun bo'yicha jami va beton hajmi (qizil — kunlik beton cheklovidan oshgan)."),
       fontSize: 7.5, color: C.muted, margin: [0, 6, 0, 0],
     });
   }
 
-  // 2) buyurtmalar bo'yicha prognoz
-  if ((plan.orders || []).length) {
+  // 2) buyurtmalar bo'yicha prognoz (yoki chaqiruvchining o'z jadvali)
+  if (ctx.extraContent) content.push(...ctx.extraContent({ C, cell, head, tableLayout, pageBreak: days.length ? "before" : undefined }));
+  else if ((plan.orders || []).length) {
     content.push({ text: tr("Buyurtmalar bo'yicha prognoz"), fontSize: 13, bold: true, color: C.head, margin: [0, 8, 0, 6], pageBreak: days.length ? "before" : undefined });
     content.push({
       table: {
@@ -226,13 +235,13 @@ export function planPdfDefinition(plan, ctx, { days: maxDays = 12 } = {}) {
     pageSize: "A4",
     pageOrientation: "landscape",
     pageMargins: [28, 42, 28, 36],
-    info: { title: tr("Kunlik ishlab chiqarish rejasi"), creator: "ПТО" },
+    info: { title: ctx.title || tr("Kunlik ishlab chiqarish rejasi"), creator: "ПТО" },
     defaultStyle: { font: "Roboto", fontSize: 9, color: C.ink, lineHeight: 1.15 },
     header: () => ({
       margin: [28, 16, 28, 0],
       columns: [
         { text: ctx.company || "", fontSize: 8.5, bold: true, color: C.ink2 },
-        { text: tr("Buyurtmalar rejasi"), fontSize: 8.5, color: C.muted, alignment: "right" },
+        { text: ctx.headerRight || tr("Buyurtmalar rejasi"), fontSize: 8.5, color: C.muted, alignment: "right" },
       ],
     }),
     footer: (page, pages) => ({

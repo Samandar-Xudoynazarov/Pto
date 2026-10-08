@@ -1357,6 +1357,9 @@ export const DICT = {
     "{n} / quyish": "{n} / заливка",
     "{h} qolibida": "в форме {h}",
     "Lotok qopqog'i: «{h}» qolibiga bo'lib quyiladi — kuniga yo {n} ta, yo umuman yo'q; o'sha kuni «{h}»ning bitta qolibi band bo'ladi. «Qoliplar soni» — bitta quyishdagi qopqoqlar soni.": "Крышка лотка: заливается в форму «{h}», разделённую на части — в день либо {n} шт, либо ничего; в этот день одна форма «{h}» занята. «Количество форм» — число крышек за одну заливку.",
+    "rejadan tashqari: {n}": "вне плана: {n}",
+    "Har katakda: mahsulot va rejadagi soni (dona); o'tgan kunlarda tagida — kunlik hisobotdagi fakt (yashil — bajarildi, qizil — kam). Pastki satr — kun bo'yicha jami va beton hajmi.": "В каждой ячейке: изделие и количество по плану (шт); для прошедших дней ниже — факт из дневного отчёта (зелёный — выполнено, красный — недовыполнено). Нижняя строка — итог за день и объём бетона.",
+    "Bugundan oy oxirigacha": "С сегодняшнего дня до конца месяца",
   },
 
   ruPatterns: [
