@@ -137,6 +137,7 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
           <span className="muted">{t("{d} kungi jo'natish", { d: fmtDate(date) })}</span>
         </div>
 
+        {!groups.length && <p className="notice">{t("Bu kunda jo'natish yozilmagan. «Договор №» dan shartnomani tanlang — mahsulotlar shu buyurtmadan qo'yiladi, yoki qatorlarni o'zingiz yozing.")}</p>}
         {groups.length > 1 && (
           <div className="field">
             <span className="lbl">{t("Qaysi jo'natish (mashina)")}</span>

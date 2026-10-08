@@ -584,11 +584,10 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
                 {canEdit && (
                   <button className="btn sm" onClick={touch(() => setShips((rows) => [...rows, emptyShip()]))}>{tr("+ Jo'natish qo'shish")}</button>
                 )}
-                {ships.some((r) => r.productId && num(r.qty) > 0) && (
-                  <button className="btn sm" onClick={() => setNkOpen(true)} title={tr("Shu kungi jo'natish bo'yicha yuk xati (PDF)")}>
-                    <Icon name="print" size={14} /> {tr("Накладная (PDF)")}
-                  </button>
-                )}
+                {/* doim ko'rinadi: jo'natish bo'lmasa — «Договор №» tanlab, shartnomadagi buyurtmadan to'ldiriladi */}
+                <button className="btn sm" onClick={() => setNkOpen(true)} title={tr("Shu kungi jo'natish bo'yicha yuk xati (PDF)")}>
+                  <Icon name="print" size={14} /> {tr("Накладная (PDF)")}
+                </button>
               </div>
               {nkOpen && <NakladnoyDialog ships={ships} date={date} data={data} notify={notify} onClose={() => setNkOpen(false)} />}
             </div>

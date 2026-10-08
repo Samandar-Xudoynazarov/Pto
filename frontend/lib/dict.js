@@ -1378,6 +1378,7 @@ export const DICT = {
     "Shu yerga imzo chizing": "Распишитесь здесь",
     "Shu kungi jo'natish bo'yicha yuk xati (PDF)": "Накладная по отгрузке за этот день (PDF)",
     "tanlang yoki yozing": "выберите или введите",
+    "Bu kunda jo'natish yozilmagan. «Договор №» dan shartnomani tanlang — mahsulotlar shu buyurtmadan qo'yiladi, yoki qatorlarni o'zingiz yozing.": "За этот день отгрузка не записана. Выберите договор в поле «Договор №» — изделия подставятся из этого заказа, или заполните строки вручную.",
   },
 
   ruPatterns: [
