@@ -7,7 +7,7 @@ import { stockReport } from "./stock.js";
 import { planOrders, checkNewOrder, planConfig, addDays } from "./plan.js";
 import { vehicleStats } from "./fleet.js";
 import { DEFAULT_SCHEMES, assignSchemes } from "./schemes.js";
-import { ROLES, ADMIN_ROLES, WRITE_ROLES, ACCT_ROLES, STORE_ROLES, DAY_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
+import { ROLES, ADMIN_ROLES, WRITE_ROLES, ACCT_ROLES, STORE_ROLES, DAY_ROLES, MPLAN_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
 import { audit, diff } from "./audit.js";
 import { meterFactor } from "./metal.js";
 import { cleanContract, cleanItems, itemsOf, orderView, planLines, shippedMap } from "./orders.js";
@@ -126,6 +126,8 @@ app.use("/api", (req, res, next) => {
   if (STORE_ROLES.includes(role) && (STORE_PATH.test(req.path) || (/^\/materials(\/|$)/.test(req.path) && req.method !== "DELETE"))) return next();
   // sex boshlig'i (usta): faqat kunlik hisobotni saqlaydi, o'chira olmaydi
   if (DAY_ROLES.includes(role) && req.method === "PUT" && /^\/days\/[^/]+$/.test(req.path)) return next();
+  // tasdiqlangan reja: usta ham tuzadi va saqlaydi (o'chira olmaydi)
+  if (MPLAN_ROLES.includes(role) && req.method === "PUT" && /^\/month-plans\/[^/]+$/.test(req.path)) return next();
   // tayyor mahsulotni brakka chiqarish: ПТО, admin va usta
   if (DAY_ROLES.includes(role) && /^\/product-moves(\/|$)/.test(req.path)) return next();
   return res.status(403).json({ error: "Sizda bu amal uchun ruxsat yo'q" });

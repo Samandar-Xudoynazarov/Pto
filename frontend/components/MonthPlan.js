@@ -12,6 +12,7 @@ import {
 import { buildPlanPdf, deliverPdf, planPdfDefinition } from "@/lib/plan-pdf";
 import DeleteButton from "./DeleteButton";
 import Icon from "./Icon";
+import MonthPlanMaterials from "./MonthPlanMaterials";
 
 const WEEK = ["Ya", "Du", "Se", "Ch", "Pa", "Ju", "Sh"];
 const SOURCE = { excel: "Excel'dan yuklangan", qolda: "Qo'lda tuzilgan", dastur: "Dastur taklifidan tuzilgan" };
@@ -25,7 +26,7 @@ const cellTxt = (v) => (v ? fmtN(v, 3) : "");
  */
 export default function MonthPlan({ data, notify }) {
   const t = useT();
-  const { canEdit } = useUser();
+  const { canEdit, canPlan } = useUser(); // canPlan — tuzish/saqlash (usta ham), canEdit — o'chirish
   const { products, prods, mats, settings } = data;
   const [month, setMonthRaw] = useState(() => lsGet("pto.mplanMonth", today().slice(0, 7)));
   const [list, setList] = useState(null); // bazada saqlangan rejalar (oylar)
@@ -380,12 +381,12 @@ export default function MonthPlan({ data, notify }) {
             </>
           ) : (
             <>
-              {canEdit && (
+              {canPlan && (
                 <button type="button" className="btn" onClick={() => fileRef.current?.click()} disabled={busy}>
                   <Icon name="upload" /> {t("Excel'dan yuklash")}
                 </button>
               )}
-              {canEdit && saved && (
+              {canPlan && saved && (
                 <button type="button" className="btn primary" onClick={() => startDraft(saved)}>
                   <Icon name="edit" /> {t("Tahrirlash")}
                 </button>
@@ -425,7 +426,7 @@ export default function MonthPlan({ data, notify }) {
         <EmptyStart
           list={list}
           onPick={setMonth}
-          canEdit={canEdit}
+          canEdit={canPlan}
           busy={busy}
           month={month}
           onExcel={() => fileRef.current?.click()}
@@ -551,6 +552,8 @@ export default function MonthPlan({ data, notify }) {
           />
 
           <Summary plan={plan} editing={editing} showFact={showFact && !editing} factOf={factOf} products={products} prods={prods} mats={mats} change={change} n={n} todayIdx={todayIdx} isOff={isOff} month={month} />
+
+          <MonthPlanMaterials plan={plan} month={month} n={n} todayIdx={todayIdx} data={data} notify={notify} editing={editing} />
 
           {!editing && plan.rows.some((r) => !r.productId) && (
             <p className="hint warn-text">
