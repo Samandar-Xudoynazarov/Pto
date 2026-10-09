@@ -108,6 +108,14 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
   const { products, mats } = data;
   const [sel, setSel] = useState(() => lsGet("pto.costSel", products[0]?.id));
   const [q, setQ] = useState("");
+  // guruhlar — «Katalog»dagi kabi (mahsulotning «Guruh» maydoni bo'yicha)
+  const [group, setGroupRaw] = useState(() => lsGet("pto.costGroup", "all"));
+  const setGroup = (g) => {
+    setGroupRaw(g);
+    lsSet("pto.costGroup", g);
+  };
+  const groups = useMemo(() => [...new Set(products.map((p) => p.group).filter(Boolean))], [products]);
+  const activeGroup = group === "all" || groups.includes(group) ? group : "all"; // guruh o'chirilgan bo'lsa — hammasi
   const rows = useMemo(
     () =>
       products.map((p) => {
@@ -116,7 +124,15 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
       }),
     [products, mats]
   );
-  const shown = rows.filter((r) => !q || `${r.p.code} ${r.p.name} ${r.p.group}`.toLowerCase().includes(q.toLowerCase()));
+  const shown = rows.filter(
+    (r) => (activeGroup === "all" || r.p.group === activeGroup) && (!q || `${r.p.code} ${r.p.name} ${r.p.group}`.toLowerCase().includes(q.toLowerCase()))
+  );
+  // «Hammasi»da ro'yxat guruhlarga bo'lib ko'rsatiladi (guruhsizlar — oxirida)
+  const sections = useMemo(() => {
+    if (activeGroup !== "all") return [[activeGroup, shown]];
+    const order = [...groups, ""];
+    return order.map((g) => [g, shown.filter((r) => (r.p.group || "") === g)]).filter(([, l]) => l.length);
+  }, [shown, groups, activeGroup]);
   const cur = rows.find((r) => r.p.id === sel) || rows[0];
   const [sheet, setSheet] = useState(false);
   const sheetRef = useRef(null);
@@ -189,6 +205,7 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
                 {
                   name: tr("Narxlar ro'yxati"),
                   title: tr("Mahsulotlar narxlari (kalkulyatsiya bo'yicha)"),
+                  subtitle: activeGroup !== "all" ? `${tr("Guruh")}: ${activeGroup}` : undefined,
                   columns: [
                     { header: tr("Marka"), key: "code", width: 18 },
                     { header: tr("Nomi"), key: "name", width: 30 },
@@ -199,7 +216,7 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
                     { header: tr("Narx QQSsiz"), key: "novat", type: "money", width: 15 },
                     { header: tr("Narx QQS bilan"), key: "final", type: "money", width: 16 },
                   ],
-                  rows: shown.map(({ p, c, has }) => ({
+                  rows: sections.flatMap(([, l]) => l).map(({ p, c, has }) => ({
                     code: p.code, name: p.name, group: p.group,
                     v: has ? Math.round(c.V * 1000) / 1000 : null,
                     mat: has ? Math.round(c.materials) : null, ss: has ? Math.round(c.itogo) : null,
@@ -215,6 +232,15 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
           <button className="btn" onClick={() => window.print()}>{tr("Chop etish")}</button>
         </div>
       </div>
+      {groups.length > 0 && (
+        <div className="chips no-print">
+          {[["all", tr("Hammasi")], ...groups.map((g) => [g, g])].map(([k, l]) => (
+            <button key={k} type="button" className="chip" aria-pressed={activeGroup === k} onClick={() => setGroup(k)}>
+              {l} · {k === "all" ? products.length : products.filter((p) => p.group === k).length}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="split">
         <div className="tbl-wrap list-pane no-print">
           <table>
@@ -226,20 +252,30 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
                 <th className="n">{tr("Narx QQS bilan")}</th>
               </tr>
             </thead>
-            <tbody>
-              {shown.map(({ p, c, has }) => (
-                <tr key={p.id} className={`clickable ${cur?.p.id === p.id ? "selected" : ""}`} onClick={() => choose(p.id)}>
-                  <td>
-                    <span className="code">{p.code}</span>
-                    <span className="sub">{p.name}</span>
-                  </td>
-                  <td className="n">{has ? fmtN(c.V, 3) : ""}</td>
-                  <td className="n">{has ? fmt(c.itogo) : "—"}</td>
-                  <td className="n strong">{has ? fmt(c.final) : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
+            {sections.map(([g, list]) => (
+              <tbody key={g || "-"}>
+                {activeGroup === "all" && sections.length > 1 && (
+                  <tr className="grp-row">
+                    <td colSpan={4}>
+                      {g || tr("Guruhsiz")} <span className="muted">· {list.length}</span>
+                    </td>
+                  </tr>
+                )}
+                {list.map(({ p, c, has }) => (
+                  <tr key={p.id} className={`clickable ${cur?.p.id === p.id ? "selected" : ""}`} onClick={() => choose(p.id)}>
+                    <td>
+                      <span className="code">{p.code}</span>
+                      <span className="sub">{p.name}</span>
+                    </td>
+                    <td className="n">{has ? fmtN(c.V, 3) : ""}</td>
+                    <td className="n">{has ? fmt(c.itogo) : "—"}</td>
+                    <td className="n strong">{has ? fmt(c.final) : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            ))}
           </table>
+          {!shown.length && <div className="empty">{tr("Hech narsa topilmadi")}</div>}
         </div>
         {cur && <div className="cost-side">{side}</div>}
       </div>
