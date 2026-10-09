@@ -77,6 +77,8 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
   const [d, setD] = useState(null);
   const [tab, setTab] = useState("norm");
   const [busy, setBusy] = useState(false);
+  // andozadan «alohida»ga o'tkazilgan bo'lsa — qaysi andozadan (qaytarish tugmasi uchun)
+  const [fromScheme, setFromScheme] = useState("");
 
   useEffect(() => {
     const el = ref.current;
@@ -88,6 +90,7 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
       if (!p.calc) p.calc = { ...blankCalc(settings.calcTemplate), scheme: schemes[0]?.id || "" };
       setD(p);
       setTab("norm");
+      setFromScheme("");
       if (el && !el.open) el.showModal();
     } else if (el?.open) el.close();
   }, [open, product, settings.calcTemplate]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -117,6 +120,13 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
   }, [d, norms, calc]);
   const expanded = useMemo(() => (numeric ? expandNorms(numeric, mats, settings) : new Map()), [numeric, mats, settings]);
   const scheme = schemes.find((x) => x.id === calc.scheme);
+  // andoza qiymatlarini shu mahsulotga nusxalab, faqat shu mahsulot uchun tahrirlash (andoza va boshqa mahsulotlar o'zgarmaydi)
+  const detach = () => {
+    if (!scheme) return;
+    setFromScheme(scheme.id);
+    setCalc({ scheme: "", prodRows: clone(scheme.prodRows), otherRows: clone(scheme.otherRows), margin: scheme.margin, vat: scheme.vat });
+  };
+  const backScheme = schemes.find((x) => x.id === fromScheme);
   const card = useMemo(() => (numeric ? costCard(applyScheme(numeric, schemes), mats) : null), [numeric, mats, schemes]);
   const groups = [...new Set(products.map((p) => p.group).filter(Boolean))];
   // «Л 5д-15» → asosiy lotok «Л 5-15» (qolibi bo'lsa)
@@ -336,8 +346,11 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
                     onChange={(e) => {
                       const v = e.target.value;
                       // andozadan «alohida»ga o'tganda — andozadagi qatorlar boshlang'ich qiymat sifatida ko'chiriladi
-                      if (!v && scheme) setCalc({ scheme: "", prodRows: clone(scheme.prodRows), otherRows: clone(scheme.otherRows), margin: scheme.margin, vat: scheme.vat });
-                      else setCalc({ scheme: v });
+                      if (!v && scheme) detach();
+                      else {
+                        setCalc({ scheme: v });
+                        setFromScheme("");
+                      }
                     }}
                   >
                     {schemes.map((x) => (
@@ -364,9 +377,14 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
 
               {scheme ? (
                 <div className="scheme-ro">
-                  <p className="hint">
-                    {tr("Quyidagi xarajatlar «{n}» andozasidan olinadi. Ularni o'zgartirish — «Kalkulyatsiya» → «Xarajat andozalari» (shu andozadagi barcha mahsulotlarga ta'sir qiladi).", { n: scheme.name })}
-                  </p>
+                  <div className="bar">
+                    <p className="hint" style={{ margin: 0 }}>
+                      {tr("Quyidagi xarajatlar «{n}» andozasidan olinadi.", { n: scheme.name })}
+                    </p>
+                    <button type="button" className="btn sm" onClick={detach} title={tr("Andoza qiymatlari shu mahsulotga nusxalanadi — andozaning o'zi va boshqa mahsulotlar o'zgarmaydi")}>
+                      {tr("Xarajatlarni tahrirlash")}
+                    </button>
+                  </div>
                   {[["Производственная СС (ФОТ, ЕСП …)", card.prodRows], ["Другие затраты", card.otherRows]].map(([title, rows]) => (
                     <div key={title}>
                       <h4>{title}</h4>
@@ -389,6 +407,25 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
                 </div>
               ) : (
                 <>
+                  <div className="bar">
+                    <p className="hint" style={{ margin: 0 }}>
+                      {backScheme
+                        ? tr("Xarajatlar «{n}» andozasidan nusxalandi va endi faqat shu mahsulot uchun — andoza va undagi boshqa mahsulotlar o'zgarmaydi.", { n: backScheme.name })
+                        : tr("Xarajatlar faqat shu mahsulot uchun (andozaga bog'lanmagan).")}
+                    </p>
+                    {backScheme && (
+                      <button
+                        type="button"
+                        className="btn sm"
+                        onClick={() => {
+                          setCalc({ scheme: backScheme.id });
+                          setFromScheme("");
+                        }}
+                      >
+                        {tr("Andozaga qaytarish")}
+                      </button>
+                    )}
+                  </div>
                   <RowsEditor title="Производственная СС (ФОТ, ЕСП …)" idp="pr" rows={calc.prodRows} setRows={(r) => setCalc({ prodRows: r })} computed={card.prodRows} />
                   <RowsEditor title="Другие затраты" idp="or" rows={calc.otherRows} setRows={(r) => setCalc({ otherRows: r })} computed={card.otherRows} />
                 </>

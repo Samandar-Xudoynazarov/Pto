@@ -50,6 +50,13 @@ export const DICT = {
   },
 
   ru: {
+    // mahsulot: xarajatlarni faqat shu mahsulot uchun tahrirlash
+    "Quyidagi xarajatlar «{n}» andozasidan olinadi.": "Расходы ниже берутся из шаблона «{n}».",
+    "Xarajatlarni tahrirlash": "Изменить расходы",
+    "Andoza qiymatlari shu mahsulotga nusxalanadi — andozaning o'zi va boshqa mahsulotlar o'zgarmaydi": "Значения шаблона копируются в это изделие — сам шаблон и другие изделия не меняются",
+    "Xarajatlar «{n}» andozasidan nusxalandi va endi faqat shu mahsulot uchun — andoza va undagi boshqa mahsulotlar o'zgarmaydi.": "Расходы скопированы из шаблона «{n}» и теперь только для этого изделия — шаблон и другие его изделия не меняются.",
+    "Xarajatlar faqat shu mahsulot uchun (andozaga bog'lanmagan).": "Расходы только для этого изделия (не привязаны к шаблону).",
+    "Andozaga qaytarish": "Вернуть к шаблону",
     // tasdiqlangan reja: material sarfi
     "Material sarfi (reja bo'yicha)": "Расход материалов (по плану)",
     "Rejadagi soni × mahsulot sarf normasi (beton — retsept bo'yicha qum, sement, sheben; elektrod — metallning foizi). Narx — «Materiallar» bo'limidagi joriy narx.": "Количество по плану × норма расхода изделия (бетон — по рецепту: песок, цемент, щебень; электрод — процент от металла). Цена — текущая из раздела «Материалы».",
