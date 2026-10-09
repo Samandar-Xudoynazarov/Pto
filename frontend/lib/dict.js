@@ -52,9 +52,7 @@ export const DICT = {
   ru: {
     // tasdiqlangan reja: material sarfi
     "Material sarfi (reja bo'yicha)": "Расход материалов (по плану)",
-    "{n} ta material yetishmaydi": "Не хватает материалов: {n}",
     "Rejadagi soni × mahsulot sarf normasi (beton — retsept bo'yicha qum, sement, sheben; elektrod — metallning foizi). Narx — «Materiallar» bo'limidagi joriy narx.": "Количество по плану × норма расхода изделия (бетон — по рецепту: песок, цемент, щебень; электрод — процент от металла). Цена — текущая из раздела «Материалы».",
-    "Omborda — bugungi ({d}) qoldiq.": "«На складе» — остаток на сегодня ({d}).",
     "Saqlanmagan o'zgarishlar ham hisobga olinmoqda.": "Учтены и несохранённые изменения.",
     "Katalog bilan bog'lanmagan {n} ta mahsulot hisobga kirmadi.": "Не учтены изделия, не связанные с каталогом: {n}.",
     "Sarf normasi kiritilmagan: {list}": "Не заполнена норма расхода: {list}",
@@ -62,7 +60,6 @@ export const DICT = {
     "Hammasi": "Все",
     "Material sarfi": "Расход материалов",
     "{m} oyi rejasi bo'yicha material sarfi": "Расход материалов по плану на {m}",
-    "Omborda — {d} holatiga": "На складе — на {d}",
     "Material": "Материал",
     "Guruh": "Группа",
     "Birlik": "Ед. изм.",
@@ -74,9 +71,6 @@ export const DICT = {
     "Summa, so'm": "Сумма, сум",
     "yetadi": "хватает",
     "Jami": "Итого",
-    "«Yetishmaydi» = butun oyga kerak − omborda.": "«Не хватает» = нужно на весь месяц − на складе.",
-    "«Yetishmaydi» = bugundan oy oxirigacha kerak − omborda.": "«Не хватает» = нужно с сегодня до конца месяца − на складе.",
-    "Kutilayotgan kirimlar hisobga olinmagan.": "Ожидаемые поступления не учтены.",
     // telefonga o'rnatish yo'riqnomasi
     "Safari pastidagi {more} tugmasini bosing": "Нажмите внизу Safari кнопку {more}",
     "{share} ni tanlang": "Выберите {share}",
