@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { useUser } from "@/lib/role";
 import { api } from "@/lib/api";
 import { GROUPS, fmt, fmtN, priceOf } from "@/lib/calc";
+import { MATERIAL_VER, atMonth, thisMonth } from "@/lib/versions";
+import VersionBar from "./VersionBar";
 import DeleteButton from "./DeleteButton";
 
 const groupLabel = Object.fromEntries(GROUPS);
@@ -53,12 +55,23 @@ function LinesEditor({ idp, lines, setLines, materials, mats, showPrice }) {
 }
 
 function MaterialEditor({ material, open, onClose, data, notify, onSaved }) {
+  const { canEdit: canPrice } = useUser(); // narx va retseptni ПТО/admin o'zgartiradi
   const ref = useRef(null);
   const [d, setD] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [from, setFromRaw] = useState(thisMonth); // narx/retsept qaysi oydan kuchga kiradi
+  // oy almashtirilsa — shu oydagi narx va retsept ko'rsatiladi (o'sha oy versiyasi tahrirlanadi)
+  const setFrom = (m) => {
+    setFromRaw(m);
+    if (material) {
+      const v = JSON.parse(JSON.stringify(atMonth(material, m, MATERIAL_VER)));
+      setD((x) => ({ ...x, price: v.price, recipe: v.recipe || [], writeoff: v.writeoff || [] }));
+    }
+  };
   useEffect(() => {
     const el = ref.current;
     if (open) {
+      setFromRaw(thisMonth());
       setD(
         material
           ? JSON.parse(JSON.stringify(material))
@@ -73,7 +86,7 @@ function MaterialEditor({ material, open, onClose, data, notify, onSaved }) {
     setBusy(true);
     const clean = (arr) => (arr || []).filter((l) => l.materialId).map((l) => ({ materialId: l.materialId, norm: +l.norm || 0 }));
     const body = { name: d.name.trim(), unit: d.unit.trim(), group: d.group, price: +d.price || 0, stock: d.stock, electrodeBase: d.electrodeBase, isElectrode: Boolean(d.isElectrode), recipe: clean(d.recipe), writeoff: clean(d.writeoff),
-      kgPerM: d.kgPerM === "" || d.kgPerM === null || d.kgPerM === undefined ? null : +d.kgPerM || null };
+      kgPerM: d.kgPerM === "" || d.kgPerM === null || d.kgPerM === undefined ? null : +d.kgPerM || null, from };
     try {
       if (material?.id) await api(`/materials/${material.id}`, { method: "PUT", body });
       else await api("/materials", { method: "POST", body });
@@ -87,14 +100,36 @@ function MaterialEditor({ material, open, onClose, data, notify, onSaved }) {
     }
   }
 
+  async function delVersion(v) {
+    try {
+      await api(`/materials/${material.id}/versions/${v}`, { method: "DELETE" });
+      notify("Versiya o'chirildi");
+      await onSaved();
+      onClose();
+    } catch (err) {
+      notify(err.message);
+    }
+  }
+
   const isBeton = d?.group === "beton";
-  const recipePrice = isBeton ? (d.recipe || []).reduce((s, l) => s + (+l.norm || 0) * priceOf(data.mats.get(l.materialId), data.mats), 0) : 0;
+  const D = data.at(from); // tanlangan oydagi boshqa materiallar narxi
+  const recipePrice = isBeton ? (d.recipe || []).reduce((s, l) => s + (+l.norm || 0) * priceOf(D.mats.get(l.materialId), D.mats), 0) : 0;
 
   return (
     <dialog ref={ref} onClose={onClose} className={isBeton ? "wide-dlg" : undefined}>
       {d && (
         <form onSubmit={save}>
           <h2>{material ? material.name : tr("Yangi material")}</h2>
+          {material?.id && canPrice && (
+            <VersionBar
+              id="me-ver"
+              history={material.history}
+              from={from}
+              setFrom={setFrom}
+              describe={(v) => (isBeton ? tr("retsept") : `${fmt(v.price)} ${tr("so'm")}`)}
+              onDelete={delVersion}
+            />
+          )}
           <div className="form-grid">
             <div className="field" style={{ gridColumn: "1/-1" }}>
               <label htmlFor="me-name">{tr("Nomi")}</label>
@@ -159,7 +194,7 @@ function MaterialEditor({ material, open, onClose, data, notify, onSaved }) {
             <div className="grid2">
               <div>
                 <h4>{tr("1 m³ narxi uchun tarkib (kalkulyatsiya)")}</h4>
-                <LinesEditor idp="rc" lines={d.recipe || []} setLines={(l) => setD({ ...d, recipe: l })} materials={data.materials} mats={data.mats} showPrice />
+                <LinesEditor idp="rc" lines={d.recipe || []} setLines={(l) => setD({ ...d, recipe: l })} materials={data.materials} mats={D.mats} showPrice />
                 <p className="hint" style={{ marginTop: 6 }}>{tr("1 m³ narxi:")} <strong>{fmt(recipePrice, 1)} {tr("so'm")}</strong>
                 </p>
               </div>

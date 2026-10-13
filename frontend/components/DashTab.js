@@ -25,7 +25,6 @@ const costGroup = (g) => (g === "xomashyo" || g === "beton" ? "xomashyo" : g ===
 /** Rahbar uchun grafiklar: oyma-oy reja bajarilishi, beton, material xarajati, brak, jo'natish */
 export default function DashTab({ data, notify }) {
   const t = useT();
-  const { mats, prods } = data;
   const [n, setN] = useState(12); // 1 — bitta oy kunma-kun
   const thisMonth = today().slice(0, 7);
   const [month, setMonth] = useState(thisMonth);
@@ -38,14 +37,18 @@ export default function DashTab({ data, notify }) {
       .catch((e) => notify(e.message));
   }, [n, month, notify]);
 
+  // har oy o'z narxi va normasi bilan (narx o'zgarsa, o'tgan oylar qiymati o'zgarmaydi — lib/versions.js)
   const derived = useMemo(() => {
     if (!raw) return null;
     const price = new Map();
-    const pr = (id) => {
-      if (!price.has(id)) price.set(id, priceOf(mats.get(id), mats) || 0);
-      return price.get(id);
-    };
     const derive = (m) => {
+      const ym = String(m.key || "").slice(0, 7);
+      const { mats, prods } = data.at(ym);
+      const pr = (id) => {
+        const k = `${ym}|${id}`;
+        if (!price.has(k)) price.set(k, priceOf(mats.get(id), mats) || 0);
+        return price.get(k);
+      };
       const cost = { xomashyo: 0, metall: 0, yoqilgi: 0, boshqa: 0 };
       let sarfCost = 0;
       for (const [id, q] of Object.entries(m.sarf)) {
@@ -68,7 +71,7 @@ export default function DashTab({ data, notify }) {
     };
     const rows = raw.rows.map(derive);
     return raw.cur ? { rows, cur: derive(raw.cur), prev: derive(raw.prev) } : { rows, cur: rows[rows.length - 1], prev: rows[rows.length - 2] };
-  }, [raw, mats, prods]);
+  }, [raw, data]);
 
   const rows = derived?.rows;
   const labels = rows?.map((r) => r.key) || [];

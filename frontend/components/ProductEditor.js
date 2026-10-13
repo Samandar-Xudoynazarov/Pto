@@ -3,6 +3,8 @@ import { tr } from "@/lib/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { ROW_TYPES, applyScheme, calcMetalKg, costCard, expandNorms, fmt, fmtN, priceOf } from "@/lib/calc";
+import { PRODUCT_VER, atMonth, thisMonth } from "@/lib/versions";
+import VersionBar from "./VersionBar";
 
 const clone = (x) => JSON.parse(JSON.stringify(x ?? null));
 const blankCalc = (tpl) => ({ items: [], metalKg: 0, prodRows: [], otherRows: [], margin: 20, vat: 12, ...(clone(tpl) || {}), ...(tpl ? { items: [] } : {}) });
@@ -72,9 +74,24 @@ export function RowsEditor({ title, rows, setRows, computed, idp }) {
 
 export default function ProductEditor({ product, open, onClose, data, notify, onSaved }) {
   const ref = useRef(null);
-  const { materials, mats, settings, products } = data;
-  const schemes = data.schemes || [];
+  // norma va kalkulyatsiya qaysi oydan kuchga kiradi; hisob shu oy narxlari va andozalari bilan ko'rsatiladi
+  const [from, setFromRaw] = useState(thisMonth);
+  const D = data.at(from);
+  const { materials, products } = data;
+  const { mats, settings } = D;
+  const schemes = D.schemes || [];
   const [d, setD] = useState(null);
+  const rawOf = () => (product ? data.rawProds?.get(product.id) || product : null);
+  // oy almashtirilsa — shu oydagi norma va kalkulyatsiya tahrirlanadi
+  const setFrom = (m) => {
+    setFromRaw(m);
+    const raw = rawOf();
+    if (raw) {
+      const v = clone(atMonth(raw, m, PRODUCT_VER));
+      setD((x) => ({ ...x, norms: v.norms || [], calc: v.calc || x.calc }));
+      setFromScheme("");
+    }
+  };
   const [tab, setTab] = useState("norm");
   const [busy, setBusy] = useState(false);
   // andozadan «alohida»ga o'tkazilgan bo'lsa — qaysi andozadan (qaytarish tugmasi uchun)
@@ -84,7 +101,8 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
     const el = ref.current;
     if (open) {
       // tahrirlash — asl (andoza qo'llanmagan) ko'rinishda
-      const raw = product ? data.rawProds?.get(product.id) || product : null;
+      setFromRaw(thisMonth());
+      const raw = rawOf();
       const p = raw ? clone(raw) : { code: "", name: "", group: "", norms: [], calc: { ...blankCalc(settings.calcTemplate), scheme: schemes[0]?.id || "" }, forms: "", cycleDays: 1 };
       if (!p.forms) p.forms = "";
       if (!p.calc) p.calc = { ...blankCalc(settings.calcTemplate), scheme: schemes[0]?.id || "" };
@@ -142,7 +160,7 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
     if (!numeric.code.trim()) return notify("Marka kiritilmagan");
     setBusy(true);
     try {
-      const body = { code: numeric.code.trim(), name: numeric.name, group: numeric.group, norms: numeric.norms, calc: numeric.calc, forms: +d.forms || 0, cycleDays: +d.cycleDays || 1 };
+      const body = { code: numeric.code.trim(), name: numeric.name, group: numeric.group, norms: numeric.norms, calc: numeric.calc, forms: +d.forms || 0, cycleDays: +d.cycleDays || 1, from };
       if (product?.id) await api(`/products/${product.id}`, { method: "PUT", body });
       else await api("/products", { method: "POST", body });
       notify("Saqlandi");
@@ -157,11 +175,29 @@ export default function ProductEditor({ product, open, onClose, data, notify, on
 
   const derivedRows = [...expanded.entries()].filter(([, r]) => r.derived);
 
+  async function delVersion(v) {
+    try {
+      await api(`/products/${product.id}/versions/${v}`, { method: "DELETE" });
+      notify("Versiya o'chirildi");
+      await onSaved();
+      onClose();
+    } catch (err) {
+      notify(err.message);
+    }
+  }
+  // versiya tavsifi: o'sha oydagi 1 dona narxi (QQS bilan)
+  const verPrice = (v) => {
+    const A = data.at(v.from);
+    const p = { ...(rawOf() || {}), norms: v.norms, calc: v.calc };
+    return p.calc?.items?.length ? `${fmt(costCard(applyScheme(p, A.schemes), A.mats).final)} ${tr("so'm")}` : tr("norma");
+  };
+
   return (
     <dialog ref={ref} onClose={onClose} className="wide-dlg">
       {d && (
         <form onSubmit={save}>
           <h2>{product ? tr("{c} — tahrirlash", { c: product.code }) : tr("Yangi mahsulot")}</h2>
+          {product?.id && <VersionBar id="pe-ver" history={rawOf()?.history} from={from} setFrom={setFrom} describe={verPrice} onDelete={delVersion} />}
           <div className="form-grid">
             <div className="field">
               <label htmlFor="pe-code">{tr("Marka")}</label>

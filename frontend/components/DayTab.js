@@ -14,8 +14,9 @@ const emptyShip = () => ({ productId: "", qty: "", customer: "", vehicle: "", or
 
 export default function DayTab({ data, notify, onSaved, onDirtyChange, version }) {
   const { canEdit, canDay } = useUser(); // canDay: ПТО, admin va sex boshlig'i (usta — jo'natish va kunni o'chirishsiz)
-  const { materials, products, mats, prods, settings, orders } = data;
   const [date, setDate] = useState(() => lsGet("pto.day", today()));
+  // shu kun oyining sarf normasi va retseptlari (keyingi oylarda o'zgartirilgan norma bu kunga ta'sir qilmaydi)
+  const { materials, products, mats, prods, settings, orders } = data.at(date.slice(0, 7));
   const [loading, setLoading] = useState(true);
   const [prod, setProd] = useState([]);
   const [matIn, setMatIn] = useState({}); // materialId → { sarf, kirim } (matn ko'rinishida)
@@ -166,7 +167,8 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
     notify("Sarf normadan to'ldirildi — tekshirib, saqlang");
   });
 
-  async function save() {
+  async function save(shipRows) {
+    if (!Array.isArray(shipRows)) shipRows = ships;
     setSaving(true);
     try {
       const body = {
@@ -175,7 +177,7 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
           .filter((r) => r.productId)
           .map((r) => ({ productId: r.productId, plan: num(r.plan), fact: num(r.fact), brak: num(r.brak), brakReason: num(r.brak) > 0 ? r.brakReason || "boshqa" : "", note: r.note || "" })),
         materials: Object.entries(matIn).map(([materialId, v]) => ({ materialId, sarf: num(v?.sarf), kirim: num(v?.kirim) })),
-        shipments: ships
+        shipments: shipRows
           .filter((r) => r.productId && num(r.qty) > 0)
           .map((r) => ({ productId: r.productId, qty: num(r.qty), customer: r.customer || "", vehicle: r.vehicle || "", orderId: r.orderId || null })),
       };
@@ -189,6 +191,16 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
     } finally {
       setSaving(false);
     }
+  }
+
+  // Накладнаяdagi mahsulotlar → shu kunning jo'natishi. replaceIdx — накладная qaysi jo'natish qatorlaridan
+  // to'ldirilgan bo'lsa, o'shalar yangilanadi (ikki marta qo'shilmaydi), qolganlari joyida qoladi. Kun saqlanadi.
+  async function applyNakladnoy(rows, replaceIdx = []) {
+    const drop = new Set(replaceIdx);
+    const next = [...ships.filter((_, i) => !drop.has(i)), ...rows];
+    setShips(next);
+    setDirty(true);
+    await save(next);
   }
 
   // ekrandagi (hali saqlanmagan bo'lsa ham) holat bo'yicha Excel
@@ -309,7 +321,7 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
             <button className="btn danger" onClick={removeDay}>{tr("Kunni o'chirish")}</button>
           )}
           {canDay && (
-            <button className="btn primary" onClick={save} disabled={saving || loading}>
+            <button className="btn primary" onClick={() => save()} disabled={saving || loading}>
               <Icon name="save" /> {saving ? tr("Saqlanmoqda…") : tr("Saqlash")}
             </button>
           )}
@@ -589,7 +601,7 @@ export default function DayTab({ data, notify, onSaved, onDirtyChange, version }
                   <Icon name="print" size={14} /> {tr("Накладная (PDF)")}
                 </button>
               </div>
-              {nkOpen && <NakladnoyDialog ships={ships} date={date} data={data} notify={notify} onClose={() => setNkOpen(false)} />}
+              {nkOpen && <NakladnoyDialog ships={ships} date={date} data={data} notify={notify} onClose={() => setNkOpen(false)} onApply={canEdit ? applyNakladnoy : null} />}
             </div>
           </div>
 

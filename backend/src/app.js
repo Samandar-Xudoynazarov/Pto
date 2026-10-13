@@ -9,6 +9,7 @@ import { vehicleStats } from "./fleet.js";
 import { DEFAULT_SCHEMES, assignSchemes } from "./schemes.js";
 import { ROLES, ADMIN_ROLES, WRITE_ROLES, ACCT_ROLES, STORE_ROLES, DAY_ROLES, MPLAN_ROLES, hashPassword, verifyPassword, safeEqual, passwordProblem, issueToken, readToken, publicUser } from "./auth.js";
 import { audit, diff } from "./audit.js";
+import { MONTH_RE as VER_MONTH_RE, MATERIAL_VER, PRODUCT_VER, SETTINGS_VER, thisMonth, versionAt, applyVersion, removeVersion, currentView } from "./versions.js";
 import { meterFactor } from "./metal.js";
 import { cleanContract, cleanItems, itemsOf, orderView, planLines, shippedMap } from "./orders.js";
 import { USER_LIMIT, USER_LOCK_MIN, IP_LIMIT, IP_LOCK_MIN, clientIp, userKey, ipKey, takeAttempt, lock, loginSucceeded, clearUserLocks } from "./limits.js";
@@ -142,6 +143,23 @@ const pick = (obj, keys) => Object.fromEntries(keys.filter((k) => obj?.[k] !== u
 const notFound = (res) => res.status(404).json({ error: "Yozuv topilmadi" });
 const upd = { returnDocument: "after", runValidators: true };
 const validDate = (s) => typeof s === "string" && DATE_RE.test(s);
+/** O'zgarish qaysi oydan kuchga kiradi: body.from (YYYY-MM) yoki joriy oy */
+const versionFrom = (b) => (typeof b?.from === "string" && VER_MONTH_RE.test(b.from) ? b.from : thisMonth());
+/** Versiyalanadigan maydonlarni sxema bo'yicha keltiradi (bazadagi ko'rinish bilan solishtirish uchun) */
+function castVer(Model, data, fields) {
+  const present = fields.filter((f) => data[f] !== undefined);
+  if (!present.length) return data;
+  const obj = new Model(pick(data, present)).toObject();
+  for (const f of present) data[f] = obj[f];
+  return data;
+}
+/** Bazadagi hujjatning versiyalanadigan qiymatlarini ham shu ko'rinishga keltiradi (eski yozuvlarda yangi maydonlar bo'lmasligi mumkin) */
+const castBefore = (Model, before, fields) => ({
+  ...before,
+  ...castVer(Model, pick(before, fields), fields),
+  history: (before.history || []).map((v) => ({ ...v, ...castVer(Model, pick(v, fields), fields) })),
+});
+const monthLabel = (ym) => (ym === "0000-00" ? "boshidan" : `${ym.slice(5, 7)}.${ym.slice(0, 4)} dan`);
 
 async function getSettings() {
   return (await Settings.findOne({ key: "main" })) || (await Settings.create({ key: "main" }));
@@ -290,7 +308,7 @@ const STORE_MATERIAL_FIELDS = ["name", "unit", "group", "code", "minQty"]; // om
 const materialFields = (req) => (WRITE_ROLES.includes(req.user.role) ? MATERIAL_FIELDS : STORE_MATERIAL_FIELDS);
 
 app.get("/api/materials", async (_req, res) => {
-  res.json(await Material.find().sort({ sort: 1, name: 1 }));
+  res.json((await Material.find().sort({ sort: 1, name: 1 })).map((m) => currentView(m, MATERIAL_VER)));
 });
 // nomni solishtirish: katta-kichik harf, «ё/е» va bo'shliqlar farqi hisobga olinmaydi
 const matKey = (s) => String(s || "").toLowerCase().replace(/ё/g, "е").replace(/\s+/g, " ").trim();
@@ -309,10 +327,25 @@ app.put("/api/materials/:id", async (req, res) => {
   if (!isId(req.params.id)) return notFound(res);
   const before = await Material.findById(req.params.id).lean();
   if (!before) return notFound(res);
-  const doc = await Material.findByIdAndUpdate(req.params.id, pick(req.body, materialFields(req)), upd);
+  // narx va retsept — tanlangan oydan boshlab (o'tgan oylar eski qiymatda qoladi)
+  const from = versionFrom(req.body);
+  const { set, changed } = applyVersion(castBefore(Material, before, MATERIAL_VER), castVer(Material, pick(req.body, materialFields(req)), MATERIAL_VER), MATERIAL_VER, from);
+  const doc = await Material.findByIdAndUpdate(req.params.id, { $set: set }, upd);
   if (!doc) return notFound(res);
-  await audit(req, { action: "update", entity: "material", entityId: doc._id, label: doc.name, before, after: doc });
-  res.json(doc);
+  const at = (o) => ({ ...o, ...pick(versionAt(o.history, from) || {}, MATERIAL_VER) }); // audit: shu oy qiymatlari
+  await audit(req, { action: "update", entity: "material", entityId: doc._id, label: changed.length ? `${doc.name} (${monthLabel(from)})` : doc.name, before: at(before), after: at(doc.toObject()) });
+  res.json(currentView(doc, MATERIAL_VER));
+});
+// narx/retsept versiyasini o'chirish: shu oydan boshlab oldingi versiya yana kuchga kiradi
+app.delete("/api/materials/:id/versions/:from", async (req, res) => {
+  if (!isId(req.params.id) || !(VER_MONTH_RE.test(req.params.from) || req.params.from === "0000-00")) return notFound(res);
+  const before = await Material.findById(req.params.id).lean();
+  if (!before) return notFound(res);
+  const set = removeVersion(before, MATERIAL_VER, req.params.from);
+  if (!set) return res.status(400).json({ error: "Bu versiyani o'chirib bo'lmaydi" });
+  const doc = await Material.findByIdAndUpdate(req.params.id, { $set: set }, upd);
+  await audit(req, { action: "update", entity: "material", entityId: doc._id, label: `${doc.name}: ${monthLabel(req.params.from)} narx versiyasi o'chirildi`, changes: [{ p: "versiya", a: req.params.from, b: null }] });
+  res.json(currentView(doc, MATERIAL_VER));
 });
 app.delete("/api/materials/:id", async (req, res) => {
   const id = req.params.id;
@@ -359,7 +392,7 @@ async function ensureSchemes(req) {
 
 app.get("/api/products", async (req, res) => {
   await ensureSchemes(req);
-  res.json(await Product.find().sort({ sort: 1, code: 1 }));
+  res.json((await Product.find().sort({ sort: 1, code: 1 })).map((p) => currentView(p, PRODUCT_VER)));
 });
 // bir nechta mahsulotni andozaga bog'lash: { scheme: "id" | "", productIds: [...] } ("" — o'z qatorlari)
 app.post("/api/products/scheme", async (req, res) => {
@@ -369,7 +402,16 @@ app.post("/api/products/scheme", async (req, res) => {
   const scheme = String(b.scheme ?? "");
   const s = await ensureSchemes(req);
   if (scheme && !(s.costSchemes || []).some((x) => x.id === scheme)) return res.status(400).json({ error: "Bunday andoza yo'q" });
-  const r = await Product.updateMany({ _id: { $in: ids } }, { $set: { "calc.scheme": scheme } });
+  // andozaga bog'lash ham kalkulyatsiya versiyasi: joriy (yoki tanlangan) oydan boshlab, o'tgan oylar o'zgarmaydi
+  const from = versionFrom(b);
+  const list = await Product.find({ _id: { $in: ids } }).lean();
+  const ops = [];
+  for (const p of list) {
+    const calc = { ...(versionAt(p.history, from) || p).calc, scheme };
+    const { set, changed } = applyVersion(castBefore(Product, p, PRODUCT_VER), castVer(Product, { calc }, PRODUCT_VER), PRODUCT_VER, from);
+    if (changed.length) ops.push({ updateOne: { filter: { _id: p._id }, update: { $set: set } } });
+  }
+  const r = { modifiedCount: ops.length ? (await Product.bulkWrite(ops)).modifiedCount : 0 };
   const name = (s.costSchemes || []).find((x) => x.id === scheme)?.name || "alohida";
   await audit(req, { action: "update", entity: "product", entityId: "scheme", label: `${r.modifiedCount} ta mahsulot → ${name}`, changes: [{ p: "calc.scheme", a: null, b: name }] });
   res.json({ ok: true, modified: r.modifiedCount });
@@ -389,10 +431,25 @@ app.put("/api/products/:id", async (req, res) => {
   if (!isId(req.params.id)) return notFound(res);
   const before = await Product.findById(req.params.id).lean();
   if (!before) return notFound(res);
-  const doc = await Product.findByIdAndUpdate(req.params.id, pick(req.body, PRODUCT_FIELDS), upd);
+  // sarf normasi va kalkulyatsiya — tanlangan oydan boshlab (o'tgan oylar eski normada qoladi)
+  const from = versionFrom(req.body);
+  const { set, changed } = applyVersion(castBefore(Product, before, PRODUCT_VER), castVer(Product, pick(req.body, PRODUCT_FIELDS), PRODUCT_VER), PRODUCT_VER, from);
+  const doc = await Product.findByIdAndUpdate(req.params.id, { $set: set }, upd);
   if (!doc) return notFound(res);
-  await audit(req, { action: "update", entity: "product", entityId: doc._id, label: doc.code, before, after: doc });
-  res.json(doc);
+  const at = (o) => ({ ...o, ...pick(versionAt(o.history, from) || {}, PRODUCT_VER) }); // audit: shu oy qiymatlari
+  await audit(req, { action: "update", entity: "product", entityId: doc._id, label: changed.length ? `${doc.code} (${monthLabel(from)})` : doc.code, before: at(before), after: at(doc.toObject()) });
+  res.json(currentView(doc, PRODUCT_VER));
+});
+// norma/kalkulyatsiya versiyasini o'chirish
+app.delete("/api/products/:id/versions/:from", async (req, res) => {
+  if (!isId(req.params.id) || !(VER_MONTH_RE.test(req.params.from) || req.params.from === "0000-00")) return notFound(res);
+  const before = await Product.findById(req.params.id).lean();
+  if (!before) return notFound(res);
+  const set = removeVersion(before, PRODUCT_VER, req.params.from);
+  if (!set) return res.status(400).json({ error: "Bu versiyani o'chirib bo'lmaydi" });
+  const doc = await Product.findByIdAndUpdate(req.params.id, { $set: set }, upd);
+  await audit(req, { action: "update", entity: "product", entityId: doc._id, label: `${doc.code}: ${monthLabel(req.params.from)} norma versiyasi o'chirildi`, changes: [{ p: "versiya", a: req.params.from, b: null }] });
+  res.json(currentView(doc, PRODUCT_VER));
 });
 app.delete("/api/products/:id", async (req, res) => {
   const id = req.params.id;
@@ -1455,13 +1512,14 @@ app.delete("/api/month-plans/:month", async (req, res) => {
 
 /* ---------- Sozlamalar ---------- */
 app.get("/api/settings", async (req, res) => {
-  res.json(await ensureSchemes(req));
+  res.json(currentView(await ensureSchemes(req), SETTINGS_VER));
 });
 app.put("/api/settings", async (req, res) => {
   const s = await getSettings();
   const before = s.toObject();
   const b = req.body || {};
-  if (b.electrodePct !== undefined) s.electrodePct = Math.max(0, +b.electrodePct || 0);
+  const ver = {}; // oyma-oy versiyalanadigan qiymatlar (andozalar, elektrod %)
+  if (b.electrodePct !== undefined) ver.electrodePct = Math.max(0, +b.electrodePct || 0);
   if (b.company !== undefined) s.company = String(b.company).slice(0, 200);
   if (b.plan && typeof b.plan === "object") {
     const holidays = Array.isArray(b.plan.holidays) ? b.plan.holidays : s.plan?.holidays || [];
@@ -1493,8 +1551,16 @@ app.put("/api/settings", async (req, res) => {
       const used = await Product.countDocuments({ "calc.scheme": { $in: gone } });
       if (used) return res.status(400).json({ error: `O'chirilayotgan andozaga ${used} ta mahsulot bog'langan — avval ularni boshqa andozaga o'tkazing` });
     }
-    s.costSchemes = clean;
-    s.markModified("costSchemes");
+    ver.costSchemes = clean;
+  }
+  if (Object.keys(ver).length) {
+    const from = versionFrom(b);
+    const { set } = applyVersion(before, ver, SETTINGS_VER, from);
+    for (const f of [...SETTINGS_VER, "history"]) {
+      if (set[f] === undefined) continue;
+      s[f] = set[f];
+      s.markModified(f);
+    }
   }
   if (b.calcTemplate !== undefined) {
     if (b.calcTemplate === null) s.calcTemplate = null;
@@ -1520,7 +1586,7 @@ app.put("/api/settings", async (req, res) => {
   }
   await s.save();
   await audit(req, { action: "update", entity: "settings", entityId: "main", label: "Sozlamalar", before, after: s });
-  res.json(s);
+  res.json(currentView(s, SETTINGS_VER));
 });
 
 /* ---------- 404 va xatolar ---------- */

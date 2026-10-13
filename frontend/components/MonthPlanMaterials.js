@@ -17,7 +17,7 @@ const groupOrder = (g) => {
  */
 export default function MonthPlanMaterials({ plan, month, n, todayIdx, data, notify, editing }) {
   const t = useT();
-  const { prods, mats, settings } = data;
+  const { prods, mats, settings } = data.at(month); // reja oyining normasi va narxi
   const [group, setGroup] = useState("all");
   const past = todayIdx >= n; // oy tugagan — qolgan kunlar yo'q
   const from = Math.max(0, Math.min(todayIdx, n)); // «qolgan» kunlar shu indeksdan (bugun ham kiradi)

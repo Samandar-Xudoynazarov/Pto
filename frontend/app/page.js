@@ -5,6 +5,7 @@ import { UserContext, roleLabel, canStoreRole } from "@/lib/role";
 import { I18nProvider, LANGS, tr, useI18n, useT } from "@/lib/i18n";
 import { useCardTables } from "@/lib/cards";
 import { applyScheme, byId, fmtDate, lsGet, lsSet, today } from "@/lib/calc";
+import { MATERIAL_VER, PRODUCT_VER, SETTINGS_VER, atMonth, thisMonth } from "@/lib/versions";
 import FormDialog from "@/components/FormDialog";
 import DayTab from "@/components/DayTab";
 import MonthTab from "@/components/MonthTab";
@@ -249,10 +250,30 @@ function App() {
   const openForm = useCallback((f) => setForm({ ...f, key: Date.now() }), []);
 
   // mahsulotlar kalkulyatsiyasi umumiy xarajat andozasi bilan (rawProds — tahrirlash uchun asl ko'rinish)
+  // data.at("YYYY-MM") — shu oydagi narx, retsept, norma, kalkulyatsiya va andozalar bilan (o'tgan oylar hisoboti uchun)
   const data = useMemo(() => {
-    const schemes = settings?.costSchemes || [];
-    const resolved = products.map((p) => applyScheme(p, schemes));
-    return { materials, products: resolved, orders, targets, settings: settings || {}, schemes, mats: byId(materials), prods: byId(resolved), rawProds: byId(products) };
+    const build = (mats0, prods0, st0) => {
+      const schemes = st0?.costSchemes || [];
+      const resolved = prods0.map((p) => applyScheme(p, schemes));
+      return { materials: mats0, products: resolved, settings: st0 || {}, schemes, mats: byId(mats0), prods: byId(resolved), rawProds: byId(prods0) };
+    };
+    const base = { ...build(materials, products, settings), orders, targets };
+    const cur = thisMonth();
+    const cache = new Map();
+    base.month = cur;
+    base.at = (month) => {
+      if (!month || month === cur) return base;
+      if (!cache.has(month)) {
+        const v = build(
+          materials.map((m) => atMonth(m, month, MATERIAL_VER)),
+          products.map((p) => atMonth(p, month, PRODUCT_VER)),
+          atMonth(settings || {}, month, SETTINGS_VER)
+        );
+        cache.set(month, { ...base, ...v, month });
+      }
+      return cache.get(month);
+    };
+    return base;
   }, [materials, products, orders, targets, settings]);
 
   if (phase === "login") return <Login onDone={loadAll} />;

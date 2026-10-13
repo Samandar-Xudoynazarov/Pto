@@ -27,8 +27,8 @@ const cellTxt = (v) => (v ? fmtN(v, 3) : "");
 export default function MonthPlan({ data, notify }) {
   const t = useT();
   const { canEdit, canPlan } = useUser(); // canPlan — tuzish/saqlash (usta ham), canEdit — o'chirish
-  const { products, prods, mats, settings } = data;
   const [month, setMonthRaw] = useState(() => lsGet("pto.mplanMonth", today().slice(0, 7)));
+  const { products, prods, mats, settings } = data.at(month); // reja oyining normasi (beton hajmi)
   const [list, setList] = useState(null); // bazada saqlangan rejalar (oylar)
   const picked = useRef(lsGet("pto.mplanMonth", null) !== null); // foydalanuvchi oyni o'zi tanlaganmi
   const [saved, setSaved] = useState(undefined); // undefined — yuklanmoqda, null — reja yo'q

@@ -50,6 +50,12 @@ export const DICT = {
   },
 
   ru: {
+    // накладная → jo'natish
+    "PDF tayyorlanganda shu jo'natish qatorlarini накладнаяdagidek yangilash va kunni saqlash": "При создании PDF обновить эти строки отгрузки по накладной и сохранить день",
+    "PDF tayyorlanganda mahsulotlarni shu kunning jo'natishiga qo'shish va kunni saqlash": "При создании PDF добавить изделия в отгрузку этого дня и сохранить день",
+    "Накладная sanasi ({a}) hisobot kunidan ({b}) farq qiladi — jo'natishga qo'shilmadi. O'sha kunning hisobotidan oching.": "Дата накладной ({a}) отличается от дня отчёта ({b}) — в отгрузку не добавлено. Откройте из отчёта того дня.",
+    "Jo'natishga qo'shiladigan mahsulot yo'q (katalogdagi marka tanlanmagan)": "Нет изделий для отгрузки (не выбрана марка из каталога)",
+    "Katalogda topilmadi, jo'natishga qo'shilmadi: {l}": "Нет в каталоге, в отгрузку не добавлено: {l}",
     // mahsulot: xarajatlarni faqat shu mahsulot uchun tahrirlash
     "Quyidagi xarajatlar «{n}» andozasidan olinadi.": "Расходы ниже берутся из шаблона «{n}».",
     "Xarajatlarni tahrirlash": "Изменить расходы",
@@ -1412,6 +1418,19 @@ export const DICT = {
     "Summa ustunini PDF'ga chiqarish": "Выводить столбец «Сумма» в PDF",
     "Bu kunda jo'natish yozilmagan. «Договор №» ni tanlang, keyin «Наименование» katagini bosing — shu shartnomadagi mahsulot kodlari chiqadi. Soni, summa va ob'ektni o'zingiz yozasiz.": "За этот день отгрузка не записана. Выберите «Договор №», затем нажмите на ячейку «Наименование» — появятся коды изделий этого договора. Количество, сумму и объект вводите сами.",
     "Topilmadi": "Не найдено",
+    // narx / norma versiyalari
+    "Qaysi oydan kuchga kiradi": "С какого месяца действует",
+    "Diqqat: o'tgan oy tanlandi — {m} va keyingi oylar (keyingi versiyagacha) qayta hisoblanadi.": "Внимание: выбран прошедший месяц — {m} и следующие месяцы (до следующей версии) будут пересчитаны.",
+    "O'tgan oylar hisoboti eski qiymatda qoladi.": "Отчёты прошлых месяцев останутся со старыми значениями.",
+    "Versiyalar:": "Версии:",
+    "boshidan": "с начала",
+    "Versiyani o'chirish": "Удалить версию",
+    "{m} versiyasini o'chirasizmi? Shu oydan boshlab oldingi qiymat qo'llanadi.": "Удалить версию {m}? С этого месяца будет действовать предыдущее значение.",
+    "Versiya o'chirildi": "Версия удалена",
+    "retsept": "рецепт",
+    "norma": "норма",
+    "Qaysi oy narxlari": "Цены какого месяца",
+    "Oy": "Месяц",
   },
 
   ruPatterns: [

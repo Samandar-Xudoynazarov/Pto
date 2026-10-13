@@ -65,8 +65,9 @@ function DailyChart({ month, plan, fact }) {
 }
 
 export default function MonthTab({ data, notify }) {
-  const { materials, products, mats, prods, settings } = data;
   const [month, setMonth] = useState(() => lsGet("pto.month", today().slice(0, 7)));
+  // tanlangan oyning o'z narxi va normasi (keyin kiritilgan o'zgarishlar o'tgan oyga ta'sir qilmaydi)
+  const { materials, products, mats, prods, settings } = data.at(month);
   const [days, setDays] = useState(null);
   const [stock, setStock] = useState(null);
 

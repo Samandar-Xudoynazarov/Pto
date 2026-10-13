@@ -103,8 +103,9 @@ function OpeningDialog({ open, onClose, data, onSaved, notify }) {
 
 export default function StockTab({ data, notify, reloadSettings, version }) {
   const { canEdit } = useUser();
-  const { materials, products, mats, prods, settings, orders } = data;
   const [date, setDate] = useState(today());
+  // qoldiq qiymati — tanlangan sana oyining narxida
+  const { materials, products, mats, prods, settings, orders } = data.at(date.slice(0, 7));
   const [stock, setStock] = useState(null);
   const [group, setGroup] = useState("all");
   const [openDlg, setOpenDlg] = useState(false);

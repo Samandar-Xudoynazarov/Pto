@@ -2,7 +2,7 @@ import { AuditLog } from "./models.js";
 
 const MAX_CHANGES = 80;
 const MAX_LEN = 160;
-const SKIP = new Set(["_id", "id", "createdAt", "updatedAt", "__v", "passwordHash", "tokenVersion", "failedLogins", "lockUntil", "lastLoginAt"]);
+const SKIP = new Set(["_id", "id", "createdAt", "updatedAt", "__v", "passwordHash", "tokenVersion", "failedLogins", "lockUntil", "lastLoginAt", "history"]);
 
 const plain = (doc) => (doc ? JSON.parse(JSON.stringify(doc.toObject ? doc.toObject() : doc)) : null);
 

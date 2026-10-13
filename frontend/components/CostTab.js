@@ -5,6 +5,7 @@ import { fileDate } from "@/lib/xlsx-export";
 import { useUser } from "@/lib/role";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ROW_TYPES, costCard, fmt, fmtN, lsGet, lsSet, schemeName } from "@/lib/calc";
+import { monthText, thisMonth } from "@/lib/versions";
 import SchemesEditor from "./SchemesEditor";
 import OfferDialog from "./OfferDialog";
 
@@ -105,7 +106,10 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
   const { canEdit } = useUser();
   const [schemesOpen, setSchemesOpen] = useState(false);
   const [offerOpen, setOfferOpen] = useState(false);
-  const { products, mats } = data;
+  // qaysi oy narxlari bilan ko'rsatiladi (o'tgan oy kalkulyatsiyasini ko'rish uchun)
+  const [vm, setVm] = useState(thisMonth);
+  const V = data.at(vm);
+  const { products, mats } = V;
   const [sel, setSel] = useState(() => lsGet("pto.costSel", products[0]?.id));
   const [q, setQ] = useState("");
   // guruhlar — «Katalog»dagi kabi (mahsulotning «Guruh» maydoni bo'yicha)
@@ -156,7 +160,7 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
                 </h3>
                 <p className="hint">
                   {cur.p.group}
-                  {schemeName(cur.p, data.schemes) ? ` · ${tr("andoza")}: ${schemeName(cur.p, data.schemes)}` : ` · ${tr("xarajatlar alohida")}`}
+                  {schemeName(cur.p, V.schemes) ? ` · ${tr("andoza")}: ${schemeName(cur.p, V.schemes)}` : ` · ${tr("xarajatlar alohida")}`}
                 </p>
               </div>
               {canEdit && (
@@ -190,6 +194,15 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
           <input id="cost-q" type="search" placeholder={tr("Qidirish: Ф5, лоток…")} value={q} onChange={(e) => setQ(e.target.value)} aria-label={tr("Qidirish")} />
         </div>
         <div className="r">
+          <input
+            id="cost-month"
+            type="month"
+            value={vm}
+            max={thisMonth()}
+            onChange={(e) => setVm(e.target.value || thisMonth())}
+            aria-label={tr("Qaysi oy narxlari")}
+            title={tr("Qaysi oy narxlari")}
+          />
           {canEdit && (
             <button className="btn" onClick={() => setSchemesOpen(true)}>
               {tr("Xarajat andozalari")}
@@ -205,7 +218,7 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
                 {
                   name: tr("Narxlar ro'yxati"),
                   title: tr("Mahsulotlar narxlari (kalkulyatsiya bo'yicha)"),
-                  subtitle: activeGroup !== "all" ? `${tr("Guruh")}: ${activeGroup}` : undefined,
+                  subtitle: [vm !== thisMonth() ? `${tr("Oy")}: ${monthText(vm)}` : "", activeGroup !== "all" ? `${tr("Guruh")}: ${activeGroup}` : ""].filter(Boolean).join(" · ") || undefined,
                   columns: [
                     { header: tr("Marka"), key: "code", width: 18 },
                     { header: tr("Nomi"), key: "name", width: 30 },

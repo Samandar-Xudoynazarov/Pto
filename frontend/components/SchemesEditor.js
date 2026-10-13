@@ -4,6 +4,8 @@ import { api } from "@/lib/api";
 import { tr } from "@/lib/i18n";
 import { applyScheme, costCard, fmt } from "@/lib/calc";
 import { RowsEditor } from "./ProductEditor";
+import { PRODUCT_VER, atMonth, thisMonth } from "@/lib/versions";
+import VersionBar from "./VersionBar";
 
 const clone = (x) => JSON.parse(JSON.stringify(x ?? null));
 const num = (s) => ({
@@ -21,8 +23,11 @@ const num = (s) => ({
  */
 export default function SchemesEditor({ open, onClose, data, notify, onSaved }) {
   const ref = useRef(null);
-  const { mats } = data;
-  const raw = useMemo(() => [...(data.rawProds?.values() || [])], [data.rawProds]);
+  // andoza qaysi oydan kuchga kiradi: o'tgan oylar kalkulyatsiyasi eski andozada qoladi
+  const [from, setFromRaw] = useState(thisMonth);
+  const D = data.at(from);
+  const { mats } = D;
+  const raw = useMemo(() => [...(data.rawProds?.values() || [])].map((p) => atMonth(p, from, PRODUCT_VER)), [data.rawProds, from]);
   const [list, setList] = useState([]);
   const [sel, setSel] = useState("");
   const [assign, setAssign] = useState({}); // productId → scheme ("" — alohida)
@@ -30,14 +35,24 @@ export default function SchemesEditor({ open, onClose, data, notify, onSaved }) 
   const [bulk, setBulk] = useState({ group: "", scheme: "" });
   const [q, setQ] = useState("");
 
+  const loadMonth = (m) => {
+    const A = data.at(m);
+    const l = clone(A.schemes || []);
+    setList(l);
+    setSel((x) => (l.some((s) => s.id === x) ? x : l[0]?.id || ""));
+    setAssign(Object.fromEntries([...(data.rawProds?.values() || [])].map((p) => [p.id, atMonth(p, m, PRODUCT_VER).calc?.scheme || ""])));
+    setBulk({ group: "", scheme: l[0]?.id || "" });
+  };
+  const setFrom = (m) => {
+    setFromRaw(m);
+    loadMonth(m);
+  };
   useEffect(() => {
     const el = ref.current;
     if (open) {
-      const l = clone(data.schemes || []);
-      setList(l);
-      setSel(l[0]?.id || "");
-      setAssign(Object.fromEntries(raw.map((p) => [p.id, p.calc?.scheme || ""])));
-      setBulk({ group: "", scheme: l[0]?.id || "" });
+      const m = thisMonth();
+      setFromRaw(m);
+      loadMonth(m);
       if (el && !el.open) el.showModal();
     } else if (el?.open) el.close();
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -54,9 +69,9 @@ export default function SchemesEditor({ open, onClose, data, notify, onSaved }) 
     if (!open) return [];
     return raw
       .filter((p) => p.calc?.items?.length)
-      .map((p) => ({ p, a: priceWith(p, p.calc?.scheme || "", data.schemes || []), b: priceWith(p, assign[p.id] || "", numList) }))
+      .map((p) => ({ p, a: priceWith(p, p.calc?.scheme || "", D.schemes || []), b: priceWith(p, assign[p.id] || "", numList) }))
       .filter((x) => Math.round(x.a) !== Math.round(x.b));
-  }, [open, raw, assign, numList, data.schemes]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open, raw, assign, numList, D.schemes]); // eslint-disable-line react-hooks/exhaustive-deps
   const groups = [...new Set(raw.map((p) => p.group).filter(Boolean))];
   const count = (id) => raw.filter((p) => assign[p.id] === id).length;
 
@@ -75,13 +90,13 @@ export default function SchemesEditor({ open, onClose, data, notify, onSaved }) 
     if (list.some((x) => !String(x.name).trim())) return notify("Andoza nomi kiritilmagan");
     setBusy(true);
     try {
-      await api("/settings", { method: "PUT", body: { costSchemes: numList } });
+      await api("/settings", { method: "PUT", body: { costSchemes: numList, from } });
       const moves = new Map();
       for (const p of raw) {
         const to = assign[p.id] || "";
         if (to !== (p.calc?.scheme || "")) moves.set(to, [...(moves.get(to) || []), p.id]);
       }
-      for (const [scheme, productIds] of moves) await api("/products/scheme", { method: "POST", body: { scheme, productIds } });
+      for (const [scheme, productIds] of moves) await api("/products/scheme", { method: "POST", body: { scheme, productIds, from } });
       await onSaved();
       notify(tr("Saqlandi — {n} ta mahsulot narxi qayta hisoblandi", { n: changed.length }));
       onClose();
@@ -104,6 +119,7 @@ export default function SchemesEditor({ open, onClose, data, notify, onSaved }) 
           }}
         >
           <h2>{tr("Xarajat andozalari")}</h2>
+          <VersionBar id="sc-ver" history={data.settings?.history} from={from} setFrom={setFrom} />
           <p className="hint">
             {tr("Производственная СС, Другие затраты, marja va QQS shu yerda bir marta kiritiladi — andozaga bog'langan barcha mahsulotlar kalkulyatsiyasi avtomatik yangilanadi. Mahsulotning o'zida faqat materiallar va metall og'irligi qoladi.")}
           </p>
@@ -194,7 +210,7 @@ export default function SchemesEditor({ open, onClose, data, notify, onSaved }) 
               </thead>
               <tbody>
                 {shown.map((p) => {
-                  const before = p.calc?.items?.length ? priceWith(p, p.calc?.scheme || "", data.schemes || []) : null;
+                  const before = p.calc?.items?.length ? priceWith(p, p.calc?.scheme || "", D.schemes || []) : null;
                   const after = p.calc?.items?.length ? priceWith(p, assign[p.id] || "", numList) : null;
                   const diff = before != null && Math.round(before) !== Math.round(after);
                   return (

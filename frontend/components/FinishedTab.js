@@ -96,20 +96,24 @@ export default function FinishedTab({ data, notify, version }) {
       if (!(x.brak || x.writeoff || x.fact)) continue;
       byProd.set(id, { p: prods.get(id), fact: x.fact || 0, brak: x.brak || 0, writeoff: x.writeoff || 0 });
     }
+    // zarar — har brak o'z oyidagi tannarx bo'yicha (keyin narx o'zgarsa, o'tgan oylar zarari o'zgarmaydi)
+    const lossBy = new Map();
     for (const b of rep.brak) {
-      const c = cost(prods.get(b.productId), mats);
+      const D = data.at(String(b.date || "").slice(0, 7));
+      const c = cost(D.prods.get(b.productId), D.mats);
       loss += b.qty * c;
+      lossBy.set(b.productId, (lossBy.get(b.productId) || 0) + b.qty * c);
       byReason.set(b.reason, (byReason.get(b.reason) || 0) + b.qty);
       if (b.source === "ishlab") brakMade += b.qty;
       else brakStock += b.qty;
     }
     const prodRows = [...byProd.values()]
       .filter((r) => r.brak || r.writeoff)
-      .map((r) => ({ ...r, pct: r.fact + r.brak ? (r.brak / (r.fact + r.brak)) * 100 : 0, loss: (r.brak + r.writeoff) * cost(r.p, mats) }))
+      .map((r) => ({ ...r, pct: r.fact + r.brak ? (r.brak / (r.fact + r.brak)) * 100 : 0, loss: r.p ? lossBy.get(r.p.id) || 0 : 0 }))
       .sort((a, b) => b.loss - a.loss || b.brak + b.writeoff - (a.brak + a.writeoff));
     const reasons = [...byReason.entries()].sort((a, b) => b[1] - a[1]);
     return { made, brakMade, brakStock, loss, pct: made + brakMade ? (brakMade / (made + brakMade)) * 100 : 0, prodRows, reasons };
-  }, [rep, prods, mats]);
+  }, [rep, prods, data]);
 
   return (
     <section className="sheet fg">

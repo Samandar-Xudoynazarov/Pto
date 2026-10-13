@@ -35,9 +35,10 @@ function rowFor(p, qty, mats) {
 }
 
 export default function AcctTab({ data, notify }) {
-  const { products, prods, mats } = data;
   const { canAcct } = useUser();
   const [month, setMonth] = useState(() => lsGet("pto.acct.month", defaultMonth()));
+  // hisobot oyining narxi, normasi va kalkulyatsiyasi (keyingi oyda yangilangan narx bu oyga ta'sir qilmaydi)
+  const { products, prods, mats } = data.at(month);
   const [withBrak, setWithBrak] = useState(() => lsGet("pto.acct.brak", false));
   const [days, setDays] = useState(null);
   const [saved, setSaved] = useState(undefined); // undefined — yuklanmoqda, null — hali saqlanmagan

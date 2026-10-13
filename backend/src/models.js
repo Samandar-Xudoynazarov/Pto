@@ -45,6 +45,8 @@ const materialSchema = new Schema(
     archived: { type: Boolean, default: false }, // ro'yxatlarda ko'rinmaydi, tarixi saqlanadi
     recipe: { type: [normLine], default: [] }, // beton: 1 m³ narxi uchun tarkib (kalkulyatsiya)
     writeoff: { type: [normLine], default: [] }, // beton: 1 m³ uchun ombordan yoziladigan xomashyo (Норма)
+    // oyma-oy versiyalar: [{ from: "YYYY-MM", price, recipe, writeoff }] — o'tgan oylar eski narxda qoladi (src/versions.js)
+    history: { type: [Schema.Types.Mixed], default: [] },
     sort: { type: Number, default: 0 },
   },
   opts
@@ -84,6 +86,8 @@ const productSchema = new Schema(
     excelPrice: { type: Number, default: null }, // import paytidagi Excel narxi (solishtirish uchun)
     forms: { type: Number, default: 0, min: [0, "Qoliplar soni manfiy bo'lmaydi"] }, // qoliplar (opalubka) soni — rejalashtirish uchun
     cycleDays: { type: Number, default: 1, min: [0.1, "Aylanish muddati kamida 0,1 kun"] }, // 1 qolip necha kunda bo'shaydi
+    // oyma-oy versiyalar: [{ from: "YYYY-MM", norms, calc }] — o'tgan oylar eski normada qoladi (src/versions.js)
+    history: { type: [Schema.Types.Mixed], default: [] },
     sort: { type: Number, default: 0 },
   },
   opts
@@ -172,6 +176,8 @@ const settingsSchema = new Schema(
       workDays: { type: [Number], default: () => [1, 2, 3, 4, 5, 6] }, // 0 = yakshanba
       holidays: { type: [String], default: [] }, // dam olish / bayram kunlari
     },
+    // oyma-oy versiyalar: [{ from: "YYYY-MM", costSchemes, electrodePct }] (src/versions.js)
+    history: { type: [Schema.Types.Mixed], default: [] },
     company: { type: String, default: "" },
     signers: { type: [String], default: [] },
   },

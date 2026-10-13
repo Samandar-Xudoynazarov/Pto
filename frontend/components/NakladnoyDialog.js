@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useT } from "@/lib/i18n";
+import { tr, useT } from "@/lib/i18n";
 import { fmtDate, lsGet, lsSet } from "@/lib/calc";
 import { buildPlanPdf, deliverPdf } from "@/lib/plan-pdf";
 import { cyr, money, nakladnoyDefinition, nextNo } from "@/lib/nakladnoy-pdf";
@@ -13,7 +13,7 @@ const num = (v) => +String(v ?? "").replace(/\s/g, "").replace(",", ".") || 0;
  * Накладная: kunlik hisobotdagi jo'natishlardan (bitta mashina + bitta qabul qiluvchi = bitta накладная).
  * ships — joriy jadvaldagi jo'natish qatorlari (saqlanmagan bo'lsa ham), date — hisobot sanasi.
  */
-export default function NakladnoyDialog({ ships, date, data, notify, onClose }) {
+export default function NakladnoyDialog({ ships, date, data, notify, onClose, onApply }) {
   const t = useT();
   const { prods, mats, orders } = data;
   const ref = useRef(null);
@@ -22,15 +22,15 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
   // jo'natishlarni guruhlash: mashina + qayerga/buyurtmachi
   const groups = useMemo(() => {
     const m = new Map();
-    for (const s of ships) {
-      if (!s.productId || !(num(s.qty) > 0)) continue;
+    ships.forEach((s, idx) => {
+      if (!s.productId || !(num(s.qty) > 0)) return;
       const o = orders.find((x) => x.id === s.orderId);
       const k = `${(s.vehicle || "").replace(/\s+/g, "").toUpperCase()}|${(s.customer || o?.customer || "").trim().toLowerCase()}`;
       if (!m.has(k)) m.set(k, { key: k, vehicle: s.vehicle || "", customer: s.customer || "", order: o || null, lines: [] });
       const g = m.get(k);
       g.order ||= o || null;
-      g.lines.push({ ...s, order: o });
-    }
+      g.lines.push({ ...s, order: o, idx }); // idx — kunlik hisobotdagi jo'natish qatori
+    });
     return [...m.values()];
   }, [ships, orders]);
   const [gk, setGk] = useState(groups[0]?.key || "");
@@ -71,6 +71,7 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
       copies: saved.copies === 1 ? 1 : 2,
       showSum: saved.showSum !== false,
       signature: saved.signature || "",
+      toShip: saved.toShip !== false, // PDF tayyorlanganda mahsulotlarni jo'natishga yozish
     });
   }, [gk, groups, date, prods, saved]);
 
@@ -97,6 +98,9 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
   }));
   const setItem = (i, k, v) => setF((x) => ({ ...x, items: x.items.map((it, j) => (j === i ? { ...it, [k]: v } : it)) }));
   const totalQty = f.items.reduce((s, it) => s + num(it.qty), 0);
+  // qatordagi mahsulot: ro'yxatdan tanlangan yoki qo'lda yozilgan marka katalogdagiga mos kelsa
+  const normCode = (s) => String(s || "").toLowerCase().replace(/\s+/g, "").replace(/,/g, ".");
+  const pidOf = (it) => it.productId || [...prods.values()].find((p) => normCode(p.code) === normCode(it.name))?.id || "";
   const total = f.items.reduce((s, it) => s + num(it.sum), 0);
 
   async function make(share) {
@@ -111,11 +115,36 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
       lsSet(KEY, { ...st, lastNo: f.num, sender: f.sender, sentBy: f.sentBy, copies: f.copies, showSum: f.showSum, signature: f.signature, drivers: { ...(st.drivers || {}), ...(plate && f.driver ? { [plate]: f.driver } : {}) } });
       const r = await deliverPdf(blob, `Nakladnaya_${(f.num || "").replace(/[^\w-]+/g, "_")}_${fmtDate(f.date)}.pdf`, { share });
       if (r === "downloaded-fallback") notify("Bu qurilmada ulashish yo'q — fayl yuklab olindi");
+      lsSet(KEY, { ...lsGet(KEY, {}), toShip: f.toShip });
+      if (onApply && f.toShip) await addToShipments();
     } catch (e) {
       notify(e.message || "PDF tayyorlab bo'lmadi");
     } finally {
       setBusy(false);
     }
+  }
+
+  // накладнаяdagi mahsulotlarni kunlik hisobotdagi jo'natishga yozish
+  async function addToShipments() {
+    if (f.date !== date) return notify(tr("Накладная sanasi ({a}) hisobot kunidan ({b}) farq qiladi — jo'natishga qo'shilmadi. O'sha kunning hisobotidan oching.", { a: fmtDate(f.date), b: fmtDate(date) }));
+    const rows = [];
+    const skipped = [];
+    for (const it of f.items) {
+      if (!(num(it.qty) > 0)) continue;
+      const pid = pidOf(it);
+      if (!pid) {
+        if (it.name.trim()) skipped.push(it.name.trim());
+        continue;
+      }
+      // buyurtma — shartnomada shu mahsulot bo'lsa
+      const orderId = order && order.items.some((x) => x.productId === pid) ? order.id : "";
+      rows.push({ productId: pid, qty: String(num(it.qty)), customer: f.receiver || f.place || "", vehicle: f.car || "", orderId });
+    }
+    if (!rows.length) return notify("Jo'natishga qo'shiladigan mahsulot yo'q (katalogdagi marka tanlanmagan)");
+    const g = groups.find((x) => x.key === gk);
+    await onApply(rows, g ? g.lines.map((l) => l.idx) : []);
+    if (skipped.length) notify(tr("Katalogda topilmadi, jo'natishga qo'shilmadi: {l}", { l: skipped.join(", ") }));
+    ref.current?.close();
   }
 
   return (
@@ -231,6 +260,14 @@ export default function NakladnoyDialog({ ships, date, data, notify, onClose }) 
           <input type="checkbox" checked={f.showSum} onChange={(e) => setF((x) => ({ ...x, showSum: e.target.checked }))} />
           {t("Summa ustunini PDF'ga chiqarish")}
         </label>
+        {onApply && (
+          <label className="check">
+            <input type="checkbox" checked={f.toShip} onChange={(e) => setF((x) => ({ ...x, toShip: e.target.checked }))} />
+            {groups.find((x) => x.key === gk)
+              ? t("PDF tayyorlanganda shu jo'natish qatorlarini накладнаяdagidek yangilash va kunni saqlash")
+              : t("PDF tayyorlanganda mahsulotlarni shu kunning jo'natishiga qo'shish va kunni saqlash")}
+          </label>
+        )}
 
         <div className="form-grid nk-grid">
           <div className="field">
