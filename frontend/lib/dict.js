@@ -1431,6 +1431,8 @@ export const DICT = {
     "norma": "норма",
     "Qaysi oy narxlari": "Цены какого месяца",
     "Oy": "Месяц",
+    "Ulashish": "Поделиться",
+    "Kalkulyatsiyani PDF qilib yuklab olish": "Скачать калькуляцию в PDF",
   },
 
   ruPatterns: [

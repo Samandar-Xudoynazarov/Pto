@@ -4,8 +4,10 @@ import ExportButtons from "./ExportButtons";
 import { fileDate } from "@/lib/xlsx-export";
 import { useUser } from "@/lib/role";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ROW_TYPES, costCard, fmt, fmtN, lsGet, lsSet, schemeName } from "@/lib/calc";
+import { ROW_TYPES, costCard, fmt, fmtN, lsGet, lsSet, schemeName, today } from "@/lib/calc";
 import { monthText, thisMonth } from "@/lib/versions";
+import { buildPlanPdf, deliverPdf } from "@/lib/plan-pdf";
+import { costPdfDefinition, costPdfName } from "@/lib/cost-pdf";
 import SchemesEditor from "./SchemesEditor";
 import OfferDialog from "./OfferDialog";
 
@@ -138,6 +140,22 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
     return order.map((g) => [g, shown.filter((r) => (r.p.group || "") === g)]).filter(([, l]) => l.length);
   }, [shown, groups, activeGroup]);
   const cur = rows.find((r) => r.p.id === sel) || rows[0];
+  // tanlangan mahsulot kalkulyatsiyasi — PDF (tanlangan oy narxlarida)
+  const [pdfBusy, setPdfBusy] = useState(false);
+  async function downloadPdf(share = false) {
+    if (!cur?.has) return;
+    setPdfBusy(true);
+    try {
+      const def = costPdfDefinition(cur.p, mats, { company: data.settings?.company, month: vm, date: today(), scheme: schemeName(cur.p, V.schemes), signers: data.settings?.signers });
+      const blob = await buildPlanPdf(def);
+      const r = await deliverPdf(blob, costPdfName(cur.p, vm), { share });
+      if (r === "downloaded-fallback") notify("Bu qurilmada ulashish yo'q — fayl yuklab olindi");
+    } catch (e) {
+      notify(e.message || "PDF tayyorlab bo'lmadi");
+    } finally {
+      setPdfBusy(false);
+    }
+  }
   const [sheet, setSheet] = useState(false);
   const sheetRef = useRef(null);
   const choose = (id) => {
@@ -163,9 +181,19 @@ export default function CostTab({ data, onEdit, notify, onSchemesSaved }) {
                   {schemeName(cur.p, V.schemes) ? ` · ${tr("andoza")}: ${schemeName(cur.p, V.schemes)}` : ` · ${tr("xarajatlar alohida")}`}
                 </p>
               </div>
-              {canEdit && (
-                <button className="btn no-print" onClick={() => { setSheet(false); onEdit(cur.p); }}>{tr("Tahrirlash")}</button>
-              )}
+              <div className="r no-print" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {cur.has && (
+                  <button className="btn" disabled={pdfBusy} onClick={() => downloadPdf(false)} title={tr("Kalkulyatsiyani PDF qilib yuklab olish")}>
+                    {pdfBusy ? tr("Tayyorlanmoqda…") : "PDF"}
+                  </button>
+                )}
+                {cur.has && typeof navigator !== "undefined" && navigator.canShare && (
+                  <button className="btn" disabled={pdfBusy} onClick={() => downloadPdf(true)}>{tr("Ulashish")}</button>
+                )}
+                {canEdit && (
+                  <button className="btn" onClick={() => { setSheet(false); onEdit(cur.p); }}>{tr("Tahrirlash")}</button>
+                )}
+              </div>
             </div>
             {!cur.has ? (
               <div className="empty tbl-wrap">{tr("Kalkulyatsiya kiritilmagan. «Tahrirlash» orqali materiallarni qo'shing.")}</div>
